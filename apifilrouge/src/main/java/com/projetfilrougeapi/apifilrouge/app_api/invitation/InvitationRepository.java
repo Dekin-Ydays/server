@@ -1,4 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.app_api.invitation;
 
-public interface InvitationRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface InvitationRepository extends JpaRepository<Invitation, Integer> {
+
 }
