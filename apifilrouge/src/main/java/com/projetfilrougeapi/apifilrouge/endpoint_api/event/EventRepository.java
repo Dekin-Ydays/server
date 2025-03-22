@@ -7,5 +7,5 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel = "events", path = "events")
 @Repository
 public interface EventRepository extends JpaRepository<Event, Integer> {
-    List<Event> findByActiveTrue();
+    List<Event> findAllBy();
 }
