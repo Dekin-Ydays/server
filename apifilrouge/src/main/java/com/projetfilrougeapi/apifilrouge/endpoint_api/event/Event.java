@@ -1,6 +1,5 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
-import com.projetfilrougeapi.apifilrouge.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -31,7 +31,6 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
@@ -61,13 +60,13 @@ public class User implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-       // return UserDetails.super.isCredentialsNonExpired();
+        // return UserDetails.super.isCredentialsNonExpired();
         return true;
     }
 
     @Override
     public boolean isEnabled() {
         return true;
-       // return UserDetails.super.isEnabled();
+        // return UserDetails.super.isEnabled();
     }
 }

@@ -1,12 +1,9 @@
-package com.projetfilrougeapi.apifilrouge.app_api.invitation;
+package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 
-import com.projetfilrougeapi.apifilrouge.app_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Data
@@ -14,7 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "_invitation")
+@Getter
+@Setter
 public class Invitation {
     @Id
     @GeneratedValue
