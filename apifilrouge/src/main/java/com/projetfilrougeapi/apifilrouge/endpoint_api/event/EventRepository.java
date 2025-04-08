@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @RepositoryRestResource(collectionResourceRel = "events", path = "events")
 @Repository
-public interface EventRepository extends JpaRepository<Event, Integer> {
-    Optional<Event> findById(Integer id);
+public interface EventRepository extends JpaRepository<Event, Long> {
+    Optional<Event> findById(Long id);
 }

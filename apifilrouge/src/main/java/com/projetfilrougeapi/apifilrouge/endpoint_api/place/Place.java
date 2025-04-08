@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import lombok.*;
 
 import java.util.List;
@@ -15,17 +16,25 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@JsonIdentityInfo(
+@Transactional
+/**@JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "place_id")
+        property = "place_id")*/
 public class Place {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long place_id;
+    @Column(name = "place_id")
+    @SequenceGenerator(
+            name = "place_id_seq",
+            sequenceName = "place_id_seq",
+            allocationSize = 1
+    )
+    private Long placeId;
     private String city_name;
 
-    @OneToMany(mappedBy = "place")// One place can have many events
-    private List<Event> events;
+    /*@OneToMany(cascade = CascadeType.ALL)// One place can have many events
+    @JoinColumn(name = "place_Event", referencedColumnName = "place_id")
+    private List<Event> events;*/
 
 
 
