@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import lombok.*;
 
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Builder
@@ -17,10 +18,8 @@ import java.util.List;
 @Getter
 @Setter
 @Transactional
-/**@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "place_id")*/
 public class Place {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "place_id")
@@ -32,10 +31,7 @@ public class Place {
     private Long placeId;
     private String city_name;
 
-    /*@OneToMany(cascade = CascadeType.ALL)// One place can have many events
-    @JoinColumn(name = "place_Event", referencedColumnName = "place_id")
-    private List<Event> events;*/
-
-
+    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
+    private List<Event> events;
 
 }
