@@ -36,9 +36,15 @@ public class Event {
     private Boolean is_trending;
     private Boolean active;
 
-    @OneToMany(mappedBy = "event")// One event can have many invitations
-    private List<Invitation> invitations;
+    @ManyToOne
+    @JoinColumn(name = "place_id")
+    private Place place;
 
+    /*@OneToMany(mappedBy = "event")// One event can have many invitations
+    private List<Invitation> invitations;*/
+    /*@ManyToOne
+    @JoinColumn(name = "place_id", referencedColumnName = "place_id")
+    private Place place;*/
 
 
 }

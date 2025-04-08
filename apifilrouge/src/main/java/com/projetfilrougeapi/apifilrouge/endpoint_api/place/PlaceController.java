@@ -10,18 +10,20 @@ import java.util.List;
 public class PlaceController {
 
    private final PlaceService placeService;
+    private final PlaceRepository placeRepository;
 
     @Autowired
-    public PlaceController(PlaceService placeService) {
+    public PlaceController(PlaceService placeService, PlaceRepository placeRepository) {
         this.placeService = placeService;
+        this.placeRepository = placeRepository;
     }
     @GetMapping("/places")
     public List<Place> getAllPlaces() {
         return placeService.getPlaces();
     }
     @PostMapping("/createPlaces")
-    public void addPlace(@RequestBody Place place) {
-        placeService.addPlace(place);
+    public Place addPlace(@RequestBody Place place) {
+       return placeRepository.save(place);
     }
     //    @GetMapping("/places/{id}")
 //    public ResponseEntity<Place> getPlaceById(@PathVariable Long id) {

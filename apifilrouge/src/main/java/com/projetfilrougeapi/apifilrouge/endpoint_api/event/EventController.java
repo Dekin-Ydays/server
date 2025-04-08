@@ -20,7 +20,8 @@ public class EventController {
     // For example, to get all events:
      @GetMapping("/events")
      public List<Event> getAllEvents() {
-         return eventRepository.findAll();
+
+        return eventRepository.findAll();
      }
     // Example of a method to create an event
      @PostMapping("/events")
