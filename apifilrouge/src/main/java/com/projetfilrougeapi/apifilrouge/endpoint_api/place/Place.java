@@ -32,6 +32,7 @@ public class Place {
     private String city_name;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Event> events;
 
 }

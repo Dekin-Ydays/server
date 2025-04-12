@@ -35,5 +35,6 @@ public class Event {
 
     @ManyToOne
     @JoinColumn(name = "place_id")
+    @JsonBackReference
     private Place place;
 }
