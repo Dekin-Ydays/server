@@ -1,7 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.user;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -38,6 +40,11 @@ public class User implements UserDetails {
     //private String phone;
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-events")
+    private List<Event> events;
+
 
     /*@OneToMany(mappedBy = "sender")
     private List<Invitation> invitations = new ArrayList<Invitation>();

@@ -11,6 +11,4 @@ import java.util.Optional;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
     Optional<Event> findById(Long id);
-    List<Event> findByPlace_PlaceId(Long placeId);
-
 }

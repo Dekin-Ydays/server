@@ -46,31 +46,32 @@ public class PlaceController {
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getPlaceId())).withRel("events"));
     }
-@GetMapping("/places/{id}/events")
-                public CollectionModel<EntityModel<Event>> getEventsForPlace(@PathVariable Long id) {
-                    Place place = placeRepository.findById(id)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-                    List<EntityModel<Event>> events = place.getEvents().stream()
-                            .map(event -> EntityModel.of(event,
-                                    linkTo(methodOn(EventController.class).getEventById(event.getEvent_id())).withSelfRel(),
-                                    linkTo(methodOn(PlaceController.class).getPlaceById(place.getPlaceId())).withRel("place")
-                            ))
-                            .collect(Collectors.toList());
+    @GetMapping("/places/{id}/events")
+    public CollectionModel<EntityModel<Event>> getEventsForPlace(@PathVariable Long id) {
+        Place place = placeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-                    return CollectionModel.of(events,
-                            linkTo(methodOn(PlaceController.class).getEventsForPlace(id)).withSelfRel(),
-                            linkTo(methodOn(PlaceController.class).getPlaceById(id)).withRel("place"));
-                }
+        List<EntityModel<Event>> events = place.getEvents().stream()
+                .map(event -> EntityModel.of(event,
+                        linkTo(methodOn(EventController.class).getEventById(event.getEvent_id())).withSelfRel(),
+                        linkTo(methodOn(PlaceController.class).getPlaceById(place.getPlaceId())).withRel("place")
+                ))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(events,
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(id)).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getPlaceById(id)).withRel("place"));
+    }
 
     @PostMapping("/places")
     @ResponseStatus(HttpStatus.CREATED)
     public EntityModel<Place> addPlace(@RequestBody Place place) {
         Place savedPlace = placeRepository.save(place);
 
-    return EntityModel.of(savedPlace,
-                            linkTo(methodOn(PlaceController.class).getPlaceById(savedPlace.getPlaceId())).withSelfRel(),
-                            linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
-                            linkTo(methodOn(PlaceController.class).getEventsForPlace(savedPlace.getPlaceId())).withRel("events"));
-                }
+        return EntityModel.of(savedPlace,
+                linkTo(methodOn(PlaceController.class).getPlaceById(savedPlace.getPlaceId())).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(savedPlace.getPlaceId())).withRel("events"));
     }
+}

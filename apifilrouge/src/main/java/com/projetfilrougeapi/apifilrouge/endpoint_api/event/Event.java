@@ -3,7 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 import com.fasterxml.jackson.annotation.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
+import com.projetfilrougeapi.apifilrouge.user.User;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import lombok.*;
@@ -17,24 +17,31 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Getter
-@Setter
-@Transactional
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long event_id;
-    private LocalDateTime event_date;
+    private LocalDateTime eventDate;
     private String description;
-    private String event_name;
+    private String eventName;
     private String address;
-    private Integer max_customers;
-    private Boolean is_trending;
+    private Integer maxCustomers;
+    private Boolean isTrending;
     private Boolean active;
 
     @ManyToOne
     @JoinColumn(name = "place_id")
-    @JsonBackReference
+    @JsonBackReference(value = "place-events")
     private Place place;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "invitation-events")
+    private List<Invitation> invitations;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference(value = "user-events")
+    private User user;
+
 }
