@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.user;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -24,9 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "_user")
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id")
+
 public class User implements UserDetails {
     @Id
     @GeneratedValue
