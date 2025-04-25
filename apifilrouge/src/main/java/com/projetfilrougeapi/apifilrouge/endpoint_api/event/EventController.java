@@ -112,25 +112,13 @@ public class EventController {
     }
 
     @GetMapping("/events/{id}/user")
-    public EntityModel<Map<String, Object>> getUserForEvent(@PathVariable Long id) {
+    public EntityModel<User> getUserForEvent(@PathVariable Long id) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         User user = event.getUser();
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun utilisateur associé à cet événement");
-        }
+        user.setPassword("xxx");
 
-        Map<String, Object> userData = new HashMap<>();
-        Map<String, Object> userMap = new HashMap<>();
-        userMap.put("id", user.getId());
-        userMap.put("firstName", user.getFirstName());
-        userMap.put("lastName", user.getLastName());
-        userMap.put("email", user.getEmail());
-        userMap.put("role", user.getRole().name());
-
-        userData.put("user", userMap);
-
-        return EntityModel.of(userData,
+        return EntityModel.of(user,
                 linkTo(methodOn(EventController.class).getUserForEvent(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
