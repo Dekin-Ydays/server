@@ -3,7 +3,9 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import com.projetfilrougeapi.apifilrouge.user.UserDTO;
+import java.util.Map;
+import java.util.HashMap;
+
 import com.projetfilrougeapi.apifilrouge.user.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -110,7 +112,7 @@ public class EventController {
     }
 
     @GetMapping("/events/{id}/user")
-    public EntityModel<UserDTO> getUserForEvent(@PathVariable Long id) {
+    public EntityModel<Map<String, Object>> getUserForEvent(@PathVariable Long id) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         User user = event.getUser();
@@ -118,15 +120,17 @@ public class EventController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun utilisateur associé à cet événement");
         }
 
-        UserDTO userDTO = new UserDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getRole().name()
-        );
+        Map<String, Object> userData = new HashMap<>();
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("firstName", user.getFirstName());
+        userMap.put("lastName", user.getLastName());
+        userMap.put("email", user.getEmail());
+        userMap.put("role", user.getRole().name());
 
-        return EntityModel.of(userDTO,
+        userData.put("user", userMap);
+
+        return EntityModel.of(userData,
                 linkTo(methodOn(EventController.class).getUserForEvent(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
