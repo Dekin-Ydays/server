@@ -4,50 +4,30 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@RequestMapping("/categories")
 public class CategoryController {
-    private final CategoryRepository categoryRepository;
 
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
-    @GetMapping("/categories")
+    @GetMapping
     public CollectionModel<EntityModel<Category>> getAllCategories() {
-        List<EntityModel<Category>> categories = categoryRepository.findAll().stream()
-                .map(category -> EntityModel.of(category,
-                        linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel()
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(categories,
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel());
+        return categoryService.getAllCategories();
     }
 
-   @GetMapping("/categories/{id}")
-   public EntityModel<Category> getCategoryById(@PathVariable Long id) {
-       Category category = categoryRepository.findById(id)
-               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    @GetMapping("/{id}")
+    public EntityModel<Category> getCategoryById(@PathVariable Long id) {
+        return categoryService.getCategoryById(id);
+    }
 
-       return EntityModel.of(category,
-               linkTo(methodOn(CategoryController.class).getCategoryById(id)).withSelfRel());
-   }
-
-    @PostMapping("/categories")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Category> addPlace(@RequestBody Category category) {
-        Category savedCategory = categoryRepository.save(category);
-
-        return EntityModel.of(savedCategory,
-                linkTo(methodOn(CategoryController.class).getCategoryById(savedCategory.getId())).withSelfRel(),
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
+    public EntityModel<Category> addCategory(@RequestBody Category category) {
+        return categoryService.addCategory(category);
     }
 }
