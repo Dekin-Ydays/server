@@ -66,4 +66,33 @@ public class InvitationService {
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getEvent_id())).withRel("event"));
     }
+    public EntityModel<Invitation> updateInvitation(Long id, Invitation invitation) {
+        Invitation existingInvitation = invitationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (invitation.getEvent() != null) {
+            existingInvitation.setEvent(invitation.getEvent());
+        }
+        if (invitation.getDescription() != null) {
+            existingInvitation.setDescription(invitation.getDescription());
+        }
+        if (invitation.getType() != null) {
+            existingInvitation.setType(invitation.getType());
+        }
+        if (invitation.getStatus() != null) {
+            existingInvitation.setStatus(invitation.getStatus());
+        }
+
+        Invitation updatedInvitation = invitationRepository.save(existingInvitation);
+
+        return EntityModel.of(updatedInvitation,
+                linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getInvitationId())).withSelfRel(),
+                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getEvent_id())).withRel("event"));
+    }
+    public void deleteInvitation(Long id) {
+        Invitation invitation = invitationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        invitationRepository.delete(invitation);
+    }
 }

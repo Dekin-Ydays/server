@@ -48,4 +48,16 @@ public class EventController {
     public EntityModel<User> getUserForEvent(@PathVariable Long id) {
         return eventService.getUserForEvent(id);
     }
+
+    @PatchMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public EntityModel<Event> updateEvent(@PathVariable Long id, @RequestBody Event event) {
+        return eventService.updateEvent(id, event);
+    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteEvent(@PathVariable Long id) {
+        eventService.deleteEvent(id);
+    }
+
 }

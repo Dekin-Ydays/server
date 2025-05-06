@@ -113,4 +113,51 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getUserForEvent(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
+    public EntityModel<Event> updateEvent(Long id, Event event) {
+        Event existingEvent = eventRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        // Check if the event name is not null before updating
+        if (event.getEventName() != null) {
+            existingEvent.setEventName(event.getEventName());
+        }
+        if (event.getDescription() != null) {
+            existingEvent.setDescription(event.getDescription());
+        }
+        if (event.getEventDate() != null) {
+            existingEvent.setEventDate(event.getEventDate());
+        }
+        if (event.getAddress() != null) {
+            existingEvent.setAddress(event.getAddress());
+        }
+        if (event.getMaxCustomers() != null) {
+            existingEvent.setMaxCustomers(event.getMaxCustomers());
+        }
+        if (event.getIsTrending() != null) {
+            existingEvent.setIsTrending(event.getIsTrending());
+        }
+        if (event.getActive() != null) {
+            existingEvent.setActive(event.getActive());
+        }
+        if (event.getPlace() != null) {
+            existingEvent.setPlace(event.getPlace());
+        }
+        if (event.getUser() != null) {
+            existingEvent.setUser(event.getUser());
+        }
+
+        Event updatedEvent = eventRepository.save(existingEvent);
+
+        return EntityModel.of(updatedEvent,
+                linkTo(methodOn(EventController.class).getEventById(updatedEvent.getEvent_id())).withSelfRel(),
+                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getEvent_id())).withRel("places"),
+                linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getEvent_id())).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getUserForEvent(updatedEvent.getEvent_id())).withRel("user"));
+    }
+    public void deleteEvent(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        eventRepository.delete(event);
+    }
 }

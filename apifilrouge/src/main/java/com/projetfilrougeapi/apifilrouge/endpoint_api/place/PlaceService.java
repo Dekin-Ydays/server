@@ -69,4 +69,23 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(savedPlace.getPlaceId())).withRel("events"));
     }
+
+    public EntityModel<Place> updatePlace(Long id, Place place) {
+        Place existingPlace = placeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (existingPlace.getCity_name() != null && !existingPlace.getCity_name().equals(place.getCity_name()) ) {
+            existingPlace.setCity_name(place.getCity_name());
+        }
+        Place updatedPlace = placeRepository.save(existingPlace);
+        return EntityModel.of(updatedPlace,
+                linkTo(methodOn(PlaceController.class).getPlaceById(updatedPlace.getPlaceId())).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(updatedPlace.getPlaceId())).withRel("events"));
+    }
+    public void deletePlace(Long id) {
+        Place place = placeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        placeRepository.delete(place);
+    }
 }

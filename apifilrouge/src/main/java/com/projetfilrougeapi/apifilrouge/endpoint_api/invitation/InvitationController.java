@@ -31,9 +31,14 @@ public class InvitationController {
         return invitationService.getEventForInvitation(id);
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Invitation> addInvitation(@RequestBody Invitation invitation) {
-        return invitationService.addInvitation(invitation);
+    @PatchMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public EntityModel<Invitation> updateInvitation(@PathVariable Long id, @RequestBody Invitation invitation) {
+        return invitationService.updateInvitation(id, invitation);
+    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteInvitation(@PathVariable Long id) {
+        invitationService.deleteInvitation(id);
     }
 }

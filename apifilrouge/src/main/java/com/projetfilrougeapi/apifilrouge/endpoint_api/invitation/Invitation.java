@@ -37,4 +37,6 @@ public class Invitation {
     @JsonBackReference(value = "invitation-events")
     private Event event;
 
+    //TO DO : ajouter une relation avec l'utilisateur
+
 }

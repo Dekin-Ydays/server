@@ -36,4 +36,16 @@ public class PlaceController {
     public EntityModel<Place> addPlace(@RequestBody Place place) {
         return placeService.addPlace(place);
     }
+
+    @PatchMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public EntityModel<Place> updatePlace(@PathVariable Long id, @RequestBody Place place) {
+        return placeService.updatePlace(id, place);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePlace(@PathVariable Long id) {
+        placeService.deletePlace(id);
+    }
 }
