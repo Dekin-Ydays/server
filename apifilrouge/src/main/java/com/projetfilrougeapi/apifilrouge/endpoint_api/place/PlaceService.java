@@ -73,8 +73,8 @@ public class PlaceService {
     public EntityModel<Place> updatePlace(Long id, Place place) {
         Place existingPlace = placeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (existingPlace.getCity_name() != null && !existingPlace.getCity_name().equals(place.getCity_name()) ) {
-            existingPlace.setCity_name(place.getCity_name());
+        if (existingPlace.getPlace_name() != null && !existingPlace.getPlace_name().equals(place.getPlace_name()) ) {
+            existingPlace.setPlace_name(place.getPlace_name());
         }
         Place updatedPlace = placeRepository.save(existingPlace);
         return EntityModel.of(updatedPlace,

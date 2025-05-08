@@ -24,7 +24,7 @@ public class Place {
             allocationSize = 1
     )
     private Long placeId;
-    private String city_name;
+    private String place_name;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "place-events")

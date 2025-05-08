@@ -5,7 +5,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,5 +44,28 @@ public class CategoryService {
         return EntityModel.of(savedCategory,
                 linkTo(methodOn(CategoryController.class).getCategoryById(savedCategory.getId())).withSelfRel(),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
+    }
+    public EntityModel<Category> updateCategory(Long id, Category category) {
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (existingCategory.getName() != null && !existingCategory.getName().equals(category.getName()) ) {
+            existingCategory.setName(category.getName());
+        }
+        if (existingCategory.getDescription() != null && !existingCategory.getDescription().equals(category.getDescription()) ) {
+            existingCategory.setDescription(category.getDescription());
+        }
+
+        Category updatedCategory = categoryRepository.save(existingCategory);
+
+        return EntityModel.of(updatedCategory,
+                linkTo(methodOn(CategoryController.class).getCategoryById(updatedCategory.getId())).withSelfRel(),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
+    }
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        categoryRepository.delete(category);
     }
 }
