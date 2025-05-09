@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.user.User;
@@ -7,6 +8,8 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/events")
@@ -30,7 +33,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Event> getEventById(@PathVariable Long id) {
+    public EntityModel<Event> getEventById(@PathVariable("id") Long id) {
         return eventService.getEventById(id);
     }
 
@@ -59,5 +62,8 @@ public class EventController {
     public void deleteEvent(@PathVariable Long id) {
         eventService.deleteEvent(id);
     }
-
+    @PostMapping("/{eventId}/categories")
+    public EntityModel<Event> addCategoriesToEvent(@PathVariable Long eventId, @RequestBody List<Long> categoryIds) {
+        return eventService.addCategoriesToEvent(eventId, categoryIds);
+    }
 }

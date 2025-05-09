@@ -22,7 +22,7 @@ public class InvitationController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Invitation> getInvitationById(@PathVariable Long id) {
+    public EntityModel<Invitation> getInvitationById(@PathVariable("id") Long id) {
         return invitationService.getInvitationById(id);
     }
 
@@ -40,5 +40,11 @@ public class InvitationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteInvitation(@PathVariable Long id) {
         invitationService.deleteInvitation(id);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public EntityModel<Invitation> addInvitation(@RequestBody Invitation invitation) {
+        return invitationService.addInvitation(invitation);
     }
 }

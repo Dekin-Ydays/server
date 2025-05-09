@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.fasterxml.jackson.annotation.*;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.user.User;
@@ -44,4 +45,10 @@ public class Event {
     @JsonBackReference(value = "user-events")
     private User user;
 
+    @ManyToMany
+    @JoinTable(name = "eventCategory",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @JsonIgnoreProperties("events")
+    private List<Category> categories = new ArrayList<>();
 }

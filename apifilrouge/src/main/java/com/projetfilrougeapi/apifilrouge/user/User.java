@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import jakarta.persistence.*;
@@ -43,6 +44,15 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-events")
     private List<Event> events;
+
+//    @ManyToMany
+//    @JoinTable(
+//            name = "user_category",
+//            joinColumns = @JoinColumn(name = "user_id"),
+//            inverseJoinColumns = @JoinColumn(name = "category_id")
+//    )
+//    @JsonManagedReference(value = "user-category")
+//    private List<Category> categories = new ArrayList<>();
 
 
     /*@OneToMany(mappedBy = "sender")

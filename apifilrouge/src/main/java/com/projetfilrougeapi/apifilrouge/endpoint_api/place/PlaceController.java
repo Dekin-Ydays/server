@@ -22,7 +22,7 @@ public class PlaceController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Place> getPlaceById(@PathVariable Long id) {
+    public EntityModel<Place> getPlaceById(@PathVariable("id") Long id) {
         return placeService.getPlaceById(id);
     }
 

@@ -1,5 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
@@ -24,10 +26,12 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository) {
+    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public CollectionModel<EntityModel<Event>> getAllEvents() {
@@ -113,6 +117,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getUserForEvent(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
+
     public EntityModel<Event> updateEvent(Long id, Event event) {
         Event existingEvent = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -154,10 +159,30 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getEvent_id())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getUserForEvent(updatedEvent.getEvent_id())).withRel("user"));
     }
+
     public void deleteEvent(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         eventRepository.delete(event);
     }
+
+    public EntityModel<Event> addCategoriesToEvent(Long eventId, List<Long> categoryIds) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé avec l'ID: " + eventId));
+
+        for (Long categoryId : categoryIds) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Catégorie non trouvée avec l'ID: " + categoryId));
+
+            if (event.getCategories().stream().noneMatch(c -> c.getId().equals(categoryId))) {
+                event.getCategories().add(category);
+            }
+        }
+        eventRepository.save(event);
+
+        return EntityModel.of(event,
+                linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel());
+    }
+
 }

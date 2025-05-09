@@ -21,7 +21,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Category> getCategoryById(@PathVariable Long id) {
+    public EntityModel<Category> getCategoryById(@PathVariable("id") Long id) {
         return categoryService.getCategoryById(id);
     }
 
@@ -29,5 +29,16 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.CREATED)
     public EntityModel<Category> addCategory(@RequestBody Category category) {
         return categoryService.addCategory(category);
+    }
+
+    @PatchMapping("/{id}")
+    public EntityModel<Category> updateCategory(@PathVariable("id") Long id, @RequestBody Category category) {
+        return categoryService.updateCategory(id, category);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable("id") Long id) {
+        categoryService.deleteCategory(id);
     }
 }
