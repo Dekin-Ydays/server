@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 import com.fasterxml.jackson.annotation.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Status;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.user.User;
 import jakarta.persistence.*;
@@ -29,7 +30,8 @@ public class Event {
     private String address;
     private Integer maxCustomers;
     private Boolean isTrending;
-    private Boolean active;
+    @Enumerated(EnumType.STRING)
+    private EventStatus eventStatus;
 
     @ManyToOne
     @JoinColumn(name = "place_id")

@@ -72,8 +72,13 @@ public class CategoryService {
 
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Catégorie non trouvée avec l'ID: " + id));
+
+        if (!category.getEvents().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de supprimer cette catégorie : elle est encore associée à un ou plusieurs événements.");
+        }
 
         categoryRepository.delete(category);
     }
+
 }

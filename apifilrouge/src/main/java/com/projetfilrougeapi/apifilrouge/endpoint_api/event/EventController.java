@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.DTO.EventRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
@@ -8,8 +9,6 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/events")
@@ -28,8 +27,8 @@ public class EventController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Event> createEvent(@RequestBody Event event) {
-        return eventService.createEvent(event);
+    public EntityModel<Event> createEvent(@RequestBody EventRequest request) {
+        return eventService.createEvent(request);
     }
 
     @GetMapping("/{id}")
@@ -51,19 +50,19 @@ public class EventController {
     public EntityModel<User> getUserForEvent(@PathVariable Long id) {
         return eventService.getUserForEvent(id);
     }
+    @GetMapping("/{eventId}/categories")
+    public CollectionModel<Category> getCategoriesForEvent(@PathVariable Long eventId) {
+        return eventService.getCategoriesForEvent(eventId);
+    }
 
     @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public EntityModel<Event> updateEvent(@PathVariable Long id, @RequestBody Event event) {
-        return eventService.updateEvent(id, event);
+    public EntityModel<Event> patchEvent(@PathVariable Long id, @RequestBody EventRequest request) {
+        return eventService.updateEvent(id, request);
     }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteEvent(@PathVariable Long id) {
         eventService.deleteEvent(id);
-    }
-    @PostMapping("/{eventId}/categories")
-    public EntityModel<Event> addCategoriesToEvent(@PathVariable Long eventId, @RequestBody List<Long> categoryIds) {
-        return eventService.addCategoriesToEvent(eventId, categoryIds);
     }
 }
