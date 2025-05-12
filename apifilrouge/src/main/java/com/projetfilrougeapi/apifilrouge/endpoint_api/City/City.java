@@ -1,13 +1,15 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.City;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -23,5 +25,9 @@ public class City {
     private String region;
     private String country;
     private String description;
+
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
+    @JsonBackReference(value = "place-city")
+    private List<Place> places;
     // Constructors, getters, and setters
 }

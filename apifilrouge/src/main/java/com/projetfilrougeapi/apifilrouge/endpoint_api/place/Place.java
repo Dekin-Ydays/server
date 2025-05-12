@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.City.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
@@ -25,9 +26,16 @@ public class Place {
     )
     private Long placeId;
     private String place_name;
+    private String description;
+    private String address;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "place-events")
     private List<Event> events;
+
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    @JsonIgnore
+    private City city;
 
 }

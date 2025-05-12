@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.user;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
@@ -30,7 +31,9 @@ public class UserService {
         return EntityModel.of(user,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"));
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
 
 
@@ -44,7 +47,9 @@ public class UserService {
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
 
      public CollectionModel<EntityModel<Event>> getEventsForUser(Long id) {
@@ -61,11 +66,12 @@ public class UserService {
         return CollectionModel.of(events,
                 linkTo(methodOn(UserController.class).getEventsForUser(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
-
+                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
 
      }
-
+    // à modifier pour le DTO
     public EntityModel<User> updateUser(Long id, User user) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -87,7 +93,8 @@ public class UserService {
         return EntityModel.of(existingUser,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
-
+                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
 }

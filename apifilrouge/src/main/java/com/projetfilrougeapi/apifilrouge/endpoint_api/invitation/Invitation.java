@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import com.projetfilrougeapi.apifilrouge.user.User;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import lombok.*;
@@ -36,6 +37,11 @@ public class Invitation {
     @JoinColumn(name = "event_id", nullable = true, referencedColumnName = "event_id")
     @JsonBackReference(value = "invitation-events")
     private Event event;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
+    @JsonBackReference(value = "user-invitations")
+    private User user;
 
     //TO DO : ajouter une relation avec l'utilisateur
 

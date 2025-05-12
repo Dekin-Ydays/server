@@ -29,11 +29,11 @@ public class Category {
     private String description;
     private boolean isTrending;
 
-//    @ManyToMany(mappedBy = "categories")
-//    @JsonBackReference(value = "user-category")
-//    private List<User> users = new ArrayList<>();
+    @ManyToMany(mappedBy = "categories")
+    @JsonIgnoreProperties("categories-user")
+    private List<User> users = new ArrayList<>();
 
     @ManyToMany(mappedBy = "categories")
-    @JsonIgnoreProperties("categories")
+    @JsonIgnoreProperties("categories-events")
     private List<Event> events = new ArrayList<>();
 }

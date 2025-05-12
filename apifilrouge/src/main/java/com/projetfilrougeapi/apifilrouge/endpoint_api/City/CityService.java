@@ -30,7 +30,9 @@ private final CityRepository cityRepository;
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return EntityModel.of(city,
-                linkTo(methodOn(CityController.class).getCityById(id)).withSelfRel());
+                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel(),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
 
     public CollectionModel<EntityModel<City>> getAllCities() {
@@ -41,7 +43,9 @@ private final CityRepository cityRepository;
                 .collect(Collectors.toList());
 
         return CollectionModel.of(cities,
-                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel());
+                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel(),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
 
 
@@ -49,8 +53,9 @@ private final CityRepository cityRepository;
         City savedCity = cityRepository.save(city);
 
         return EntityModel.of(savedCity,
-                linkTo(methodOn(CityController.class).getCityById(savedCity.getCity_id())).withSelfRel());
-    }
+                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel(),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));    }
 
     public EntityModel<City> updateCity(Long id, City city) {
         City existingCity = cityRepository.findById(id)
@@ -66,7 +71,9 @@ private final CityRepository cityRepository;
         City updatedCity = cityRepository.save(existingCity);
 
         return EntityModel.of(updatedCity,
-                linkTo(methodOn(CityController.class).getCityById(updatedCity.getCity_id())).withSelfRel());
+                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel(),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
     public void deleteCity(Long id) {
         City city = cityRepository.findById(id)

@@ -8,6 +8,7 @@ public class ApifilrougeApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApifilrougeApplication.class, args);
+
 	}
 
 }

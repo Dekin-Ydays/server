@@ -1,5 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.City.City;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.City.CityController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.City.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import org.springframework.hateoas.CollectionModel;
@@ -32,6 +35,7 @@ public class PlaceService {
 
         return CollectionModel.of(places,
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withSelfRel(),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
     }
 
@@ -67,6 +71,7 @@ public class PlaceService {
         return EntityModel.of(savedPlace,
                 linkTo(methodOn(PlaceController.class).getPlaceById(savedPlace.getPlaceId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(savedPlace.getPlaceId())).withRel("events"));
     }
 
@@ -76,10 +81,17 @@ public class PlaceService {
         if (existingPlace.getPlace_name() != null && !existingPlace.getPlace_name().equals(place.getPlace_name()) ) {
             existingPlace.setPlace_name(place.getPlace_name());
         }
+        if (existingPlace.getDescription() != null && !existingPlace.getDescription().equals(place.getDescription()) ) {
+            existingPlace.setDescription(place.getDescription());
+        }
+        if (existingPlace.getAddress() != null && !existingPlace.getAddress().equals(place.getAddress()) ) {
+            existingPlace.setAddress(place.getAddress());
+        }
         Place updatedPlace = placeRepository.save(existingPlace);
         return EntityModel.of(updatedPlace,
                 linkTo(methodOn(PlaceController.class).getPlaceById(updatedPlace.getPlaceId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(updatedPlace.getPlaceId())).withRel("events"));
     }
     public void deletePlace(Long id) {
@@ -88,4 +100,19 @@ public class PlaceService {
 
         placeRepository.delete(place);
     }
+
+    public CollectionModel<EntityModel<City>> getPlacesForCity(Long cityId) {
+        Place place = placeRepository.findById(cityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        List<EntityModel<City>> cities = place.getCity() != null ? List.of(EntityModel.of(place.getCity(),
+                linkTo(methodOn(CityController.class).getCityById(place.getCity().getCity_id())).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getPlaceById(place.getPlaceId())).withRel("place")
+        )) : List.of();
+
+        return CollectionModel.of(cities,
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(cityId)).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getPlaceById(cityId)).withRel("place"));
+    }
+
 }
