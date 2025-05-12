@@ -30,7 +30,7 @@ import java.util.List;
 public class User implements UserDetails {
     @Id
     @GeneratedValue
-    private Integer id;
+    private Long id;
     private String firstName;
     private String lastName;
     //private Integer age;
@@ -45,19 +45,6 @@ public class User implements UserDetails {
     @JsonManagedReference(value = "user-events")
     private List<Event> events;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "user_category",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "category_id")
-//    )
-//    @JsonManagedReference(value = "user-category")
-//    private List<Category> categories = new ArrayList<>();
-
-
-    /*@OneToMany(mappedBy = "sender")
-    private List<Invitation> invitations = new ArrayList<Invitation>();
-*/
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
