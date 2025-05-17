@@ -1,9 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.City.City;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
 import lombok.*;
 
 import java.util.List;

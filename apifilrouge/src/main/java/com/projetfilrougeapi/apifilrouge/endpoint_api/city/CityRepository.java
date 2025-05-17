@@ -1,4 +1,4 @@
-package com.projetfilrougeapi.apifilrouge.endpoint_api.City;
+package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;

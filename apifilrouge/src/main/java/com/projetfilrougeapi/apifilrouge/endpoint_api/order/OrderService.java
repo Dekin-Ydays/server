@@ -25,13 +25,13 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return EntityModel.of(order,
-                linkTo(methodOn(OrderController.class).getCommandeById(id)).withSelfRel());
+                linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel());
     }
     public EntityModel<Order> createCommande(Order order) {
         Order savedOrder = orderRepository.save(order);
         return EntityModel.of(savedOrder,
-                linkTo(methodOn(OrderController.class).getCommandeById(savedOrder.getId())).withSelfRel(),
-                linkTo(methodOn(OrderController.class).getAllCommandes()).withRel("commandes"));
+                linkTo(methodOn(OrderController.class).getOrderById(savedOrder.getId())).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("commandes"));
     }
 
     public EntityModel<Order> updateCommande(Long id, Order order) {
@@ -42,18 +42,18 @@ public class OrderService {
         Order updatedOrder = orderRepository.save(existingOrder);
 
         return EntityModel.of(updatedOrder,
-                linkTo(methodOn(OrderController.class).getCommandeById(updatedOrder.getId())).withSelfRel(),
-                linkTo(methodOn(OrderController.class).getAllCommandes()).withRel("commandes"));
+                linkTo(methodOn(OrderController.class).getOrderById(updatedOrder.getId())).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("commandes"));
     }
 
     public CollectionModel<EntityModel<Order>> getAllCommandes() {
         List<EntityModel<Order>> commandes = orderRepository.findAll().stream()
                 .map(order -> EntityModel.of(order,
-                        linkTo(methodOn(OrderController.class).getCommandeById(order.getId())).withSelfRel()))
+                        linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel()))
                 .collect(Collectors.toList());
 
         return CollectionModel.of(commandes,
-                linkTo(methodOn(OrderController.class).getAllCommandes()).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getAllOrders()).withSelfRel(),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
 
@@ -64,6 +64,6 @@ public class OrderService {
         orderRepository.delete(order);
 
         return EntityModel.of(order,
-                linkTo(methodOn(OrderController.class).getAllCommandes()).withRel("commandes"));
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("commandes"));
     }
 }

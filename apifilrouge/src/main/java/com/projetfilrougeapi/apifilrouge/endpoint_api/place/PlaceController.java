@@ -1,7 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
-import com.projetfilrougeapi.apifilrouge.endpoint_api.City.City;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.City.CityService;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;

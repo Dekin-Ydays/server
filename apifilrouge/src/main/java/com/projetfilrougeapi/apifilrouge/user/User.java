@@ -52,6 +52,7 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
+
     @JsonIgnoreProperties("users")
     private List<Category> categories;
 

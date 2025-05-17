@@ -1,7 +1,6 @@
-package com.projetfilrougeapi.apifilrouge.endpoint_api.City;
+package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

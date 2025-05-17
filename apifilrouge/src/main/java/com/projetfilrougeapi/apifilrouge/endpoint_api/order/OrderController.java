@@ -12,23 +12,23 @@ public class OrderController {
         this.orderService = orderService;
     }
     @GetMapping
-    public CollectionModel<EntityModel<Order>> getAllCommandes() {
+    public CollectionModel<EntityModel<Order>> getAllOrders() {
         return orderService.getAllCommandes();
     }
     @GetMapping("/{id}")
-    public EntityModel<Order> getCommandeById(Long id) {
+    public EntityModel<Order> getOrderById(Long id) {
         return orderService.getCommandeById(id);
     }
     @PostMapping
-    public EntityModel<Order> createCommande(Order order) {
+    public EntityModel<Order> createOrder(Order order) {
         return orderService.createCommande(order);
     }
     @PatchMapping("/{id}")
-    public EntityModel<Order> updateCommande(Long id, Order order) {
+    public EntityModel<Order> updateOrder(Long id, Order order) {
         return orderService.updateCommande(id, order);
     }
     @DeleteMapping("/{id}")
-    public EntityModel<Order> deleteCommande(Long id) {
+    public EntityModel<Order> deleteOrder(Long id) {
         return orderService.deleteCommande(id);
     }
 }

@@ -1,4 +1,4 @@
-package com.projetfilrougeapi.apifilrouge.endpoint_api.City;
+package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
