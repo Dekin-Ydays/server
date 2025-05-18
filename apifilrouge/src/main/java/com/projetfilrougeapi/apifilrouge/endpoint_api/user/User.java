@@ -1,14 +1,12 @@
-package com.projetfilrougeapi.apifilrouge.user;
+package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
 import com.fasterxml.jackson.annotation.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,18 +21,25 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "_user")
-
 public class User implements UserDetails {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="user_id", nullable = false, updatable = false, unique = true)
     private Long id;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
-    //private Integer age;
-    @Column(nullable = false, unique = true) // doit être unique
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
-    //private String phone;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -46,24 +51,24 @@ public class User implements UserDetails {
     @JsonManagedReference(value = "user-invitations")
     private List<Invitation> invitations;
 
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference(value = "user-orders")
+    private List<Order> orders;
+
     @ManyToMany
     @JoinTable(
-            name = "userCategory",
+            name = "user_category",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-
     @JsonIgnoreProperties("users")
-    private List<Category> categories;
+    private List<Category> categories = new ArrayList<>();
+
+    // === Spring Security methods ===
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 
     @Override
@@ -73,25 +78,21 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        //return UserDetails.super.isAccountNonExpired();
         return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        //return UserDetails.super.isAccountNonLocked();
         return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        // return UserDetails.super.isCredentialsNonExpired();
         return true;
     }
 
     @Override
     public boolean isEnabled() {
         return true;
-        // return UserDetails.super.isEnabled();
     }
 }

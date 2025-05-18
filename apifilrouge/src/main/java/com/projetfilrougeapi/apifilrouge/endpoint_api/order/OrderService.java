@@ -1,12 +1,22 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
+import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,55 +25,86 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class OrderService {
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
     OrderRepository orderRepository;
-    OrderService(OrderRepository orderRepository) {
+    OrderService(OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
     }
 
-    public EntityModel<Order> getCommandeById(Long id) {
+    public EntityModel<Order> getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return EntityModel.of(order,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel());
     }
-    public EntityModel<Order> createCommande(Order order) {
+    @Transactional
+    public EntityModel<Order> createOrder(OrderRequest request) {
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
+
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
+
+        Order order = new Order();
+        order.setUser(user);
+
+        List<Ticket> tickets = new ArrayList<>();
+        for (int i = 0; i < request.getQuantity(); i++) {
+            Ticket ticket = new Ticket();
+            ticket.setName(event.getName() + " Ticket");
+            ticket.setDescription(event.getDescription());
+            ticket.setPrice(event.getPrice());
+            ticket.setOrder(order);
+            ticket.setEvent(event);
+            tickets.add(ticket);
+        }
+        order.setTickets(tickets);
+
+        double totalPrice = tickets.stream().mapToDouble(Ticket::getPrice).sum();
+        order.setTotalPrice(totalPrice);
+
         Order savedOrder = orderRepository.save(order);
+
         return EntityModel.of(savedOrder,
                 linkTo(methodOn(OrderController.class).getOrderById(savedOrder.getId())).withSelfRel(),
-                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("commandes"));
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
 
-    public EntityModel<Order> updateCommande(Long id, Order order) {
+    public EntityModel<Order> updateOrder(Long id, Order order) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        existingOrder.setPrixTotal(order.getPrixTotal());
+        existingOrder.setTotalPrice(order.getTotalPrice());
         Order updatedOrder = orderRepository.save(existingOrder);
 
         return EntityModel.of(updatedOrder,
                 linkTo(methodOn(OrderController.class).getOrderById(updatedOrder.getId())).withSelfRel(),
-                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("commandes"));
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
 
-    public CollectionModel<EntityModel<Order>> getAllCommandes() {
-        List<EntityModel<Order>> commandes = orderRepository.findAll().stream()
+    public CollectionModel<EntityModel<Order>> getAllOrders() {
+        List<EntityModel<Order>> orders = orderRepository.findAll().stream()
                 .map(order -> EntityModel.of(order,
                         linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel()))
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(commandes,
+        return CollectionModel.of(orders,
                 linkTo(methodOn(OrderController.class).getAllOrders()).withSelfRel(),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
 
-    public EntityModel<Order> deleteCommande(Long id) {
+    public EntityModel<Order> deleteOrder(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         orderRepository.delete(order);
 
         return EntityModel.of(order,
-                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("commandes"));
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
 }

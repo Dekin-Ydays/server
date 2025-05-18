@@ -43,7 +43,7 @@ public class TicketService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         existingTicket.setName(ticket.getName());
-        existingTicket.setLastName(ticket.getLastName());
+        existingTicket.setDescription(ticket.getDescription());
         existingTicket.setOrder(ticket.getOrder());
 
         Ticket updatedTicket = ticketRepository.save(existingTicket);
@@ -63,7 +63,7 @@ public class TicketService {
     public CollectionModel<EntityModel<Ticket>> getAllTickets() {
         List<EntityModel<Ticket>> tickets = ticketRepository.findAll().stream()
                 .map(ticket -> EntityModel.of(ticket,
-                        linkTo(methodOn(TicketController.class).getTicketById(ticket.getTicketId())).withSelfRel()))
+                        linkTo(methodOn(TicketController.class).getTicketById(ticket.getId())).withSelfRel()))
                 .collect(Collectors.toList());
 
         return CollectionModel.of(tickets,

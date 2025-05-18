@@ -1,12 +1,13 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Builder
@@ -17,15 +18,13 @@ public class Place {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "place_id")
-    @SequenceGenerator(
-            name = "place_id_seq",
-            sequenceName = "place_id_seq",
-            allocationSize = 1
-    )
-    private Long placeId;
-    private String place_name;
+    @Column(name = "place_id", nullable = false, updatable = false, unique = true)
+    private Long id;
+    @Column(nullable = false, unique = true)
+    private String name;
+
     private String description;
+
     private String address;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
@@ -36,5 +35,4 @@ public class Place {
     @JoinColumn(name = "city_id")
     @JsonIgnore
     private City city;
-
 }

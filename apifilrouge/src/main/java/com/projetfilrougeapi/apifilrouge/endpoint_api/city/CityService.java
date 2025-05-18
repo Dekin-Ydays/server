@@ -37,7 +37,7 @@ private final CityRepository cityRepository;
     public CollectionModel<EntityModel<City>> getAllCities() {
         List<EntityModel<City>> cities = cityRepository.findAll().stream()
                 .map(city -> EntityModel.of(city,
-                        linkTo(methodOn(CityController.class).getCityById(city.getCity_id())).withSelfRel()
+                        linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel()
                 ))
                 .collect(Collectors.toList());
 
@@ -60,8 +60,8 @@ private final CityRepository cityRepository;
         City existingCity = cityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (existingCity.getCity_name() != null && !existingCity.getCity_name().equals(city.getCity_name()) ) {
-            existingCity.setCity_name(city.getCity_name());
+        if (existingCity.getName() != null && !existingCity.getName().equals(city.getName()) ) {
+            existingCity.setName(city.getName());
         }
         if (existingCity.getDescription() != null && !existingCity.getDescription().equals(city.getDescription()) ) {
             existingCity.setDescription(city.getDescription());

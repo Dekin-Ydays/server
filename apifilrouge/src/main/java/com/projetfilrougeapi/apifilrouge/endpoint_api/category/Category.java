@@ -1,9 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.category;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
-import com.projetfilrougeapi.apifilrouge.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,12 +20,14 @@ import java.util.List;
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id", nullable = false, updatable = false, unique = true)
     private Long id;
 
     @Column(nullable = false, unique = true)
     private String name;
 
     private String description;
+    @Column(name = "is_trending")
     private boolean isTrending;
 
     @ManyToMany(mappedBy = "categories")

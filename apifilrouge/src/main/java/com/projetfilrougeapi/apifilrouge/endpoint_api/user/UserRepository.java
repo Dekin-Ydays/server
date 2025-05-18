@@ -1,4 +1,4 @@
-package com.projetfilrougeapi.apifilrouge.user;
+package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;

@@ -1,9 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.auth;
 
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
-import com.projetfilrougeapi.apifilrouge.user.Role;
-import com.projetfilrougeapi.apifilrouge.user.User;
-import com.projetfilrougeapi.apifilrouge.user.UserRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

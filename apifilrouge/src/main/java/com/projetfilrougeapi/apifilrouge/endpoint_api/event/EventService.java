@@ -1,6 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
-import com.projetfilrougeapi.apifilrouge.endpoint_api.DTO.EventRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
@@ -8,8 +8,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
-import com.projetfilrougeapi.apifilrouge.user.User;
-import com.projetfilrougeapi.apifilrouge.user.UserRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -41,7 +41,7 @@ public class EventService {
     public CollectionModel<EntityModel<Event>> getAllEvents() {
         List<EntityModel<Event>> events = eventRepository.findAll().stream()
                 .map(event -> EntityModel.of(event,
-                        linkTo(methodOn(EventController.class).getEventById(event.getEvent_id())).withSelfRel()
+                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()
                 ))
                 .collect(Collectors.toList());
 
@@ -58,13 +58,13 @@ public class EventService {
 
         Event event = new Event();
         event.setUser(user);
-        event.setEventDate(request.getEventDate());
+        event.setDate(request.getDate());
         event.setDescription(request.getDescription());
-        event.setEventName(request.getEventName());
+        event.setName(request.getName());
         event.setAddress(request.getAddress());
         event.setMaxCustomers(request.getMaxCustomers());
         event.setIsTrending(request.getIsTrending());
-        event.setEventStatus(request.getEventStatus());
+        event.setStatus(request.getStatus());
 
         // Place
         Place place = placeRepository.findById(request.getPlaceId())
@@ -80,12 +80,12 @@ public class EventService {
         Event savedEvent = eventRepository.save(event);
 
         return EntityModel.of(savedEvent,
-                linkTo(methodOn(EventController.class).getEventById(savedEvent.getEvent_id())).withSelfRel(),
+                linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
-                linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getEvent_id())).withRel("places"),
-                linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getEvent_id())).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getUserForEvent(savedEvent.getEvent_id())).withRel("user"),
-                linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getEvent_id())).withRel("categories"));
+                linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
+                linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getUserForEvent(savedEvent.getId())).withRel("user"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getId())).withRel("categories"));
     }
 
 
@@ -96,10 +96,10 @@ public class EventService {
         return EntityModel.of(event,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
-                linkTo(methodOn(EventController.class).getPlaceForEvent(event.getEvent_id())).withRel("places"),
-                linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getEvent_id())).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getUserForEvent(event.getEvent_id())).withRel("user"),
-                linkTo(methodOn(EventController.class).getCategoriesForEvent(event.getEvent_id())).withRel("categories"));
+                linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
+                linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getUserForEvent(event.getId())).withRel("user"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(event.getId())).withRel("categories"));
     }
 
     public EntityModel<Place> getPlaceForEvent(Long id) {
@@ -112,7 +112,7 @@ public class EventService {
         }
 
         return EntityModel.of(place,
-                linkTo(methodOn(PlaceController.class).getPlaceById(place.getPlaceId())).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"));
     }
@@ -137,13 +137,13 @@ public class EventService {
 
         List<EntityModel<Invitation>> invitations = event.getInvitations().stream()
                 .map(invitation -> EntityModel.of(invitation,
-                        linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getInvitationId())).withSelfRel(),
-                        linkTo(methodOn(EventController.class).getEventById(event.getEvent_id())).withRel("event")))
+                        linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getId())).withSelfRel(),
+                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withRel("event")))
                 .collect(Collectors.toList());
 
         return CollectionModel.of(invitations,
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getEventById(event.getEvent_id())).withRel("event"));
+                linkTo(methodOn(EventController.class).getEventById(event.getId())).withRel("event"));
     }
 
     public EntityModel<User> getUserForEvent(Long id) {
@@ -162,13 +162,13 @@ public class EventService {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (request.getEventName() != null) event.setEventName(request.getEventName());
+        if (request.getName() != null) event.setName(request.getName());
         if (request.getDescription() != null) event.setDescription(request.getDescription());
-        if (request.getEventDate() != null) event.setEventDate(request.getEventDate());
+        if (request.getDate() != null) event.setDate(request.getDate());
         if (request.getAddress() != null) event.setAddress(request.getAddress());
         if (request.getMaxCustomers() != null) event.setMaxCustomers(request.getMaxCustomers());
         if (request.getIsTrending() != null) event.setIsTrending(request.getIsTrending());
-        if (request.getEventStatus() != null) event.setEventStatus(request.getEventStatus());
+        if (request.getStatus() != null) event.setStatus(request.getStatus());
 
         // place
         if (request.getPlaceId() != null) {
@@ -189,12 +189,12 @@ public class EventService {
         Event updatedEvent = eventRepository.save(event);
 
         return EntityModel.of(updatedEvent,
-                linkTo(methodOn(EventController.class).getEventById(updatedEvent.getEvent_id())).withSelfRel(),
+                linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
-                linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getEvent_id())).withRel("places"),
-                linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getEvent_id())).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getUserForEvent(updatedEvent.getEvent_id())).withRel("user"),
-                linkTo(methodOn(EventController.class).getCategoriesForEvent(updatedEvent.getEvent_id())).withRel("categories"));
+                linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
+                linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getUserForEvent(updatedEvent.getId())).withRel("user"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(updatedEvent.getId())).withRel("categories"));
     }
 
 

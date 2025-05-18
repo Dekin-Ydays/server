@@ -1,48 +1,38 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
-import com.projetfilrougeapi.apifilrouge.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
 import lombok.*;
-
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Getter
-@Setter
-@Transactional
 public class Invitation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "invitation_id")
-    @SequenceGenerator(
-            name = "invitation_id_seq",
-            sequenceName = "invitation_id_seq",
-            allocationSize = 1
-    )
-    private Long invitationId;
+    @Column(name="invitation_id", nullable = false, updatable = false, unique = true)
+    private Long id;
+
     private String description;
+
     @Enumerated(EnumType.STRING)
     private Type type;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 
-
     @ManyToOne
-    @JoinColumn(name = "event_id", nullable = true, referencedColumnName = "event_id")
+    @JoinColumn(name = "event_id", nullable = false)
     @JsonBackReference(value = "invitation-events")
     private Event event;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference(value = "user-invitations")
     private User user;
-
-    //TO DO : ajouter une relation avec l'utilisateur
-
 }

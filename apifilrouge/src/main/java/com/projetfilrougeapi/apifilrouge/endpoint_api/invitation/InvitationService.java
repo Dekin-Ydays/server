@@ -25,8 +25,8 @@ public class InvitationService {
     public CollectionModel<EntityModel<Invitation>> getAllInvitations() {
         List<EntityModel<Invitation>> invitations = invitationRepository.findAll().stream()
                 .map(invitation -> EntityModel.of(invitation,
-                        linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getInvitationId())).withSelfRel(),
-                        linkTo(methodOn(EventController.class).getEventById(invitation.getEvent().getEvent_id())).withRel("event")
+                        linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getId())).withSelfRel(),
+                        linkTo(methodOn(EventController.class).getEventById(invitation.getEvent().getId())).withRel("event")
                 ))
                 .collect(Collectors.toList());
 
@@ -53,7 +53,7 @@ public class InvitationService {
 
         return EntityModel.of(event,
                 linkTo(methodOn(InvitationController.class).getEventForInvitation(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getEventById(event.getEvent_id())).withRel("event"),
+                linkTo(methodOn(EventController.class).getEventById(event.getId())).withRel("event"),
                 linkTo(methodOn(InvitationController.class).getInvitationById(id)).withRel("invitation"));
     }
 
@@ -62,9 +62,9 @@ public class InvitationService {
         Invitation savedInvitation = invitationRepository.save(invitation);
 
         return EntityModel.of(savedInvitation,
-                linkTo(methodOn(InvitationController.class).getInvitationById(savedInvitation.getInvitationId())).withSelfRel(),
+                linkTo(methodOn(InvitationController.class).getInvitationById(savedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getEvent_id())).withRel("event"));
+                linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getId())).withRel("event"));
     }
     public EntityModel<Invitation> updateInvitation(Long id, Invitation invitation) {
         Invitation existingInvitation = invitationRepository.findById(id)
@@ -86,9 +86,9 @@ public class InvitationService {
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
 
         return EntityModel.of(updatedInvitation,
-                linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getInvitationId())).withSelfRel(),
+                linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getEvent_id())).withRel("event"));
+                linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getId())).withRel("event"));
     }
     public void deleteInvitation(Long id) {
         Invitation invitation = invitationRepository.findById(id)

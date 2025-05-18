@@ -1,4 +1,4 @@
-package com.projetfilrougeapi.apifilrouge.endpoint_api.DTO;
+package com.projetfilrougeapi.apifilrouge.DTO;
 
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventStatus;
 import lombok.Data;
@@ -8,13 +8,13 @@ import java.util.List;
 
 @Data
 public class EventRequest {
-    private LocalDateTime eventDate;
+    private LocalDateTime date;
     private String description;
-    private String eventName;
+    private String name;
     private String address;
     private Integer maxCustomers;
     private Boolean isTrending;
-    private EventStatus eventStatus;
+    private EventStatus status;
     private Long placeId;
     private List<Long> categoryIds;
 }
