@@ -15,6 +15,7 @@ public class EventRequest {
     private Integer maxCustomers;
     private Boolean isTrending;
     private EventStatus status;
+    private Double price;
     private Long placeId;
     private List<Long> categoryIds;
 }

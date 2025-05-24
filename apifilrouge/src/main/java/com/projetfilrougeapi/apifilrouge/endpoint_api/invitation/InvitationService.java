@@ -66,6 +66,7 @@ public class InvitationService {
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getId())).withRel("event"));
     }
+
     public EntityModel<Invitation> updateInvitation(Long id, Invitation invitation) {
         Invitation existingInvitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

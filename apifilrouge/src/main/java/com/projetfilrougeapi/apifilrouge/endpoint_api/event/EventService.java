@@ -65,6 +65,7 @@ public class EventService {
         event.setMaxCustomers(request.getMaxCustomers());
         event.setIsTrending(request.getIsTrending());
         event.setStatus(request.getStatus());
+        event.setPrice(request.getPrice());
 
         // Place
         Place place = placeRepository.findById(request.getPlaceId())
