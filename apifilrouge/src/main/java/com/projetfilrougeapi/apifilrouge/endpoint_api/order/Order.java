@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.*;
@@ -27,6 +28,11 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "order-tickets")
     private List<Ticket> tickets;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id", nullable = false)
+    @JsonBackReference(value = "orders-event")
+    private Event event;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

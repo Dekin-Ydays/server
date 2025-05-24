@@ -17,8 +17,9 @@ public class Ticket {
     private Long id;
 
     private String name;
+    private String lastName;
     private String description;
-    private Double price;
+    private Double unit_price;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)

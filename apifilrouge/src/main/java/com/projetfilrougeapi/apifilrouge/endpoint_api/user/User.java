@@ -51,7 +51,7 @@ public class User implements UserDetails {
     @JsonManagedReference(value = "user-invitations")
     private List<Invitation> invitations;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-orders")
     private List<Order> orders;
 

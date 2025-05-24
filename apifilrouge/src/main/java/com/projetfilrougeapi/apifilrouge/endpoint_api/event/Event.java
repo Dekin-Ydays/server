@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 import com.fasterxml.jackson.annotation.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.*;
@@ -57,4 +58,8 @@ public class Event {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonIgnoreProperties("events")
     private List<Category> categories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "event-orders")
+    private List<Order> orders;
 }
