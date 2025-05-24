@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.fasterxml.jackson.annotation.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
@@ -42,6 +43,11 @@ public class Event {
     @JoinColumn(name = "place_id")
     @JsonBackReference(value = "place-events")
     private Place place;
+
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    @JsonBackReference(value = "city-events")
+    private City city;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "invitation-events")

@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -36,10 +37,16 @@ public class EventController {
         return eventService.getEventById(id);
     }
 
-    @GetMapping("/{id}/places")
+    @GetMapping("/{id}/place")
     public EntityModel<Place> getPlaceForEvent(@PathVariable Long id) {
         return eventService.getPlaceForEvent(id);
     }
+
+    @GetMapping("/{id}/city")
+    public EntityModel<City> getCityForEvent(@PathVariable Long id) {
+        return eventService.getCityForEvent(id);
+    }
+
 
     @GetMapping("/{id}/invitations")
     public CollectionModel<EntityModel<Invitation>> getInvitationsForEvent(@PathVariable Long id) {

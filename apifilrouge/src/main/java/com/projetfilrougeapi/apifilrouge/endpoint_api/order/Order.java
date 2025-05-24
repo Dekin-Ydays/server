@@ -30,8 +30,8 @@ public class Order {
     private List<Ticket> tickets;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id", nullable = false)
-    @JsonBackReference(value = "orders-event")
+    @JoinColumn(name = "event_id")
+    @JsonBackReference(value = "event-orders")
     private Event event;
 
     @ManyToOne
