@@ -3,6 +3,9 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
@@ -30,12 +33,14 @@ public class EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final PlaceRepository placeRepository;
+    private final CityRepository cityRepository;
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository) {
+    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.placeRepository = placeRepository;
+        this.cityRepository = cityRepository;
     }
 
     public CollectionModel<EntityModel<Event>> getAllEvents() {
@@ -72,6 +77,11 @@ public class EventService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));
         event.setPlace(place);
 
+        // City
+        City city = cityRepository.findById(request.getCityId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvé"));
+        event.setCity(city);
+
         // Catégories
         if (request.getCategoryIds() != null) {
             List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
@@ -84,6 +94,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
+                linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getUserForEvent(savedEvent.getId())).withRel("user"),
                 linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getId())).withRel("categories"));
@@ -99,6 +110,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getUserForEvent(event.getId())).withRel("user"),
                 linkTo(methodOn(EventController.class).getCategoriesForEvent(event.getId())).withRel("categories"));
     }
@@ -116,6 +128,20 @@ public class EventService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"));
+    }
+    public EntityModel<City> getCityForEvent(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        City city = event.getCity();
+        if (city == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun lieu trouvé pour cet événement");
+        }
+
+        return EntityModel.of(city,
+                linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
+                linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
+                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"));
     }
 
     public CollectionModel<Category> getCategoriesForEvent(Long eventId) {
@@ -178,6 +204,11 @@ public class EventService {
             event.setPlace(place);
         }
 
+        // City
+        City city = cityRepository.findById(request.getCityId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvé"));
+        event.setCity(city);
+
         // catégories
         if (request.getCategoryIds() != null) {
             List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
@@ -193,6 +224,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
+                linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getUserForEvent(updatedEvent.getId())).withRel("user"),
                 linkTo(methodOn(EventController.class).getCategoriesForEvent(updatedEvent.getId())).withRel("categories"));

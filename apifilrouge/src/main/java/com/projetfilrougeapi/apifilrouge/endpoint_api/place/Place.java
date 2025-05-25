@@ -31,8 +31,9 @@ public class Place {
     @JsonManagedReference(value = "place-events")
     private List<Event> events;
 
-    @ManyToOne
-    @JoinColumn(name = "city_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "city_id", nullable = false)
     @JsonIgnore
     private City city;
+
 }

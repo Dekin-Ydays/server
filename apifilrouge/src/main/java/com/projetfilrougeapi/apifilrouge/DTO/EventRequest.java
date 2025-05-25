@@ -17,6 +17,6 @@ public class EventRequest {
     private EventStatus status;
     private Double price;
     private Long placeId;
+    private Long cityId;
     private List<Long> categoryIds;
 }
-

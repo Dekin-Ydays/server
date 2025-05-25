@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
+import com.projetfilrougeapi.apifilrouge.DTO.PlaceRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -7,7 +8,6 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/places")
 public class PlaceController {
@@ -34,15 +34,14 @@ public class PlaceController {
     public CollectionModel<EntityModel<Event>> getEventsForPlace(@PathVariable Long id) {
         return placeService.getEventsForPlace(id);
     }
-    @GetMapping("/{id}/cities")
-    public CollectionModel<EntityModel<City>> getPlacesForCity(@PathVariable Long cityId) {
-        return placeService.getPlacesForCity(cityId);
+    @GetMapping("/{id}/city")
+    public EntityModel<City> getCityForPlace(@PathVariable Long id) {
+        return placeService.getCityForPlace(id);
     }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Place> addPlace(@RequestBody Place place) {
-        return placeService.addPlace(place);
+    public EntityModel<Place> addPlace(@RequestBody PlaceRequest placeRequest) {
+        return placeService.addPlace(placeRequest);
     }
 
     @PatchMapping("/{id}")

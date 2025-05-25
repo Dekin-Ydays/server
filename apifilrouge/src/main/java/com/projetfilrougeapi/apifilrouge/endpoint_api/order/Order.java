@@ -29,7 +29,7 @@ public class Order {
     @JsonManagedReference(value = "order-tickets")
     private List<Ticket> tickets;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_id")
     @JsonBackReference(value = "event-orders")
     private Event event;
