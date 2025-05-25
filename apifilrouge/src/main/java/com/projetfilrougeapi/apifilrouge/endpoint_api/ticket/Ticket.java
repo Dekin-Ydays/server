@@ -26,8 +26,4 @@ public class Ticket {
     @JsonBackReference(value = "order-tickets")
     private Order order;
 
-    @ManyToOne
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
-
 }

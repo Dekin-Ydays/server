@@ -1,12 +1,14 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
@@ -30,11 +32,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class OrderService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final TicketRepository ticketRepository;
+
     OrderRepository orderRepository;
-    OrderService(OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository) {
+    OrderService(OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository, TicketRepository ticketRepository) {
         this.orderRepository = orderRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.ticketRepository = ticketRepository;
     }
 
     public EntityModel<Order> getOrderById(Long id) {
@@ -52,29 +57,28 @@ public class OrderService {
     @Transactional
     public EntityModel<Order> createOrder(OrderRequest request) {
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        User user = userRepository.findByEmail(username)
+        Object user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
-        Event event = eventRepository.findById(request.getEventId())
+        Object event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
 
         Order order = new Order();
-        order.setUser(user);
+        order.setUser((User) user); // Assuming user is of type User, adjust if necessary
+        //order.setUser(userRepository.findById(request.getUserId()));
+        order.setEvent((Event) event);
 
-        List<Ticket> tickets = new ArrayList<>();
-        for (int i = 0; i < request.getQuantity(); i++) {
-            Ticket ticket = new Ticket();
-            ticket.setName(event.getName() + " Ticket");
-            ticket.setDescription(event.getDescription());
-            ticket.setUnit_price(event.getPrice());
-            ticket.setOrder(order);
-            ticket.setEvent(event);
-            tickets.add(ticket);
+
+        if (request.getTicketIds() != null) {
+            List<Ticket> tickets = ticketRepository.findAllById(request.getTicketIds());
+            if (tickets.size() != request.getTicketIds().size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "un ou plusieurs tickets id sont invalides.");
+            }
+            order.setTickets(tickets);
+            double totalPrice = tickets.stream().mapToDouble(Ticket::getUnit_price).sum();
+            order.setTotalPrice(totalPrice);
         }
-        order.setTickets(tickets);
 
-        double totalPrice = tickets.stream().mapToDouble(Ticket::getUnit_price).sum();
-        order.setTotalPrice(totalPrice);
 
         Order savedOrder = orderRepository.save(order);
 
