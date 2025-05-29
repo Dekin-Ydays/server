@@ -22,7 +22,7 @@ public class Ticket {
     private Double unit_price;
 
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id", nullable = true)
     @JsonBackReference(value = "order-tickets")
     private Order order;
 

@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.TicketResquest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -56,28 +57,20 @@ public class OrderService {
     }
     @Transactional
     public EntityModel<Order> createOrder(OrderRequest request) {
-        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        Object user = userRepository.findByEmail(username)
+        //String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        //Object user = userRepository.findByEmail(username)
+        //        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
+        User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
-
         Object event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
 
         Order order = new Order();
-        order.setUser((User) user); // Assuming user is of type User, adjust if necessary
-        //order.setUser(userRepository.findById(request.getUserId()));
+        //order.setUser((User) user); // Assuming user is of type User, adjust if necessary
+        order.setUser(user);
+        order.setTotalPrice(request.getTotalPrice());
         order.setEvent((Event) event);
 
-
-        if (request.getTicketIds() != null) {
-            List<Ticket> tickets = ticketRepository.findAllById(request.getTicketIds());
-            if (tickets.size() != request.getTicketIds().size()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "un ou plusieurs tickets id sont invalides.");
-            }
-            order.setTickets(tickets);
-            double totalPrice = tickets.stream().mapToDouble(Ticket::getUnit_price).sum();
-            order.setTotalPrice(totalPrice);
-        }
 
 
         Order savedOrder = orderRepository.save(order);
@@ -157,5 +150,29 @@ public class OrderService {
 
         return CollectionModel.of(tickets,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
+    }
+
+    public EntityModel<Ticket> addTicketToOrder(Long id, TicketResquest ticket) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        Ticket newTicket = new Ticket();
+        newTicket.setName(ticket.getName());
+        newTicket.setLastName(ticket.getLastName());
+        newTicket.setDescription(ticket.getDescription());
+        newTicket.setUnit_price(ticket.getUnitPrice());
+        newTicket.setOrder( order);
+
+        Ticket savedTicket = ticketRepository.save(newTicket);
+        ( order).getTickets().add(savedTicket);
+        orderRepository.save(order);
+
+        return EntityModel.of(savedTicket,
+                linkTo(methodOn(TicketController.class).getTicketById(savedTicket.getId())).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"),
+                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
+                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events")
+        );
     }
 }

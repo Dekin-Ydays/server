@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.TicketResquest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import org.springframework.hateoas.CollectionModel;
@@ -46,4 +47,9 @@ public class OrderController {
     @GetMapping("/{id}/tickets")
     public CollectionModel<EntityModel<Ticket>> getTicketsByOrderId(@PathVariable Long id) {
         return orderService.getTicketsByOrderId(id);}
+
+    @PostMapping("/{id}/tickets")
+    public EntityModel<Ticket> addTicketToOrder(@PathVariable Long id, @RequestBody TicketResquest ticket) {
+        return orderService.addTicketToOrder(id, ticket);
+    }
 }

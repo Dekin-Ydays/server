@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderRequest {
-    private Double totalPrice;
-    private Long eventId;
-    private Long userId;
-    //private List<Long> ticketIds;
+public class TicketResquest {
+    private String name;
+    private String lastName;
+    private String description;
+    private Double unitPrice;
+    private Long orderId;
 }

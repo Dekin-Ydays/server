@@ -15,8 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "orders") // Ajout de cette ligne pour renommer la table
 public class Order {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id", nullable = false, updatable = false, unique = true)
@@ -38,5 +38,4 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference(value = "user-orders")
     private User user;
-
 }

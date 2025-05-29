@@ -26,7 +26,7 @@ public class TicketController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Ticket> getTicketById(Long id) {
+    public EntityModel<Ticket> getTicketById(@PathVariable Long id) {
         return ticketService.getTicketById(id);
     }
     /*@GetMapping("/{id}/order")
@@ -35,7 +35,7 @@ public class TicketController {
     }*/
 
     @PatchMapping
-    public EntityModel<Ticket> updateTicket(Long id, Ticket ticket) {
+    public EntityModel<Ticket> updateTicket(@PathVariable Long id, Ticket ticket) {
         return ticketService.updateTicket(id, ticket);
     }
     @DeleteMapping("/{id}")

@@ -30,6 +30,7 @@ public class TicketService {
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
+
     public EntityModel<Ticket> createTicket(Ticket ticket) {
         Ticket savedTicket = ticketRepository.save(ticket);
 
