@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.TicketResquest;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import org.springframework.hateoas.CollectionModel;
@@ -21,7 +22,7 @@ public class OrderController {
         return orderService.getAllOrders();
     }
     @GetMapping("/{id}")
-    public EntityModel<Order> getOrderById(Long id) {
+    public EntityModel<Order> getOrderById(@PathVariable Long id) {
         return orderService.getOrderById(id);
     }
 
@@ -31,12 +32,12 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}")
-    public EntityModel<Order> updateOrder(Long id, Order order) {
+    public EntityModel<Order> updateOrder(@PathVariable Long id, Order order) {
         return orderService.updateOrder(id, order);
     }
 
     @DeleteMapping("/{id}")
-    public EntityModel<Order> deleteOrder(Long id) {
+    public EntityModel<Order> deleteOrder(@PathVariable Long id) {
         return orderService.deleteOrder(id);
     }
 
@@ -51,5 +52,10 @@ public class OrderController {
     @PostMapping("/{id}/tickets")
     public EntityModel<Ticket> addTicketToOrder(@PathVariable Long id, @RequestBody TicketResquest ticket) {
         return orderService.addTicketToOrder(id, ticket);
+    }
+
+    @GetMapping("{id}/events")
+    public CollectionModel<EntityModel<Event>> getEventsByOrderId(@PathVariable Long id) {
+        return orderService.getEventsByOrderId(id);
     }
 }

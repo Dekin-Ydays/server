@@ -36,6 +36,7 @@ public class OrderService {
     private final TicketRepository ticketRepository;
 
     OrderRepository orderRepository;
+
     OrderService(OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository, TicketRepository ticketRepository) {
         this.orderRepository = orderRepository;
         this.eventRepository = eventRepository;
@@ -50,11 +51,12 @@ public class OrderService {
         return EntityModel.of(order,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
-                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events")
+                linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
+                linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
+                linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
         );
     }
+
     @Transactional
     public EntityModel<Order> createOrder(OrderRequest request) {
         //String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
@@ -72,15 +74,14 @@ public class OrderService {
         order.setEvent((Event) event);
 
 
-
         Order savedOrder = orderRepository.save(order);
 
         return EntityModel.of(savedOrder,
-                linkTo(methodOn(OrderController.class).getOrderById(savedOrder.getId())).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
-                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events")
+                linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
+                linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
+                linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
         );
 
     }
@@ -95,9 +96,10 @@ public class OrderService {
         return EntityModel.of(updatedOrder,
                 linkTo(methodOn(OrderController.class).getOrderById(updatedOrder.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
-                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
+                linkTo(methodOn(OrderController.class).getTicketsByOrderId(updatedOrder.getId())).withRel("tickets"),
+                linkTo(methodOn(OrderController.class).getUserByOrderId(updatedOrder.getId())).withRel("users"),
+                linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
+        );
     }
 
     public CollectionModel<EntityModel<Order>> getAllOrders() {
@@ -161,18 +163,33 @@ public class OrderService {
         newTicket.setLastName(ticket.getLastName());
         newTicket.setDescription(ticket.getDescription());
         newTicket.setUnit_price(ticket.getUnitPrice());
-        newTicket.setOrder( order);
+        newTicket.setOrder(order);
 
         Ticket savedTicket = ticketRepository.save(newTicket);
-        ( order).getTickets().add(savedTicket);
+        order.getTickets().add(savedTicket);
         orderRepository.save(order);
 
         return EntityModel.of(savedTicket,
                 linkTo(methodOn(TicketController.class).getTicketById(savedTicket.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"),
-                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events")
+                linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
+                linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
+                linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
         );
+    }
+
+ public CollectionModel<EntityModel<Event>> getEventsByOrderId(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        Event event = order.getEvent();
+        if (event == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found for this order");
+        }
+
+        return CollectionModel.of(
+                List.of(EntityModel.of(event,
+                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel())),
+                linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
     }
 }

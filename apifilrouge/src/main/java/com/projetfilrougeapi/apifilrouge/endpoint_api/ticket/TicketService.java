@@ -26,7 +26,7 @@ public class TicketService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         return EntityModel.of(ticket,
-                linkTo(methodOn(TicketController.class).getAllTickets()).withSelfRel(),
+                linkTo(methodOn(TicketController.class).getTicketById(id)).withSelfRel(),
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
