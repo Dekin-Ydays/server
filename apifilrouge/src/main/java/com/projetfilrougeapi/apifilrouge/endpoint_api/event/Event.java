@@ -56,7 +56,7 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference(value = "user-events")
-    private User user;
+    private User organizer;
 
     @ManyToMany
     @JoinTable(name = "event_category",
@@ -64,6 +64,14 @@ public class Event {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonIgnoreProperties("events")
     private List<Category> categories = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(name = "event_participants",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name="user_id")
+    )
+    @JsonIgnoreProperties("participatedEvents")
+    private List<User> participants = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "event-orders")

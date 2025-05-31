@@ -19,4 +19,6 @@ public class EventRequest {
     private Long placeId;
     private Long cityId;
     private List<Long> categoryIds;
+    private List<Long> participantIds;
+    private int currentParticipants;
 }

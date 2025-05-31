@@ -1,6 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.ParticipantListRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.UserSummary;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
@@ -28,12 +31,12 @@ public class EventController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Event> createEvent(@RequestBody EventRequest request) {
+    public EntityModel<EventResponse> createEvent(@RequestBody EventRequest request) {
         return eventService.createEvent(request);
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Event> getEventById(@PathVariable("id") Long id) {
+    public EntityModel<EventResponse> getEventById(@PathVariable("id") Long id) {
         return eventService.getEventById(id);
     }
 
@@ -53,18 +56,28 @@ public class EventController {
         return eventService.getInvitationsForEvent(id);
     }
 
-    @GetMapping("/{id}/user")
-    public EntityModel<User> getUserForEvent(@PathVariable Long id) {
-        return eventService.getUserForEvent(id);
+    @GetMapping("/{id}/organizer")
+    public EntityModel<User> getOrganizerForEvent(@PathVariable Long id) {
+        return eventService.getOrganizerForEvent(id);
     }
     @GetMapping("/{eventId}/categories")
     public CollectionModel<Category> getCategoriesForEvent(@PathVariable Long eventId) {
         return eventService.getCategoriesForEvent(eventId);
     }
 
+    @GetMapping("/{eventId}/participants")
+    public CollectionModel<EntityModel<UserSummary>> getParticipantsForEvent(@PathVariable Long eventId) {
+        return eventService.getParticipantsForEvent(eventId);
+    }
+
     @PatchMapping("/{id}")
-    public EntityModel<Event> patchEvent(@PathVariable Long id, @RequestBody EventRequest request) {
+    public EntityModel<EventResponse> patchEvent(@PathVariable Long id, @RequestBody EventRequest request) {
         return eventService.updateEvent(id, request);
+    }
+
+    @PostMapping("/{eventId}/participants")
+    public EntityModel<EventResponse> addParticipants(@PathVariable Long eventId, @RequestBody ParticipantListRequest request) {
+        return eventService.addParticipantsToEvent(eventId, request.getUserIds());
     }
 
     @DeleteMapping("/{id}")

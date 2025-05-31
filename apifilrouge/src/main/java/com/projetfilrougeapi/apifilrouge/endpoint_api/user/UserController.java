@@ -42,6 +42,16 @@ public class UserController {
         return userService.getCategoriesForUser(id);
     }
 
+    @GetMapping("/{userId}/organized-events")
+    public CollectionModel<EntityModel<Event>> getOrganizedEvents(@PathVariable Long userId) {
+        return userService.getOrganizedEvents(userId);
+    }
+
+    @GetMapping("/{userId}/participating-events")
+    public CollectionModel<EntityModel<Event>> getParticipatingEvents(@PathVariable Long userId) {
+        return userService.getParticipatingEvents(userId);
+    }
+
     @PatchMapping("/{id}")
     public EntityModel<User> patchUser(@PathVariable Long id, @RequestBody UserRequest request) {
         return userService.updateUser(id, request);

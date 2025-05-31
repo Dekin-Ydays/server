@@ -134,4 +134,29 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
     }
+    public CollectionModel<EntityModel<Event>> getOrganizedEvents(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        List<EntityModel<Event>> events = user.getEvents().stream()
+                .map(event -> EntityModel.of(event,
+                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(events,
+                linkTo(methodOn(UserController.class).getOrganizedEvents(userId)).withSelfRel());
+    }
+
+    public CollectionModel<EntityModel<Event>> getParticipatingEvents(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        List<EntityModel<Event>> events = user.getParticipatedEvents().stream()
+                .map(event -> EntityModel.of(event,
+                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(events,
+                linkTo(methodOn(UserController.class).getParticipatingEvents(userId)).withSelfRel());
+    }
 }

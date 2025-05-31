@@ -43,7 +43,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-events")
     private List<Event> events;
 
@@ -63,6 +63,10 @@ public class User implements UserDetails {
     )
     @JsonIgnoreProperties("users")
     private List<Category> categories = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "participants")
+    @JsonIgnoreProperties("participants")
+    private List<Event> participatedEvents = new ArrayList<>();
 
     // === Spring Security methods ===
 

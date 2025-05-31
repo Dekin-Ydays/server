@@ -1,6 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.UserSummary;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
@@ -12,6 +14,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -56,13 +59,13 @@ public class EventService {
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"));
     }
 
-    public EntityModel<Event> createEvent(EventRequest request) {
+    public EntityModel<EventResponse> createEvent(EventRequest request) {
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        User user = userRepository.findByEmail(username)
+        User organizer = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
         Event event = new Event();
-        event.setUser(user);
+        event.setOrganizer(organizer);
         event.setDate(request.getDate());
         event.setDescription(request.getDescription());
         event.setName(request.getName());
@@ -90,30 +93,64 @@ public class EventService {
 
         Event savedEvent = eventRepository.save(event);
 
-        return EntityModel.of(savedEvent,
+        // Transformation en EventResponse
+        EventResponse response = EventResponse.fromEntity(savedEvent);
+
+        return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getUserForEvent(savedEvent.getId())).withRel("user"),
-                linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getId())).withRel("categories"));
+                linkTo(methodOn(EventController.class).getOrganizerForEvent(savedEvent.getId())).withRel("organizer"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getId())).withRel("categories"),
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(savedEvent.getId())).withRel("participants"));
+    }
+
+    public EntityModel<EventResponse> addParticipantsToEvent(Long eventId, List<Long> userIds) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+
+        List<User> usersToAdd = userRepository.findAllById(userIds);
+
+        List<User> newParticipants = usersToAdd.stream()
+                .filter(user -> !event.getParticipants().contains(user))
+                .toList();
+
+        int totalAfterAdd = event.getParticipants().size() + newParticipants.size();
+        if (event.getMaxCustomers() != null && totalAfterAdd > event.getMaxCustomers()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Max participants reached");
+        }
+
+        event.getParticipants().addAll(newParticipants);
+        Event savedEvent = eventRepository.save(event);
+
+        EventResponse response = EventResponse.fromEntity(savedEvent);
+
+        return EntityModel.of(response,
+                linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel(),
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
     }
 
 
-    public EntityModel<Event> getEventById(Long id) {
+
+    public EntityModel<EventResponse> getEventById(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        return EntityModel.of(event,
+        EventResponse response = EventResponse.fromEntity(event);
+
+        return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
-                linkTo(methodOn(EventController.class).getUserForEvent(event.getId())).withRel("user"),
-                linkTo(methodOn(EventController.class).getCategoriesForEvent(event.getId())).withRel("categories"));
+                linkTo(methodOn(EventController.class).getOrganizerForEvent(event.getId())).withRel("organizer"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(event.getId())).withRel("categories"),
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(event.getId())).withRel("participants"));
     }
+
 
     public EntityModel<Place> getPlaceForEvent(Long id) {
         Event event = eventRepository.findById(id)
@@ -129,6 +166,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"));
     }
+
     public EntityModel<City> getCityForEvent(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -173,19 +211,38 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getEventById(event.getId())).withRel("event"));
     }
 
-    public EntityModel<User> getUserForEvent(Long id) {
+    public EntityModel<User> getOrganizerForEvent(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        User user = event.getUser();
-        user.setPassword("xxx");
+        User organizer = event.getOrganizer();
+        organizer.setPassword("xxx");
 
-        return EntityModel.of(user,
-                linkTo(methodOn(EventController.class).getUserForEvent(id)).withSelfRel(),
+        return EntityModel.of(organizer,
+                linkTo(methodOn(EventController.class).getOrganizerForEvent(id)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
 
-    public EntityModel<Event> updateEvent(Long id, EventRequest request) {
+    public CollectionModel<EntityModel<UserSummary>> getParticipantsForEvent(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        List<EntityModel<UserSummary>> participants = event.getParticipants().stream()
+                .map(user -> {
+                    UserSummary summary = new UserSummary(user.getId(), user.getFirstName(), user.getLastName());
+                    return EntityModel.of(summary,
+                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(participants,
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withSelfRel(),
+                linkTo(methodOn(EventController.class).getEventById(eventId)).withRel("event"));
+    }
+
+
+    public EntityModel<EventResponse> updateEvent(Long id, EventRequest request) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -205,9 +262,11 @@ public class EventService {
         }
 
         // City
-        City city = cityRepository.findById(request.getCityId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvé"));
-        event.setCity(city);
+        if (request.getCityId() != null) {
+            City city = cityRepository.findById(request.getCityId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvé"));
+            event.setCity(city);
+        }
 
         // catégories
         if (request.getCategoryIds() != null) {
@@ -218,16 +277,31 @@ public class EventService {
             event.setCategories(categories);
         }
 
+        // participants
+        if (request.getParticipantIds() != null) {
+            List<User> participants = userRepository.findAllById(request.getParticipantIds());
+            if (participants.size() != request.getParticipantIds().size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certains participants sont invalides.");
+            }
+            if (event.getMaxCustomers() != null && participants.size() > event.getMaxCustomers()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de participants dépasse la limite maximum de l'événement.");
+            }
+            event.setParticipants(participants);
+        }
+
         Event updatedEvent = eventRepository.save(event);
 
-        return EntityModel.of(updatedEvent,
+        EventResponse response = EventResponse.fromEntity(updatedEvent);
+
+        return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getUserForEvent(updatedEvent.getId())).withRel("user"),
-                linkTo(methodOn(EventController.class).getCategoriesForEvent(updatedEvent.getId())).withRel("categories"));
+                linkTo(methodOn(EventController.class).getOrganizerForEvent(updatedEvent.getId())).withRel("organizer"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(updatedEvent.getId())).withRel("categories"),
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(updatedEvent.getId())).withRel("participants"));
     }
 
 
