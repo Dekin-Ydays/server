@@ -4,6 +4,7 @@ import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
@@ -56,4 +57,15 @@ public class UserController {
     public EntityModel<User> patchUser(@PathVariable Long id, @RequestBody UserRequest request) {
         return userService.updateUser(id, request);
     }
+
+    @GetMapping("/{id}/reports-sent")
+    public CollectionModel<EntityModel<Report>> getReportsSentByUser(@PathVariable Long id) {
+        return userService.getReportsSentByUser(id);
+    }
+
+    @GetMapping("/{id}/reports-received")
+    public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(@PathVariable Long id) {
+        return userService.getReportsReceivedByUser(id);
+    }
+
 }

@@ -27,13 +27,6 @@ public class EventResponse {
     private int currentParticipants;
 
     public static EventResponse fromEntity(Event event) { // on ne veux pas pouvoir instancier un objet vide de EventResponse
-        List<UserSummary> participantSummaries = event.getParticipants().stream()
-                .map(user -> new UserSummary(user.getId(), user.getFirstName(), user.getLastName()))
-                .toList();
-
-        List<Long> categoryIds = event.getCategories().stream()
-                .map(category -> category.getId())
-                .toList();
 
         return EventResponse.builder()
                 .id(event.getId())

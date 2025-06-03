@@ -8,6 +8,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -158,5 +160,35 @@ public class UserService {
 
         return CollectionModel.of(events,
                 linkTo(methodOn(UserController.class).getParticipatingEvents(userId)).withSelfRel());
+    }
+
+    public CollectionModel<EntityModel<Report>> getReportsSentByUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        List<EntityModel<Report>> reports = user.getReportsSent().stream()
+                .map(report -> EntityModel.of(report,
+                        linkTo(methodOn(ReportController.class).getReportById(report.getId())).withSelfRel(),
+                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
+                ))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reports,
+                linkTo(methodOn(UserController.class).getReportsSentByUser(id)).withSelfRel());
+    }
+
+    public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(Long id) {
+    User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        List<EntityModel<Report>> reports = user.getReportsReceived().stream()
+                .map(report -> EntityModel.of(report,
+                        linkTo(methodOn(ReportController.class).getReportById(report.getId())).withSelfRel(),
+                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
+                ))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reports,
+                linkTo(methodOn(UserController.class).getReportsReceivedByUser(id)).withSelfRel());
     }
 }

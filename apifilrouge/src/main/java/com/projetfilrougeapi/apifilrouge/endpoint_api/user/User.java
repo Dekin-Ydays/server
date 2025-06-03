@@ -5,6 +5,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -54,6 +55,14 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-orders")
     private List<Order> orders;
+
+    @OneToMany(mappedBy = "senderUser", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reports-sent")
+    private List<Report> reportsSent;
+
+    @OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reports-received")
+    private List<Report> reportsReceived;
 
     @ManyToMany
     @JoinTable(
