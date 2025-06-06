@@ -112,7 +112,7 @@ public class OrderService {
                 linkTo(methodOn(OrderController.class).getAllOrders()).withSelfRel(),
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<Order> deleteOrder(Long id) {

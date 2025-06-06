@@ -39,7 +39,7 @@ public class PlaceService {
         return CollectionModel.of(places,
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<Place> getPlaceById(Long id) {
@@ -69,14 +69,14 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(id)).withRel("place"));
     }
 
-    public EntityModel<Place> addPlace(PlaceRequest dto) {
-        City city = cityRepository.findById(dto.getCityId())
+    public EntityModel<Place> addPlace(PlaceRequest placeRequest) {
+        City city = cityRepository.findById(placeRequest.getCityId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found"));
 
         Place place = new Place();
-        place.setName(dto.getName());
-        place.setDescription(dto.getDescription());
-        place.setAddress(dto.getAddress());
+        place.setName(placeRequest.getName());
+        place.setDescription(placeRequest.getDescription());
+        place.setAddress(placeRequest.getAddress());
         place.setCity(city);
 
         Place savedPlace = placeRepository.save(place);
@@ -87,25 +87,39 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(savedPlace.getId())).withRel("events"));
     }
 
-    public EntityModel<Place> updatePlace(Long id, Place place) {
+    public EntityModel<Place> updatePlace(Long id, PlaceRequest placeRequest) {
         Place existingPlace = placeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (existingPlace.getName() != null && !existingPlace.getName().equals(place.getName())) {
-            existingPlace.setName(place.getName());
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Place not found"));
+
+        if (placeRequest.getName() != null && !placeRequest.getName().equals(existingPlace.getName())) {
+            existingPlace.setName(placeRequest.getName());
         }
-        if (existingPlace.getDescription() != null && !existingPlace.getDescription().equals(place.getDescription())) {
-            existingPlace.setDescription(place.getDescription());
+
+        if (placeRequest.getDescription() != null && !placeRequest.getDescription().equals(existingPlace.getDescription())) {
+            existingPlace.setDescription(placeRequest.getDescription());
         }
-        if (existingPlace.getAddress() != null && !existingPlace.getAddress().equals(place.getAddress())) {
-            existingPlace.setAddress(place.getAddress());
+
+        if (placeRequest.getAddress() != null && !placeRequest.getAddress().equals(existingPlace.getAddress())) {
+            existingPlace.setAddress(placeRequest.getAddress());
         }
+
+        if (placeRequest.getCityId() != null &&
+                (existingPlace.getCity() == null || !existingPlace.getCity().getId().equals(placeRequest.getCityId()))) {
+
+            City newCity = cityRepository.findById(placeRequest.getCityId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found"));
+            existingPlace.setCity(newCity);
+        }
+
         Place updatedPlace = placeRepository.save(existingPlace);
+
         return EntityModel.of(updatedPlace,
                 linkTo(methodOn(PlaceController.class).getPlaceById(updatedPlace.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
-                linkTo(methodOn(PlaceController.class).getCityForPlace(place.getId())).withRel("city"),
+                linkTo(methodOn(PlaceController.class).getCityForPlace(updatedPlace.getId())).withRel("city"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(updatedPlace.getId())).withRel("events"));
     }
+
 
     public void deletePlace(Long id) {
         Place place = placeRepository.findById(id)

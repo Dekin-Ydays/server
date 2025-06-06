@@ -9,10 +9,15 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/events")
@@ -25,8 +30,14 @@ public class EventController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<Event>> getAllEvents() {
-        return eventService.getAllEvents();
+    public CollectionModel<EntityModel<Event>> getAllEvents(
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) { // Retourne une liste d"évenements avec des filtres optionnels. Si aucun paramètre n'est fourni, renvoie tous les événements sans filtre.
+
+        return eventService.getAllEvents(minPrice, maxPrice, startDate, endDate);
     }
 
     @PostMapping
@@ -60,6 +71,7 @@ public class EventController {
     public EntityModel<User> getOrganizerForEvent(@PathVariable Long id) {
         return eventService.getOrganizerForEvent(id);
     }
+
     @GetMapping("/{eventId}/categories")
     public CollectionModel<Category> getCategoriesForEvent(@PathVariable Long eventId) {
         return eventService.getCategoriesForEvent(eventId);
@@ -78,6 +90,11 @@ public class EventController {
     @PostMapping("/{eventId}/participants")
     public EntityModel<EventResponse> addParticipants(@PathVariable Long eventId, @RequestBody ParticipantListRequest request) {
         return eventService.addParticipantsToEvent(eventId, request.getUserIds());
+    }
+
+    @DeleteMapping("/{eventId}/participants")
+    public EntityModel<EventResponse> removeParticipants(@PathVariable Long eventId, @RequestBody ParticipantListRequest request) {
+        return eventService.removeParticipantsFromEvent(eventId, request.getUserIds());
     }
 
     @DeleteMapping("/{id}")
