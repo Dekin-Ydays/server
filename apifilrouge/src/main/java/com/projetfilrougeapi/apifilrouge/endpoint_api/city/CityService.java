@@ -76,8 +76,8 @@ public class CityService {
         return EntityModel.of(updatedCity,
                 linkTo(methodOn(CityController.class).getCityById(updatedCity.getId())).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
-                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getEventsForCity(city.getId())).withRel("events"));
+                linkTo(methodOn(CityController.class).getPlacesForCity(updatedCity.getId())).withRel("places"),
+                linkTo(methodOn(CityController.class).getEventsForCity(updatedCity.getId())).withRel("events"));
     }
 
     public CollectionModel<EntityModel<Place>> getPlacesForCity(Long cityId) {

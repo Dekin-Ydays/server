@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.UserSummary;
+import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
@@ -16,6 +17,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,18 +50,28 @@ public class EventService {
         this.cityRepository = cityRepository;
     }
 
-    public CollectionModel<EntityModel<Event>> getAllEvents() {
-        List<EntityModel<Event>> events = eventRepository.findAll().stream()
+    public CollectionModel<EntityModel<Event>> getAllEvents(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate) {
+
+        // Instanciation de l'objet Specification a vide pour le construire dynamiquement plus tard
+        Specification<Event> spec = Specification.where(null);
+
+        if (minPrice != null && maxPrice != null) {
+            spec = spec.and(EventSpecification.hasPriceBetween(minPrice, maxPrice));
+        }
+
+        if (startDate != null && endDate != null) {
+            spec = spec.and(EventSpecification.hasDateBetween(startDate, endDate));
+        }
+
+        List<EntityModel<Event>> events = eventRepository.findAll(spec).stream() // renvoie tous les événements filtrés selon les conditions.
                 .map(event -> EntityModel.of(event,
-                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()
-                ))
+                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
                 .collect(Collectors.toList());
 
         return CollectionModel.of(events,
-                linkTo(methodOn(EventController.class).getAllEvents()).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
-                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"));
+                linkTo(methodOn(EventController.class).getAllEvents(minPrice, maxPrice, startDate, endDate)).withSelfRel());
     }
+
 
     public EntityModel<EventResponse> createEvent(EventRequest request) {
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
@@ -98,7 +112,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
@@ -132,6 +146,24 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
     }
 
+    public EntityModel<EventResponse> removeParticipantsFromEvent(Long eventId, List<Long> userIds) {
+        try {
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evénement introuvable"));
+
+            List<User> usersToRemove = userRepository.findAllById(userIds);
+            event.getParticipants().removeAll(usersToRemove);
+
+            Event updatedEvent = eventRepository.save(event);
+
+            return EntityModel.of(EventResponse.fromEntity(updatedEvent),
+                    linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel(),
+                    linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Une erreur est survenue lors de la suppression des participants ", e);
+        }
+    }
 
 
     public EntityModel<EventResponse> getEventById(Long id) {
@@ -142,7 +174,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -295,7 +327,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents()).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),

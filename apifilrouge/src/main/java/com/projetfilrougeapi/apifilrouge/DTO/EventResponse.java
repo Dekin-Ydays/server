@@ -26,8 +26,7 @@ public class EventResponse {
     private EventStatus status;
     private int currentParticipants;
 
-    public static EventResponse fromEntity(Event event) { // on ne veux pas pouvoir instancier un objet vide de EventResponse
-
+    public static EventResponse fromEntity(Event event) { // on ne veut pas pouvoir instancier un objet vide de EventResponse
         return EventResponse.builder()
                 .id(event.getId())
                 .date(event.getDate())
