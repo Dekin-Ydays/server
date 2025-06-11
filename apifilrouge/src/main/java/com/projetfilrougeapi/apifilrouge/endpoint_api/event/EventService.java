@@ -50,7 +50,7 @@ public class EventService {
         this.cityRepository = cityRepository;
     }
 
-    public CollectionModel<EntityModel<Event>> getAllEvents(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate) {
+    public CollectionModel<EntityModel<Event>> getAllEvents(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
 
         // Instanciation de l'objet Specification a vide pour le construire dynamiquement plus tard
         Specification<Event> spec = Specification.where(null);
@@ -63,13 +63,17 @@ public class EventService {
             spec = spec.and(EventSpecification.hasDateBetween(startDate, endDate));
         }
 
+        if (categories != null && categories.length > 0) {
+            spec = spec.and(EventSpecification.hasCategories(categories));
+        }
+
         List<EntityModel<Event>> events = eventRepository.findAll(spec).stream() // renvoie tous les événements filtrés selon les conditions.
                 .map(event -> EntityModel.of(event,
                         linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
                 .collect(Collectors.toList());
 
         return CollectionModel.of(events,
-                linkTo(methodOn(EventController.class).getAllEvents(minPrice, maxPrice, startDate, endDate)).withSelfRel());
+                linkTo(methodOn(EventController.class).getAllEvents(minPrice, maxPrice, startDate, endDate, categories)).withSelfRel());
     }
 
 
@@ -112,7 +116,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
@@ -174,7 +178,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -327,7 +331,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),

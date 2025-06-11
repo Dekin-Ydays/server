@@ -53,7 +53,7 @@ public class UserService {
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
@@ -72,7 +72,7 @@ public class UserService {
         return CollectionModel.of(events,
                 linkTo(methodOn(UserController.class).getEventsForUser(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
 
@@ -130,7 +130,7 @@ public class UserService {
         return EntityModel.of(existingUser,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
     }

@@ -39,7 +39,7 @@ public class PlaceService {
         return CollectionModel.of(places,
                 linkTo(methodOn(PlaceController.class).getAllPlaces()).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<Place> getPlaceById(Long id) {

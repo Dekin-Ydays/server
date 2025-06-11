@@ -1,6 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.Specification;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -34,6 +36,23 @@ public class EventSpecification {
             } else {
                 return builder.conjunction();
             }
+        };
+    }
+
+    /**
+     * Filtre les événements qui appartiennent à au moins une des catégories spécifiées.
+     * Cette méthode est conçue pour une relation @ManyToMany entre Event et Category.
+     * @param categoryNames Un tableau de noms de catégories sur lesquels filtrer.
+     * @return Une Specification pour JPA.
+     */
+    public static Specification<Event> hasCategories(String[] categoryNames) {
+        return (root, query, builder) -> {
+            if (categoryNames == null || categoryNames.length == 0) {
+                return builder.conjunction();
+            }
+            Join<Event, Category> categoryJoin = root.join("categories");
+            query.distinct(true);
+            return categoryJoin.get("name").in((Object[]) categoryNames); // on s'assure du type en castant le retour
         };
     }
 }

@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.DTO;
 
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventStatus;
 import lombok.Data;
+import org.antlr.v4.runtime.misc.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
