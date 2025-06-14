@@ -21,14 +21,12 @@ public enum Role {
             AUTH_SERVICE_READ,
             AUTH_SERVICE_UPDATE,
             AUTH_SERVICE_DELETE
-
     )),
     User(Set.of(
             USER_READ,
             USER_CREATE,
             USER_UPDATE,
             USER_DELETE
-
     )),
     Admin(
             Set.of(
@@ -38,7 +36,7 @@ public enum Role {
                     ADMIN_CREATE
 
             )
-  ),
+    ),
     Organizer(
             Set.of(
                     ORGANIZER_CREATE,
@@ -46,9 +44,7 @@ public enum Role {
                     ORGANIZER_UPDATE,
                     ORGANIZER_DELETE
             )
-  )
-
-    ;
+    );
 
     @Getter
     private final Set<Permission> permissions;

@@ -65,7 +65,6 @@ public class InitDB {
                                 .email("user@example.com")
                                 .pseudo("user")
                                 .password(passwordEncoder.encode("password"))
-                                .isOrganizer(false)
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.User)
                                 .build(),
                         com.projetfilrougeapi.apifilrouge.endpoint_api.user.User.builder()
@@ -74,7 +73,6 @@ public class InitDB {
                                 .email("admin@example.com")
                                 .pseudo("admin")
                                 .password(passwordEncoder.encode("password"))
-                                .isOrganizer(false)
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.Admin)
                                 .build(),
                         com.projetfilrougeapi.apifilrouge.endpoint_api.user.User.builder()
@@ -83,7 +81,6 @@ public class InitDB {
                                 .email("auth@example.com")
                                 .pseudo("auth")
                                 .password(passwordEncoder.encode("password"))
-                                .isOrganizer(false)
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.AuthService)
                                 .build(),
                         com.projetfilrougeapi.apifilrouge.endpoint_api.user.User.builder()
@@ -92,7 +89,6 @@ public class InitDB {
                                 .email("organizer@example.com")
                                 .pseudo("organizer")
                                 .password(passwordEncoder.encode("password"))
-                                .isOrganizer(true)
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.Organizer)
                                 .build()
                 );

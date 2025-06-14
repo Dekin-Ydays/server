@@ -12,6 +12,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationContr
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,6 +33,24 @@ public class UserService {
         this.categoryRepository = categoryRepository;
     }
 
+    public EntityModel<UserResponse> getCurrentUserProfile() {
+        Object current= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String userEmail;
+        if (current instanceof UserDetails) {
+            userEmail = ((UserDetails) current).getUsername();
+        } else {
+            userEmail = current.toString();
+        }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : " + userEmail));
+
+        UserResponse response = UserResponse.fromEntity(user);
+
+        return EntityModel.of(response,
+                linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel());
+    }
     public EntityModel<UserResponse> getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -45,13 +65,15 @@ public class UserService {
 
     }
 
-    public CollectionModel<EntityModel<User>> getAllUsers() {
-        List<EntityModel<User>> users = userRepository.findAll().stream()
-                .map(user -> EntityModel.of(user,
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel()
-                ))
-                .collect(Collectors.toList());
+    public CollectionModel<EntityModel<UserResponse>> getAllUsers() {
 
+        List<EntityModel<UserResponse>> users = userRepository.findAll().stream()
+                .map(user -> {
+                    UserResponse response = UserResponse.fromEntity(user);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(EventController.class).getEventById(user.getId())).withSelfRel());
+                })
+                .collect(Collectors.toList());
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
@@ -124,7 +146,6 @@ public class UserService {
         if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
         if (request.getNote() != null) existingUser.setNote(request.getNote());
         if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
-        if (request.getIsOrganizer() != null) existingUser.setIsOrganizer(request.getIsOrganizer());
         if (request.getRole() != null) existingUser.setRole(request.getRole());
 
         if (request.getCategoryIds() != null) {

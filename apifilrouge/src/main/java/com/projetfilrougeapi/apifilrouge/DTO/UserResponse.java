@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,9 +28,9 @@ public class UserResponse {
     private String pseudo;
     private String email;
     private String phone;
-    private boolean isOrganizer;
     private long eventPastCount;
     private int eventsCount;
+    private Role role;
     private String description;
     private String imageUrl;
     private String bannerUrl;
@@ -52,9 +53,9 @@ public class UserResponse {
                 .pseudo(user.getPseudo())
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .isOrganizer(user.getIsOrganizer() != null && user.getIsOrganizer())
                 .eventPastCount(pastEvents)
                 .eventsCount(user.getEvents() != null ? user.getEvents().size() : 0)
+                .role(user.getRole())
                 .description(user.getDescription())
                 .imageUrl(user.getImageUrl())
                 .bannerUrl(user.getBannerUrl())

@@ -22,10 +22,13 @@ public class UserController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<User>> getAllUsers() {
+    public CollectionModel<EntityModel<UserResponse>> getAllUsers() {
         return userService.getAllUsers();
     }
-
+    @GetMapping("/me")
+    public EntityModel<UserResponse> getCurrentUserProfile() {
+        return userService.getCurrentUserProfile();
+    }
     @GetMapping("/{id}")
     public EntityModel<UserResponse> getUserById(@PathVariable Long id) {
         return userService.getUserById(id);

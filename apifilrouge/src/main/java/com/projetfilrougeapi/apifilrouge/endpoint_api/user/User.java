@@ -37,9 +37,6 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String pseudo;
 
-    @Column(name = "is_organizer", nullable = false)
-    private Boolean isOrganizer;
-
     private String phone;
 
     @Column(name = "image_url")

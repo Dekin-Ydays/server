@@ -26,7 +26,6 @@ public class AuthenticationService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .pseudo(request.getPseudo())
-                .isOrganizer(false)
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)
                 .build();
