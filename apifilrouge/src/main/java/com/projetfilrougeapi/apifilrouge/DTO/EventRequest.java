@@ -22,4 +22,6 @@ public class EventRequest {
     private List<Long> categoryIds;
     private List<Long> participantIds;
     private int currentParticipants;
+    private String contentHtml;
+    private String imageUrl;
 }

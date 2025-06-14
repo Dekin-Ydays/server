@@ -1,6 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
@@ -24,36 +27,29 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<User> getUserById(@PathVariable Long id) {
+    public EntityModel<UserResponse> getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
     @GetMapping("/{id}/events")
-    public CollectionModel<EntityModel<Event>> getEventsForUser(@PathVariable Long id) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(@PathVariable Long id) {
         return userService.getEventsForUser(id);
     }
     @GetMapping("/{id}/invitations")
     public CollectionModel<EntityModel<Invitation>> getInvitationsForUser(@PathVariable Long id) {
         return userService.getInvitationsForUser(id);
     }
-
     @GetMapping("/{id}/categories")
     public CollectionModel<EntityModel<Category>> getCategoriesForUser(@PathVariable Long id) {
         return userService.getCategoriesForUser(id);
     }
 
-    @GetMapping("/{userId}/organized-events")
-    public CollectionModel<EntityModel<Event>> getOrganizedEvents(@PathVariable Long userId) {
-        return userService.getOrganizedEvents(userId);
-    }
-
     @GetMapping("/{userId}/participating-events")
-    public CollectionModel<EntityModel<Event>> getParticipatingEvents(@PathVariable Long userId) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(@PathVariable Long userId) {
         return userService.getParticipatingEvents(userId);
     }
-
     @PatchMapping("/{id}")
-    public EntityModel<User> patchUser(@PathVariable Long id, @RequestBody UserRequest request) {
+    public EntityModel<UserResponse> patchUser(@PathVariable Long id, @RequestBody UserRequest request) {
         return userService.updateUser(id, request);
     }
 }

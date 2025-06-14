@@ -42,17 +42,36 @@ public class EventSpecification {
     /**
      * Filtre les événements qui appartiennent à au moins une des catégories spécifiées.
      * Cette méthode est conçue pour une relation @ManyToMany entre Event et Category.
-     * @param categoryNames Un tableau de noms de catégories sur lesquels filtrer.
+     *
+     * @param categoryKeys Un tableau de noms de catégories sur lesquels filtrer.
      * @return Une Specification pour JPA.
      */
-    public static Specification<Event> hasCategories(String[] categoryNames) {
+    public static Specification<Event> hasCategories(String[] categoryKeys) {
         return (root, query, builder) -> {
-            if (categoryNames == null || categoryNames.length == 0) {
+            if (categoryKeys == null || categoryKeys.length == 0) {
                 return builder.conjunction();
             }
             Join<Event, Category> categoryJoin = root.join("categories");
             query.distinct(true);
-            return categoryJoin.get("name").in((Object[]) categoryNames); // on s'assure du type en castant le retour
+            return categoryJoin.get("key").in((Object[]) categoryKeys);
+        };
+    }
+
+    public static Specification<Event> hasPlace(Long placeId) {
+        return (root, query, builder) -> {
+            if (placeId == null) {
+                return builder.conjunction();
+            }
+            return builder.equal(root.get("place").get("id"), placeId);
+        };
+    }
+
+    public static Specification<Event> hasCity(Long cityId) {
+        return (root, query, builder) -> {
+            if (cityId == null) {
+                return builder.conjunction();
+            }
+            return builder.equal(root.get("city").get("id"), cityId);
         };
     }
 }

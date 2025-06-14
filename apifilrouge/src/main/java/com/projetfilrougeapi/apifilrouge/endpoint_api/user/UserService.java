@@ -1,10 +1,11 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
@@ -30,10 +31,12 @@ public class UserService {
         this.categoryRepository = categoryRepository;
     }
 
-    public EntityModel<User> getUserById(Long id) {
+    public EntityModel<UserResponse> getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return EntityModel.of(user,
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        UserResponse response = UserResponse.fromEntity(user);
+        return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
                 linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
@@ -41,7 +44,6 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
 
     }
-
 
     public CollectionModel<EntityModel<User>> getAllUsers() {
         List<EntityModel<User>> users = userRepository.findAll().stream()
@@ -58,24 +60,22 @@ public class UserService {
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
 
-    public CollectionModel<EntityModel<Event>> getEventsForUser(Long id) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
-        List<EntityModel<Event>> events = user.getEvents().stream()
-                .map(event -> EntityModel.of(event,
-                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
-                ))
+        List<EntityModel<EventSummaryResponse>> events = user.getEvents().stream()
+                .map(event -> {
+                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel(),
+                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
+                    );
+                })
                 .collect(Collectors.toList());
 
         return CollectionModel.of(events,
-                linkTo(methodOn(UserController.class).getEventsForUser(id)).withSelfRel(),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
-                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
-
+                linkTo(methodOn(UserController.class).getEventsForUser(id)).withSelfRel());
     }
 
     public CollectionModel<EntityModel<Invitation>> getInvitationsForUser(Long id) {
@@ -107,54 +107,51 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withSelfRel());
     }
 
-    public EntityModel<User> updateUser(Long id, UserRequest request) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    public EntityModel<UserResponse> updateUser(Long id, UserRequest request) {
+
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
         if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
         if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
+        if (request.getPseudo() != null) existingUser.setPseudo(request.getPseudo());
         if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
+
         if (request.getPassword() != null) existingUser.setPassword(request.getPassword());
+
+        if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
+        if (request.getDescription() != null) existingUser.setDescription(request.getDescription());
+        if (request.getImageUrl() != null) existingUser.setImageUrl(request.getImageUrl());
+        if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
+        if (request.getNote() != null) existingUser.setNote(request.getNote());
+        if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
+        if (request.getIsOrganizer() != null) existingUser.setIsOrganizer(request.getIsOrganizer());
         if (request.getRole() != null) existingUser.setRole(request.getRole());
 
         if (request.getCategoryIds() != null) {
             List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
             if (categories.size() != request.getCategoryIds().size()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une ou plusieurs catégories sont invalides.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiple categories are invalides");
             }
             existingUser.setCategories(categories);
         }
 
-        userRepository.save(existingUser);
+        User updatedUser = userRepository.save(existingUser);
+        UserResponse response = UserResponse.fromEntity(updatedUser);
 
-        return EntityModel.of(existingUser,
-                linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
-                linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
-                linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
+        return EntityModel.of(response,
+                linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel());
     }
 
-    public CollectionModel<EntityModel<Event>> getOrganizedEvents(Long userId) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        List<EntityModel<Event>> events = user.getEvents().stream()
-                .map(event -> EntityModel.of(event,
-                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(events,
-                linkTo(methodOn(UserController.class).getOrganizedEvents(userId)).withSelfRel());
-    }
-
-    public CollectionModel<EntityModel<Event>> getParticipatingEvents(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<EntityModel<Event>> events = user.getParticipatedEvents().stream()
-                .map(event -> EntityModel.of(event,
-                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
+        List<EntityModel<EventSummaryResponse>> events = user.getParticipatedEvents().stream()
+                .map(event -> {
+                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel());
+                })
                 .collect(Collectors.toList());
 
         return CollectionModel.of(events,

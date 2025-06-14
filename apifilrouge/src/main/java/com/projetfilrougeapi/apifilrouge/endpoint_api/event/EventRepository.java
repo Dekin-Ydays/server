@@ -1,5 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -12,5 +14,28 @@ import java.util.Optional;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
     Optional<Event> findById(Long id);
+
+     // En surchargeant la méthode findAll, on dit à Spring d'appliquer
+     // notre Entity Graph nommé "Event.withDetails" chaque fois que cette méthode est appelée.
+     // Le type FETCH assure que le JOIN FETCH sera utilisé.
+     // Spring se charge de combiner la spécification (pour le WHERE) et le graphe (pour les JOIN FETCH).
+
+    @Override
+    @EntityGraph(value = "Event.withDetails", type = EntityGraph.EntityGraphType.FETCH)
+    List<Event> findAll(Specification<Event> spec);
+
+    /**
+     * Get all the events for a city
+     * in one query
+     */
+    @EntityGraph(value = "Event.withDetails", type = EntityGraph.EntityGraphType.FETCH)
+    List<Event> findByCityId(Long cityId);
+
+    /**
+     * Get all the events for a place
+     * in one query
+     */
+    @EntityGraph(value = "Event.withDetails", type = EntityGraph.EntityGraphType.FETCH)
+    List<Event> findByPlaceId(Long placeId);
 }
 

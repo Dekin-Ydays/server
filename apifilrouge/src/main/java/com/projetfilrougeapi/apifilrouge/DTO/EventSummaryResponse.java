@@ -2,7 +2,6 @@ package com.projetfilrougeapi.apifilrouge.DTO;
 
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventStatus;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventResponse {
+public class EventSummaryResponse {
     private Long id;
     private LocalDateTime date;
     private String description;
@@ -26,20 +25,20 @@ public class EventResponse {
     private Boolean isTrending;
     private Double price;
     private EventStatus status;
-    private String contentHtml;
     private String imageUrl;
     private int currentParticipants;
-    private OrganizerSummary organizer;
     private String cityName;
     private String placeName;
     private List<CategorySummary> categories;
+    private OrganizerSummary organizer;
 
-    public static EventResponse fromEntity(Event event) { // on ne veut pas pouvoir instancier un objet vide de EventResponse
+    public static EventSummaryResponse fromEntity(Event event) { // on ne veut pas pouvoir instancier un objet vide de EventResponse
         String placeName = (event.getPlace() != null) ? event.getPlace().getName() : null;
         String cityName = (event.getPlace() != null) ? event.getPlace().getCityName() : null;
         List<CategorySummary> categories = event.getCategories().stream().map(category -> new CategorySummary(category.getName(), category.getKey())).collect(Collectors.toList());
         OrganizerSummary organizer = (event.getOrganizer() != null) ? OrganizerSummary.builder().pseudo(event.getOrganizer().getPseudo()).imageUrl(event.getOrganizer().getImageUrl()).note(event.getOrganizer().getNote()).build() : null;
-        return EventResponse.builder()
+
+        return EventSummaryResponse.builder()
                 .id(event.getId())
                 .date(event.getDate())
                 .description(event.getDescription())
@@ -49,13 +48,12 @@ public class EventResponse {
                 .isTrending(event.getIsTrending())
                 .price(event.getPrice())
                 .status(event.getStatus())
-                .contentHtml(event.getContentHtml())
                 .imageUrl(event.getImageUrl())
                 .currentParticipants(event.getParticipants().size())
                 .placeName(placeName)
-                .organizer(organizer)
                 .cityName(cityName)
                 .categories(categories)
+                .organizer(organizer)
                 .build();
     }
 }

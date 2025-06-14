@@ -27,6 +27,9 @@ public class Place {
 
     private String address;
 
+    @Column(name = "city_name")
+    private String cityName;
+
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "place-events")
     private List<Event> events;

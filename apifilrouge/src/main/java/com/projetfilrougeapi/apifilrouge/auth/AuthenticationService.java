@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.auth;
 
+import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -18,12 +19,14 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse register(UserRequest request) {
 
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
+                .pseudo(request.getPseudo())
+                .isOrganizer(false)
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)
                 .build();

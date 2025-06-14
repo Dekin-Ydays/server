@@ -25,7 +25,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="user_id", nullable = false, updatable = false, unique = true)
+    @Column(name = "user_id", nullable = false, updatable = false, unique = true)
     private Long id;
 
     @Column(name = "first_name", nullable = false)
@@ -33,6 +33,28 @@ public class User implements UserDetails {
 
     @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(unique = true, nullable = false)
+    private String pseudo;
+
+    @Column(name = "is_organizer", nullable = false)
+    private Boolean isOrganizer;
+
+    private String phone;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "banner_url")
+    private String bannerUrl;
+
+    private Double note;
+
+    @Column(columnDefinition = "TEXT")
+    private String socials;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(nullable = false, unique = true)
     private String email;

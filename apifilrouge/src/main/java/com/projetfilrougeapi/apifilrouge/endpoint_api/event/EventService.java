@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.UserSummary;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
@@ -26,8 +27,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,9 +52,8 @@ public class EventService {
         this.cityRepository = cityRepository;
     }
 
-    public CollectionModel<EntityModel<Event>> getAllEvents(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
 
-        // Instanciation de l'objet Specification a vide pour le construire dynamiquement plus tard
         Specification<Event> spec = Specification.where(null);
 
         if (minPrice != null && maxPrice != null) {
@@ -67,15 +68,18 @@ public class EventService {
             spec = spec.and(EventSpecification.hasCategories(categories));
         }
 
-        List<EntityModel<Event>> events = eventRepository.findAll(spec).stream() // renvoie tous les événements filtrés selon les conditions.
-                .map(event -> EntityModel.of(event,
-                        linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel()))
+        // transforme en EventResponse
+        List<EntityModel<EventSummaryResponse>> events = eventRepository.findAll(spec).stream()
+                .map(event -> {
+                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel());
+                })
                 .collect(Collectors.toList());
 
         return CollectionModel.of(events,
                 linkTo(methodOn(EventController.class).getAllEvents(minPrice, maxPrice, startDate, endDate, categories)).withSelfRel());
     }
-
 
     public EntityModel<EventResponse> createEvent(EventRequest request) {
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
@@ -92,7 +96,8 @@ public class EventService {
         event.setIsTrending(request.getIsTrending());
         event.setStatus(request.getStatus());
         event.setPrice(request.getPrice());
-
+        event.setContentHtml(request.getContentHtml());
+        event.setImageUrl(request.getImageUrl());
         // Place
         Place place = placeRepository.findById(request.getPlaceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));
@@ -106,7 +111,7 @@ public class EventService {
         // Catégories
         if (request.getCategoryIds() != null) {
             List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            event.setCategories(categories);
+            event.setCategories(new HashSet<>(categories));
         }
 
         Event savedEvent = eventRepository.save(event);
@@ -125,7 +130,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(savedEvent.getId())).withRel("participants"));
     }
 
-    public EntityModel<EventResponse> addParticipantsToEvent(Long eventId, List<Long> userIds) {
+    public EntityModel<EventSummaryResponse> addParticipantsToEvent(Long eventId, List<Long> userIds) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
 
@@ -143,14 +148,14 @@ public class EventService {
         event.getParticipants().addAll(newParticipants);
         Event savedEvent = eventRepository.save(event);
 
-        EventResponse response = EventResponse.fromEntity(savedEvent);
+        EventSummaryResponse response = EventSummaryResponse.fromEntity(savedEvent);
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
     }
 
-    public EntityModel<EventResponse> removeParticipantsFromEvent(Long eventId, List<Long> userIds) {
+    public EntityModel<EventSummaryResponse> removeParticipantsFromEvent(Long eventId, List<Long> userIds) {
         try {
             Event event = eventRepository.findById(eventId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evénement introuvable"));
@@ -160,7 +165,7 @@ public class EventService {
 
             Event updatedEvent = eventRepository.save(event);
 
-            return EntityModel.of(EventResponse.fromEntity(updatedEvent),
+            return EntityModel.of(EventSummaryResponse.fromEntity(updatedEvent),
                     linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel(),
                     linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
 
@@ -222,7 +227,7 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé avec l'ID: " + eventId));
 
-        List<Category> categories = event.getCategories();
+        List<Category> categories = new ArrayList<>(event.getCategories());;
 
         if (categories.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune catégorie associée à cet événement");
@@ -265,7 +270,7 @@ public class EventService {
 
         List<EntityModel<UserSummary>> participants = event.getParticipants().stream()
                 .map(user -> {
-                    UserSummary summary = new UserSummary(user.getId(), user.getFirstName(), user.getLastName());
+                    UserSummary summary = new UserSummary(user.getId(), user.getFirstName(), user.getLastName(), user.getPseudo());
                     return EntityModel.of(summary,
                             linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel()
                     );
@@ -289,6 +294,8 @@ public class EventService {
         if (request.getMaxCustomers() != null) event.setMaxCustomers(request.getMaxCustomers());
         if (request.getIsTrending() != null) event.setIsTrending(request.getIsTrending());
         if (request.getStatus() != null) event.setStatus(request.getStatus());
+        if (request.getContentHtml() != null) event.setContentHtml(request.getContentHtml());
+        if (request.getImageUrl() != null) event.setImageUrl(request.getImageUrl());
 
         // place
         if (request.getPlaceId() != null) {
@@ -310,7 +317,7 @@ public class EventService {
             if (categories.size() != request.getCategoryIds().size()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une ou plusieurs catégories sont invalides.");
             }
-            event.setCategories(categories);
+            event.setCategories(new HashSet<>(categories));
         }
 
         // participants

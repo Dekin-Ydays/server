@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.auth;
 /*import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;*/
+import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody UserRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 

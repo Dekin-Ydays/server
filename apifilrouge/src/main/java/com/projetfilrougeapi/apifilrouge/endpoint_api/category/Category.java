@@ -30,6 +30,8 @@ public class Category {
     @Column(name = "is_trending")
     private boolean isTrending;
 
+    private String key;
+
     @ManyToMany(mappedBy = "categories")
     @JsonIgnoreProperties("categories-user")
     private List<User> users = new ArrayList<>();

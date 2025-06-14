@@ -63,6 +63,9 @@ public class CategoryService {
             existingCategory.setDescription(category.getDescription());
         }
 
+        if(existingCategory.getKey() != null && !existingCategory.getKey().equals((category.getKey()))){
+            existingCategory.setKey(category.getKey());
+        }
         Category updatedCategory = categoryRepository.save(existingCategory);
 
         return EntityModel.of(updatedCategory,

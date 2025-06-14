@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaceRequest {
+class SocialLink {
     private String name;
-    private String description;
-    private String cityName;
-    private String address;
-    private Long cityId;
+    private String url;
 }

@@ -1,13 +1,18 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.PlaceRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/places")
 public class PlaceController {
@@ -31,8 +36,15 @@ public class PlaceController {
     }
 
     @GetMapping("/{id}/events")
-    public CollectionModel<EntityModel<Event>> getEventsForPlace(@PathVariable Long id) {
-        return placeService.getEventsForPlace(id);
+    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForPlace(
+            @PathVariable Long id,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String[] categories
+    ) {
+        return placeService.getEventsForPlace(id, minPrice, maxPrice, startDate, endDate, categories);
     }
     @GetMapping("/{id}/city")
     public EntityModel<City> getCityForPlace(@PathVariable Long id) {
