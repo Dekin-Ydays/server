@@ -14,8 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static com.projetfilrougeapi.apifilrouge.endpoint_api.user.Permission.*;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -40,44 +38,44 @@ public class SecurityConfiguration {
                             .requestMatchers("/error").permitAll()
                             .requestMatchers(HttpMethod.GET, WHITE_LIST_URL).permitAll()
 
-                           /* .requestMatchers(HttpMethod.POST, "/places").hasAnyAuthority(ADMIN_CREATE.name(), ORGANIZER_CREATE.name(), AUTH_SERVICE_CREATE.name())
-                            *///.requestMatchers(HttpMethod.POST, "/cities").hasAnyAuthority(ADMIN_CREATE.name(), ORGANIZER_CREATE.name(),AUTH_SERVICE_CREATE.name())
-                            /*.requestMatchers(HttpMethod.POST, "/events/*").hasAnyAuthority(ADMIN_CREATE.name(), ORGANIZER_CREATE.name(),AUTH_SERVICE_CREATE.name())
-                            .requestMatchers(HttpMethod.POST, "/invitations").hasAnyAuthority(ADMIN_CREATE.name(), ORGANIZER_CREATE.name(),AUTH_SERVICE_CREATE.name(), USER_CREATE.name())
-                            .requestMatchers(HttpMethod.POST, "/categories").hasAnyAuthority(ADMIN_CREATE.name(),AUTH_SERVICE_CREATE.name())
-                            .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyAuthority(ADMIN_CREATE.name(),AUTH_SERVICE_CREATE.name(),USER_CREATE.name()) //Tickets
-                            .requestMatchers(HttpMethod.POST, "/orders").hasAnyAuthority(ADMIN_CREATE.name(),AUTH_SERVICE_CREATE.name(),USER_CREATE.name())
-                            .requestMatchers(HttpMethod.POST, "/reports").hasAnyAuthority(ADMIN_CREATE.name(),AUTH_SERVICE_CREATE.name(),USER_CREATE.name())
-                            .requestMatchers(HttpMethod.POST, "/users").hasAnyAuthority(ADMIN_CREATE.name(),AUTH_SERVICE_CREATE.name())
+                            .requestMatchers(HttpMethod.POST, "/places").hasAnyRole("Admin", "Organizer","AuthService")
+                            .requestMatchers(HttpMethod.POST, "/cities").hasAnyRole("Admin", "Organizer","AuthService")
+                            .requestMatchers(HttpMethod.POST, "/events/*").hasAnyRole("Admin", "Organizer","AuthService")
+                            .requestMatchers(HttpMethod.POST, "/invitations").hasAnyRole("Admin", "Organizer","AuthService", "User")
+                            .requestMatchers(HttpMethod.POST, "/categories").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyRole("Admin","AuthService","User") //Tickets
+                            .requestMatchers(HttpMethod.POST, "/orders").hasAnyRole("Admin","AuthService","User")
+                            .requestMatchers(HttpMethod.POST, "/reports").hasAnyRole("Admin","AuthService","User")
+                            .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("Admin","AuthService")
 
 
-                            .requestMatchers(HttpMethod.GET, "/places/**").hasAnyAuthority(ADMIN_READ.name(), AUTH_SERVICE_READ.name(), USER_READ.getPermission(),"ORGANIZER_READ")
-                            .requestMatchers(HttpMethod.GET, "/cities/**").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name(),"USER_READ","ORGANIZER_READ")
-                            .requestMatchers(HttpMethod.GET, "/events/**").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name(),"ORGANIZER_READ")
-                            .requestMatchers(HttpMethod.GET, "/invitations/**").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name(),"ORGANIZER_READ")
-                            .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyAuthority(ADMIN_READ.getPermission(),AUTH_SERVICE_READ.name(),"USER_READ","ORGANIZER_READ")
-                            .requestMatchers(HttpMethod.GET, "/orders").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name(),"USER_READ")
-                            .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name(),"USER_READ")
-                            .requestMatchers(HttpMethod.GET, "/reports").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name())
-                            .requestMatchers(HttpMethod.GET, "/users/**").hasAnyAuthority(ADMIN_READ.name(),AUTH_SERVICE_READ.name())
+                            .requestMatchers(HttpMethod.GET, "/places/**").hasAnyRole("Admin","AuthService","User","Organizer")
+                            .requestMatchers(HttpMethod.GET, "/cities/**").hasAnyRole("Admin","AuthService","User","Organizer")
+                            .requestMatchers(HttpMethod.GET, "/events/**").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.GET, "/invitations/**").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyRole("Admin","AuthService","Organizer", "User")
+                            .requestMatchers(HttpMethod.GET, "/orders").hasAnyRole("Admin","AuthService","User")
+                            .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("Admin","AuthService","User")
+                            .requestMatchers(HttpMethod.GET, "/reports").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("Admin","AuthService")
 
-                            .requestMatchers(HttpMethod.PATCH, "/places").hasAnyAuthority("Admin","AuthService","Organizer")
-                            .requestMatchers(HttpMethod.PATCH, "/cities").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.PATCH, "/events").hasAnyAuthority("Admin","AuthService","Organizer")
-                            .requestMatchers(HttpMethod.PATCH, "/events").hasAnyAuthority("Admin","AuthService","Organizer")
-                            .requestMatchers(HttpMethod.PATCH, "/categories").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.PATCH, "/orders/**").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.PATCH, "/reports").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.PATCH, "/users").hasAnyAuthority("Admin","AuthService")
+                            .requestMatchers(HttpMethod.PATCH, "/places").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.PATCH, "/cities").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.PATCH, "/events").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.PATCH, "/events").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.PATCH, "/categories").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.PATCH, "/orders/**").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.PATCH, "/reports").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.PATCH, "/users").hasAnyRole("Admin","AuthService")
 
-                            .requestMatchers(HttpMethod.DELETE, "/places").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.DELETE, "/cities").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.DELETE, "/events").hasAnyAuthority("Admin","AuthService","Organizer")
-                            .requestMatchers(HttpMethod.DELETE, "/invitations").hasAnyAuthority("Admin","AuthService","Organizer")
-                            .requestMatchers(HttpMethod.DELETE, "/categories").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.DELETE, "/orders").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.DELETE, "/reports").hasAnyAuthority("Admin","AuthService")
-                            .requestMatchers(HttpMethod.DELETE, "/users").hasAnyAuthority("Admin","AuthService")*/
+                            .requestMatchers(HttpMethod.DELETE, "/places").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.DELETE, "/cities").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.DELETE, "/events").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.DELETE, "/invitations").hasAnyRole("Admin","AuthService","Organizer")
+                            .requestMatchers(HttpMethod.DELETE, "/categories").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.DELETE, "/orders").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.DELETE, "/reports").hasAnyRole("Admin","AuthService")
+                            .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("Admin","AuthService")
 
 
                             .anyRequest().authenticated();
