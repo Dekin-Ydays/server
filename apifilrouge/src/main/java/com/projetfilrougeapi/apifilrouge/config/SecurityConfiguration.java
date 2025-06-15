@@ -25,11 +25,11 @@ import java.util.Arrays;
 public class SecurityConfiguration {
 
     private static final String[] WHITE_LIST_URL = {
-            "/places/**",
-            "/cities/**",
-            "/events/**",
-            "/categories/**",
-            "/users/**"
+            "/places",
+            "/cities",
+            "/events",
+            "/categories",
+            "/users"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
