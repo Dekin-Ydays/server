@@ -1,6 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
+import com.projetfilrougeapi.apifilrouge.DTO.CityRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -20,24 +23,24 @@ public class CityController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<City> getCityById(@PathVariable Long id) {
+    public EntityModel<CityResponse> getCityById(@PathVariable Long id) {
         return cityService.getCityById(id);
     }
     @GetMapping
-    public CollectionModel<EntityModel<City>> getAllCities() {
+    public CollectionModel<EntityModel<CityResponse>> getAllCities() {
         return cityService.getAllCities();
     }
 
     @PostMapping
-    public EntityModel<City> addCity(@RequestBody City city) {
+    public EntityModel<CityResponse> addCity(@RequestBody CityRequest city) {
         return cityService.addCity(city);
     }
     @PatchMapping("/{id}")
-    public EntityModel<City> updateCity(@PathVariable Long id, @RequestBody City city) {
+    public EntityModel<CityResponse> updateCity(@PathVariable Long id, @RequestBody CityRequest city) {
         return cityService.updateCity(id, city);
     }
     @GetMapping("/{id}/places")
-    public CollectionModel<EntityModel<Place>> getPlacesForCity(@PathVariable Long id) {
+    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(@PathVariable Long id) {
         return cityService.getPlacesForCity(id);
     }
     @DeleteMapping("/{id}")

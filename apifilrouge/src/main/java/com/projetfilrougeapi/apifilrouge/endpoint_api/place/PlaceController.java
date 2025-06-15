@@ -1,7 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
+import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.PlaceRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -26,12 +28,12 @@ public class PlaceController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<Place>> getAllPlaces() {
+    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces() {
         return placeService.getAllPlaces();
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Place> getPlaceById(@PathVariable("id") Long id) {
+    public EntityModel<PlaceResponse> getPlaceById(@PathVariable("id") Long id) {
         return placeService.getPlaceById(id);
     }
 
@@ -47,18 +49,18 @@ public class PlaceController {
         return placeService.getEventsForPlace(id, minPrice, maxPrice, startDate, endDate, categories);
     }
     @GetMapping("/{id}/city")
-    public EntityModel<City> getCityForPlace(@PathVariable Long id) {
+    public EntityModel<CityResponse> getCityForPlace(@PathVariable Long id) {
         return placeService.getCityForPlace(id);
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Place> addPlace(@RequestBody PlaceRequest placeRequest) {
+    public EntityModel<PlaceResponse> addPlace(@RequestBody PlaceRequest placeRequest) {
         return placeService.addPlace(placeRequest);
     }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EntityModel<Place> updatePlace(@PathVariable Long id, @RequestBody PlaceRequest placeRequest) {
+    public EntityModel<PlaceResponse> updatePlace(@PathVariable Long id, @RequestBody PlaceRequest placeRequest) {
         return placeService.updatePlace(id, placeRequest);
     }
 

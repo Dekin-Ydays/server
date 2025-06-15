@@ -63,7 +63,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}/organizer")
-    public EntityModel<User> getOrganizerForEvent(@PathVariable Long id) {
+    public EntityModel<UserResponse> getOrganizerForEvent(@PathVariable Long id) {
         return eventService.getOrganizerForEvent(id);
     }
 

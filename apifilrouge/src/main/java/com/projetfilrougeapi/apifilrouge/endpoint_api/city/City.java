@@ -7,7 +7,9 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -29,9 +31,22 @@ public class City {
 
     private String region;
 
+    private Double latitude;
+
+    private Double longitude;
+
     private String country;
 
     private String description;
+
+    @Column(columnDefinition="TEXT")
+    private String content;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "banner_url")
+    private String bannerUrl;
 
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     @JsonBackReference("place-city")
@@ -40,4 +55,12 @@ public class City {
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "city-events")
     private List<Event> events;
+
+    @ManyToMany
+    @JoinTable(
+            name = "city_nearest_cities",
+            joinColumns = @JoinColumn(name = "city_id"),
+            inverseJoinColumns = @JoinColumn(name = "nearest_city_id"))
+    @Builder.Default // par défaut initialiser a vide
+    private Set<City> nearestCities = new HashSet<>();
 }

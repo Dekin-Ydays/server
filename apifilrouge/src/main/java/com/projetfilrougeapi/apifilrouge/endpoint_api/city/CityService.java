@@ -1,12 +1,13 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
+import com.projetfilrougeapi.apifilrouge.DTO.CityRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
@@ -15,9 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -34,71 +36,106 @@ public class CityService {
         this.eventRepository = eventRepository;
     }
 
-    public EntityModel<City> getCityById(Long id) {
+    public EntityModel<CityResponse> getCityById(Long id) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        return EntityModel.of(city,
+        CityResponse response = CityResponse.fromEntity(city);
+
+        return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
                 linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null)).withRel("events"));
     }
 
-    public CollectionModel<EntityModel<City>> getAllCities() {
-        List<EntityModel<City>> cities = cityRepository.findAll().stream()
-                .map(city -> EntityModel.of(city,
-                        linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel()
-                ))
+    public CollectionModel<EntityModel<CityResponse>> getAllCities() {
+        List<EntityModel<CityResponse>> cities = cityRepository.findAll().stream()
+                .map(city -> {
+                    CityResponse response = CityResponse.fromEntity(city);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel());
+                })
                 .collect(Collectors.toList());
 
         return CollectionModel.of(cities,
-                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel(),
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("events"));
+                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel());
     }
 
-    public EntityModel<City> addCity(City city) {
+    public EntityModel<CityResponse> addCity(CityRequest request) {
+        City city = City.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .region(request.getRegion())
+                .postalCode(request.getPostalCode())
+                .country(request.getCountry())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .bannerUrl(request.getBannerUrl())
+                .imageUrl(request.getImageUrl())
+                .content(request.getContent())
+                .build();
+
+        if (request.getNearestCityIds() != null && !request.getNearestCityIds().isEmpty()) {
+            Set<City> nearest = new HashSet<>(cityRepository.findAllById(request.getNearestCityIds()));
+            city.setNearestCities(nearest);
+        }
+
         City savedCity = cityRepository.save(city);
+        CityResponse response = CityResponse.fromEntity(savedCity);
 
-        return EntityModel.of(savedCity,
-                linkTo(methodOn(CityController.class).getCityById(savedCity.getId())).withSelfRel(),
+        return EntityModel.of(response,
+                linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
-                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
-    public EntityModel<City> updateCity(Long id, City city) {
+    public EntityModel<CityResponse> updateCity(Long id, CityRequest request) {
         City existingCity = cityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (city.getName() != null && !city.getName().equals(existingCity.getName())) {
-            existingCity.setName(city.getName());
-        }
-        if (city.getDescription() != null && !city.getDescription().equals(existingCity.getDescription())) {
-            existingCity.setDescription(city.getDescription());
+        if (request.getName() != null) existingCity.setName(request.getName());
+        if (request.getDescription() != null) existingCity.setDescription(request.getDescription());
+        if (request.getRegion() != null) existingCity.setRegion(request.getRegion());
+        if (request.getPostalCode() != null) existingCity.setPostalCode(request.getPostalCode());
+        if (request.getCountry() != null) existingCity.setCountry(request.getCountry());
+        if (request.getLatitude() != null) existingCity.setLatitude(request.getLatitude());
+        if (request.getLongitude() != null) existingCity.setLongitude(request.getLongitude());
+        if (request.getBannerUrl() != null) existingCity.setBannerUrl(request.getBannerUrl());
+        if (request.getImageUrl() != null) existingCity.setImageUrl(request.getImageUrl());
+        if (request.getContent() != null) existingCity.setContent(request.getContent());
+
+
+        if (request.getNearestCityIds() != null) {
+            Set<City> nearest = new HashSet<>(cityRepository.findAllById(request.getNearestCityIds()));
+            existingCity.setNearestCities(nearest);
         }
 
         City updatedCity = cityRepository.save(existingCity);
+        CityResponse response = CityResponse.fromEntity(updatedCity);
 
-        return EntityModel.of(updatedCity,
-                linkTo(methodOn(CityController.class).getCityById(updatedCity.getId())).withSelfRel(),
+        return EntityModel.of(response,
+                linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
-                linkTo(methodOn(CityController.class).getPlacesForCity(updatedCity.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getEventsForCity(updatedCity.getId(), null,null,null,null,null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null,null,null,null,null)).withRel("events"));
     }
 
-    public CollectionModel<EntityModel<Place>> getPlacesForCity(Long cityId) {
+    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(Long cityId) {
         City city = cityRepository.findById(cityId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        List<EntityModel<Place>> places = city.getPlaces().stream()
-                .map(place -> EntityModel.of(place,
-                        linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel()))
-                .toList();
+        List<EntityModel<PlaceResponse>> places = city.getPlaces().stream()
+                .map(place -> {
+                    PlaceResponse response = PlaceResponse.fromEntity(place);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
+                })
+                .collect(Collectors.toList());
 
         return CollectionModel.of(places,
-                linkTo(methodOn(CityController.class).getPlacesForCity(cityId)).withSelfRel(),
-                linkTo(methodOn(CityController.class).getCityById(cityId)).withRel("city"));
+                linkTo(methodOn(CityController.class).getPlacesForCity(cityId)).withSelfRel());
     }
 
     public void deleteCity(Long id) {
@@ -110,7 +147,7 @@ public class CityService {
 
     public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForCity(Long cityId, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
         if (!cityRepository.existsById(cityId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvée");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found");
         }
 
         Specification<Event> spec = Specification.where(EventSpecification.hasCity(cityId));

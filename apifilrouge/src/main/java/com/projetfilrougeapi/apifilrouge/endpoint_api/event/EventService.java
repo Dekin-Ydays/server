@@ -1,9 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
-import com.projetfilrougeapi.apifilrouge.DTO.EventRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.UserSummary;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
@@ -252,18 +249,20 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getEventById(event.getId())).withRel("event"));
     }
 
-    public EntityModel<User> getOrganizerForEvent(Long id) {
+    public EntityModel<UserResponse> getOrganizerForEvent(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
 
         User organizer = event.getOrganizer();
-        organizer.setPassword("xxx");
+        if (organizer == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No organizer found for this event");
+        }
 
-        return EntityModel.of(organizer,
-                linkTo(methodOn(EventController.class).getOrganizerForEvent(id)).withSelfRel(),
+        UserResponse response = UserResponse.fromEntity(organizer);
+        return EntityModel.of(response,
+                linkTo(methodOn(UserController.class).getUserById(organizer.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
-
     public CollectionModel<EntityModel<UserSummary>> getParticipantsForEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));

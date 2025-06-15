@@ -27,8 +27,12 @@ public class Place {
 
     private String address;
 
+    private String type;
     private Double latitude;
     private Double longitude;
+
+    @Column(name= "banner_url")
+    private String bannerUrl;
 
     @Column(name = "image_url")
     private String imageUrl;
