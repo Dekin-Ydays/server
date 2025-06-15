@@ -25,9 +25,12 @@ import java.util.Arrays;
 public class SecurityConfiguration {
 
     private static final String[] WHITE_LIST_URL = {
-            "/places/*",
-            "/cities/*",
-            "/events/*"};
+            "/places/**",
+            "/cities/**",
+            "/events/**",
+            "/categories/**",
+            "/users/**"
+    };
 
     private final JwtAuthFilter jwtAuthFilter;
     @Autowired
@@ -69,15 +72,14 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("Admin", "AuthService")
 
 
-                            .requestMatchers(HttpMethod.GET, "/places/**").hasAnyRole("Admin", "AuthService", "User", "Organizer")
                             .requestMatchers(HttpMethod.GET, "/cities/**").hasAnyRole("Admin", "AuthService", "User", "Organizer")
-                            .requestMatchers(HttpMethod.GET, "/events/**").hasAnyRole("Admin", "AuthService", "Organizer")
+                            .requestMatchers(HttpMethod.GET, "/events/**").hasAnyRole("Admin", "AuthService", "Organizer","User")
                             .requestMatchers(HttpMethod.GET, "/invitations/**").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyRole("Admin", "AuthService", "Organizer", "User")
-                            .requestMatchers(HttpMethod.GET, "/orders").hasAnyRole("Admin", "AuthService", "User")
-                            .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("Admin", "AuthService", "User")
+                            .requestMatchers(HttpMethod.GET, "/orders").hasAnyRole("Admin", "AuthService")
+                            .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("Admin", "AuthService") //tickets mais faut pas récup les tikets d'une autre personne
                             .requestMatchers(HttpMethod.GET, "/reports").hasAnyRole("Admin", "AuthService")
-                            .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("Admin", "AuthService","User")
+                            .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("Admin", "AuthService","Organizer","User")
 
                             .requestMatchers(HttpMethod.PATCH, "/places").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.PATCH, "/cities").hasAnyRole("Admin", "AuthService")

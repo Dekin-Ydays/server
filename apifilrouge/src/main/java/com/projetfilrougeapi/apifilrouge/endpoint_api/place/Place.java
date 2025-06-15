@@ -27,6 +27,15 @@ public class Place {
 
     private String address;
 
+    private Double latitude;
+    private Double longitude;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
     @Column(name = "city_name")
     private String cityName;
 

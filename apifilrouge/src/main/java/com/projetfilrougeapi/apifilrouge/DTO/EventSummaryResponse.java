@@ -36,7 +36,7 @@ public class EventSummaryResponse {
         String placeName = (event.getPlace() != null) ? event.getPlace().getName() : null;
         String cityName = (event.getPlace() != null) ? event.getPlace().getCityName() : null;
         List<CategorySummary> categories = event.getCategories().stream().map(category -> new CategorySummary(category.getName(), category.getKey())).collect(Collectors.toList());
-        OrganizerSummary organizer = (event.getOrganizer() != null) ? OrganizerSummary.builder().pseudo(event.getOrganizer().getPseudo()).imageUrl(event.getOrganizer().getImageUrl()).note(event.getOrganizer().getNote()).build() : null;
+        OrganizerSummary organizer = (event.getOrganizer() != null) ? OrganizerSummary.builder().pseudo(event.getOrganizer().getPseudo()).imageUrl(event.getOrganizer().getImageUrl()).note(event.getOrganizer().getNote()).firstName(event.getOrganizer().getFirstName()).lastName(event.getOrganizer().getLastName()).build() : null;
 
         return EventSummaryResponse.builder()
                 .id(event.getId())

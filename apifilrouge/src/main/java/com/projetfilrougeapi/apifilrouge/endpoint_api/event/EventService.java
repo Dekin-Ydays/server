@@ -270,7 +270,7 @@ public class EventService {
 
         List<EntityModel<UserSummary>> participants = event.getParticipants().stream()
                 .map(user -> {
-                    UserSummary summary = new UserSummary(user.getId(), user.getFirstName(), user.getLastName(), user.getPseudo());
+                    UserSummary summary = new UserSummary(user.getId(),user.getPseudo(), user.getImageUrl());
                     return EntityModel.of(summary,
                             linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel()
                     );

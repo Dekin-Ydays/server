@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrganizerSummary {
     private String pseudo;
+    private String lastName;
+    private String firstName;
     private String imageUrl;
     private Double note;
 }

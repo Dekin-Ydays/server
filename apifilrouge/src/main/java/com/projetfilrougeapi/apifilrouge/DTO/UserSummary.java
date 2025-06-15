@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserSummary {
     private Long id;
-    private String firstName;
-    private String lastName;
     private String pseudo;
+    private String imageUrl;
 }
