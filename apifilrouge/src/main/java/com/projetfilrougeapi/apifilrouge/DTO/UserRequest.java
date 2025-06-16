@@ -20,6 +20,6 @@ public class UserRequest {
     private String imageUrl;
     private String bannerUrl;
     private Double note;
-    private List<Long> categoryIds;
+    private List<String> categoryKeys;
     private String socials;
 }

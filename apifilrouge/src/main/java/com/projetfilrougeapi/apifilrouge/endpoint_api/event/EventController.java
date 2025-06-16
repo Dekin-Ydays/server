@@ -6,6 +6,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -27,13 +29,14 @@ public class EventController {
     // Retourne une liste d"évenements avec des filtres optionnels. Si aucun paramètre n'est fourni, renvoie tous les événements sans filtre.
     @GetMapping
     public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(
+            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String[] categories
     ) {
-        return eventService.getAllEvents(minPrice, maxPrice, startDate, endDate, categories);
+        return eventService.getAllEvents(pageable, minPrice, maxPrice, startDate, endDate, categories);
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

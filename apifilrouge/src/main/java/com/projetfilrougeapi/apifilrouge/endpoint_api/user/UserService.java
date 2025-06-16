@@ -77,7 +77,7 @@ public class UserService {
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null,null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
@@ -148,10 +148,11 @@ public class UserService {
         if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
         if (request.getRole() != null) existingUser.setRole(request.getRole());
 
-        if (request.getCategoryIds() != null) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            if (categories.size() != request.getCategoryIds().size()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiple categories are invalides");
+        if (request.getCategoryKeys() != null) {
+            List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
+
+            if (categories.size() != request.getCategoryKeys().size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiples keys are invalides.");
             }
             existingUser.setCategories(categories);
         }

@@ -19,7 +19,7 @@ public class EventRequest {
     private Double price;
     private Long placeId;
     private Long cityId;
-    private List<Long> categoryIds;
+    private List<String> categoryKeys;
     private List<Long> participantIds;
     private int currentParticipants;
     private String contentHtml;

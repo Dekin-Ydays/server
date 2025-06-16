@@ -19,7 +19,7 @@ public class PlaceResponse {
     private String cityName;
     private String bannerUrl;
     private String imageUrl;
-    private String text;
+    private String content;
 
     public static PlaceResponse fromEntity(Place place) {
         long pastEvents = place.getEvents() != null ?
@@ -36,7 +36,7 @@ public class PlaceResponse {
                 .cityName(place.getCityName())
                 .bannerUrl(place.getBannerUrl())
                 .imageUrl(place.getImageUrl())
-                .text(place.getContent())
+                .content(place.getContent())
                 .build();
     }
 }

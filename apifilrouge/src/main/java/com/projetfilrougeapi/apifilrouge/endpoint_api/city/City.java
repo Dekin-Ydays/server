@@ -61,6 +61,25 @@ public class City {
             name = "city_nearest_cities",
             joinColumns = @JoinColumn(name = "city_id"),
             inverseJoinColumns = @JoinColumn(name = "nearest_city_id"))
-    @Builder.Default // par défaut initialiser a vide
+    @Builder.Default
+    @EqualsAndHashCode.Exclude // Eviter boucles infinies
     private Set<City> nearestCities = new HashSet<>();
+
+
+    public void addNearestCity(City city) {
+        if (this.equals(city)) {
+            return; // E do nothing if the city is the same
+        }
+        this.nearestCities.add(city);
+        city.getNearestCities().add(this);
+    }
+
+    /**
+     *  Delete a nearest city while assuring the symetric for the relation
+     * @param city the city to delte from the nearestCities
+     */
+    public void removeNearestCity(City city) {
+        this.nearestCities.remove(city);
+        city.getNearestCities().remove(this);
+    }
 }

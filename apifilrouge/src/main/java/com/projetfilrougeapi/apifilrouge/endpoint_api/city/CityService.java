@@ -9,6 +9,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -62,6 +63,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getAllCities()).withSelfRel());
     }
 
+    @Transactional
     public EntityModel<CityResponse> addCity(CityRequest request) {
         City city = City.builder()
                 .name(request.getName())
@@ -76,13 +78,19 @@ public class CityService {
                 .content(request.getContent())
                 .build();
 
-        if (request.getNearestCityIds() != null && !request.getNearestCityIds().isEmpty()) {
-            Set<City> nearest = new HashSet<>(cityRepository.findAllById(request.getNearestCityIds()));
-            city.setNearestCities(nearest);
-        }
-
+        // we save to get the id of the city
         City savedCity = cityRepository.save(city);
-        CityResponse response = CityResponse.fromEntity(savedCity);
+
+        // Establishment of the relations
+        if (request.getNearestCityIds() != null && !request.getNearestCityIds().isEmpty()) {
+            List<City> nearestCitiesToAdd = cityRepository.findAllById(request.getNearestCityIds());
+            for (City nearestCity : nearestCitiesToAdd) {
+                savedCity.addNearestCity(nearestCity);
+            }
+        }
+        // add of the junctions in the table
+        City finalSavedCity = cityRepository.save(savedCity);
+        CityResponse response = CityResponse.fromEntity(finalSavedCity);
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
@@ -91,6 +99,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
+    @Transactional
     public EntityModel<CityResponse> updateCity(Long id, CityRequest request) {
         City existingCity = cityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -106,10 +115,16 @@ public class CityService {
         if (request.getImageUrl() != null) existingCity.setImageUrl(request.getImageUrl());
         if (request.getContent() != null) existingCity.setContent(request.getContent());
 
-
         if (request.getNearestCityIds() != null) {
-            Set<City> nearest = new HashSet<>(cityRepository.findAllById(request.getNearestCityIds()));
-            existingCity.setNearestCities(nearest);
+            // Delete of previous relations
+            // Itérate on a copie to dodge ConcurrentModificationException
+            new HashSet<>(existingCity.getNearestCities()).forEach(existingCity::removeNearestCity);
+
+            // Adding of the new relations
+            List<City> newNearestCities = cityRepository.findAllById(request.getNearestCityIds());
+            for (City newNearest : newNearestCities) {
+                existingCity.addNearestCity(newNearest);
+            }
         }
 
         City updatedCity = cityRepository.save(existingCity);

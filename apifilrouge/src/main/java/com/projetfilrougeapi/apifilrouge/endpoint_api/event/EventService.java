@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
+import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
@@ -15,7 +16,10 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -40,16 +44,20 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final PlaceRepository placeRepository;
     private final CityRepository cityRepository;
+    private final PagedResourcesAssembler pagedResourcesAssembler;
+    private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository) {
+    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.placeRepository = placeRepository;
         this.cityRepository = cityRepository;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
     }
 
-    public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
 
         Specification<Event> spec = Specification.where(null);
 
@@ -66,16 +74,12 @@ public class EventService {
         }
 
         // transforme en EventResponse
-        List<EntityModel<EventSummaryResponse>> events = eventRepository.findAll(spec).stream()
-                .map(event -> {
-                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel());
-                })
-                .collect(Collectors.toList());
+        Page<Event> events = eventRepository.findAll(spec, pageable);
 
-        return CollectionModel.of(events,
-                linkTo(methodOn(EventController.class).getAllEvents(minPrice, maxPrice, startDate, endDate, categories)).withSelfRel());
+        // 3. On convertit la Page<Event> en une Page<EventSummaryResponse>.
+        Page<EventSummaryResponse> eventsDto = events.map(EventSummaryResponse::fromEntity);
+
+        return pagedResourcesAssembler.toModel(eventsDto, eventSummaryResponseAssembler);
     }
 
     public EntityModel<EventResponse> createEvent(EventRequest request) {
@@ -106,8 +110,12 @@ public class EventService {
         event.setCity(city);
 
         // Catégories
-        if (request.getCategoryIds() != null) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
+        if (request.getCategoryKeys() != null && !request.getCategoryKeys().isEmpty()) {
+            List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
+
+            if (categories.size() != request.getCategoryKeys().size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une ou plusieurs clés de catégorie sont invalides.");
+            }
             event.setCategories(new HashSet<>(categories));
         }
 
@@ -118,7 +126,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null,null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
@@ -180,7 +188,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -311,11 +319,13 @@ public class EventService {
         }
 
         // catégories
-        if (request.getCategoryIds() != null) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            if (categories.size() != request.getCategoryIds().size()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une ou plusieurs catégories sont invalides.");
+        if (request.getCategoryKeys() != null && !request.getCategoryKeys().isEmpty()) {
+            List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
+
+            if (categories.size() != request.getCategoryKeys().size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiple keys of categories are invalids.");
             }
+
             event.setCategories(new HashSet<>(categories));
         }
 
@@ -337,7 +347,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null,null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),

@@ -1,5 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,7 +24,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     @Override
     @EntityGraph(value = "Event.withDetails", type = EntityGraph.EntityGraphType.FETCH)
-    List<Event> findAll(Specification<Event> spec);
+    Page<Event> findAll(Specification<Event> spec, Pageable pageable);
 
     /**
      * Get all the events for a city
