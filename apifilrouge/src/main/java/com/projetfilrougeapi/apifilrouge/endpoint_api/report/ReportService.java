@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.report;
 import com.projetfilrougeapi.apifilrouge.DTO.ReportRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -17,19 +18,29 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class ReportService {
     private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
+    private final ReportManagerService reportManagerService;
 
-    public ReportService(ReportRepository reportRepository) {
+    public ReportService(ReportRepository reportRepository, UserRepository userRepository, ReportManagerService reportManagerService) {
         this.reportRepository = reportRepository;
+        this.userRepository = userRepository;
+        this.reportManagerService = reportManagerService;
     }
 
 
     public EntityModel<Report> createReport(ReportRequest report) {
+        User sender = userRepository.findById(report.getSenderUserId())
+                .orElseThrow(() -> new RuntimeException("Sender user not found with id: " + report.getSenderUserId()));
+        User reportedUser = userRepository.findById(report.getReportedUserId())
+                .orElseThrow(() -> new RuntimeException("Reported user not found with id: " + report.getReportedUserId()));
+
+        reportManagerService.banOrNot(reportedUser);
 
         Report newReport = Report.builder()
                 .reportType(ReportType.valueOf(report.getReportType()))
                 .description(report.getDescription())
-                .senderUser(User.builder().id(report.getSenderUserId()).build())
-                .reportedUser(User.builder().id(report.getReportedUserId()).build())
+                .senderUser(sender)
+                .reportedUser(reportedUser)
                 .build();
 
         reportRepository.save(newReport);

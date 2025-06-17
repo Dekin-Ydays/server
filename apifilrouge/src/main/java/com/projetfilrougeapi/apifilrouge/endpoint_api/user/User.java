@@ -5,6 +5,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
 @Entity
 @Table(name = "_user")
 public class User implements UserDetails {
@@ -59,6 +61,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    private int countReportsReceived=0;
+
+    private boolean isBanned = false;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -86,6 +92,14 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "participants")
     @JsonIgnoreProperties("participants")
     private List<Event> participatedEvents = new ArrayList<>();
+
+    @OneToMany(mappedBy = "senderUser", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reports-sent")
+    private List<Report> reportsSent;
+
+    @OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reports-received")
+    private List<Report> reportsReceived;
 
     // === Spring Security methods ===
 

@@ -44,7 +44,12 @@ public enum Role {
                     ORGANIZER_UPDATE,
                     ORGANIZER_DELETE
             )
+    ),
+    Banned(
+            Collections.emptySet()
     );
+
+
 
     @Getter
     private final Set<Permission> permissions;
