@@ -52,20 +52,22 @@ public class CategoryService {
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
 
-    public EntityModel<Category> updateCategory(Long id, Category category) {
+    public EntityModel<Category> updateCategory(Long id, Category categoryRequest) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (existingCategory.getName() != null && !existingCategory.getName().equals(category.getName())) {
-            existingCategory.setName(category.getName());
-        }
-        if (existingCategory.getDescription() != null && !existingCategory.getDescription().equals(category.getDescription())) {
-            existingCategory.setDescription(category.getDescription());
+        if (categoryRequest.getName() != null) {
+            existingCategory.setName(categoryRequest.getName());
         }
 
-        if(existingCategory.getKey() != null && !existingCategory.getKey().equals((category.getKey()))){
-            existingCategory.setKey(category.getKey());
+        if (categoryRequest.getDescription() != null) {
+            existingCategory.setDescription(categoryRequest.getDescription());
         }
+
+        if (categoryRequest.getKey() != null) {
+            existingCategory.setKey(categoryRequest.getKey());
+        }
+
         Category updatedCategory = categoryRepository.save(existingCategory);
 
         return EntityModel.of(updatedCategory,
