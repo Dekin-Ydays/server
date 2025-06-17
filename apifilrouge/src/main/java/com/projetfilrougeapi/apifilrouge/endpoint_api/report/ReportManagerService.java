@@ -1,6 +1,5 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.report;
 
-import com.projetfilrougeapi.apifilrouge.DTO.ReportRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
@@ -9,16 +8,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportManagerService {
     private final UserRepository userRepository;
-    private final ReportRepository reportRepository;
 
-    public ReportManagerService(UserRepository userRepository, ReportRepository reportRepository) {
+    public ReportManagerService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.reportRepository = reportRepository;
     }
 
 
     public Boolean banOrNot(User user) {
-        if (user.getReportsReceived().size()>10) {
+        if (user.getReportsReceived().size()>10 && user.getRole()!=Role.Admin && user.getRole()!=Role.AuthService) {
             user.setBanned(true);
             user.setRole(Role.Banned);
             userRepository.save(user);

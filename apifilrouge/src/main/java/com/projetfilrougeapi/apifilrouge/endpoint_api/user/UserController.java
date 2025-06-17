@@ -1,11 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
-import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import org.springframework.hateoas.CollectionModel;
