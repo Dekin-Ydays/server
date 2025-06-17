@@ -29,9 +29,11 @@ public class SecurityConfiguration {
             "/cities/**",
             "/events/**",
             "/categories",
-            "/users/**"
+            "/users/**",
+            "/v3/api-docs/**"
     };
 
+    @Autowired
     private final JwtAuthFilter jwtAuthFilter;
     @Autowired
     private AuthenticationProvider authenticationProvider;
