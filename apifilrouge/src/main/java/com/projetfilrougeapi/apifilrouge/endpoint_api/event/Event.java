@@ -49,6 +49,7 @@ public class Event {
     private Integer maxCustomers;
     @Column(name = "is_trending")
     private Boolean isTrending;
+    private Boolean isFirstEdition;
     private Double price;
     @Enumerated(EnumType.STRING)
     private EventStatus status;

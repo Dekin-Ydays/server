@@ -32,7 +32,7 @@ public class InvitationService {
 
         return CollectionModel.of(invitations,
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<Invitation> getInvitationById(Long id) {

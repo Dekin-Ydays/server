@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,19 +39,32 @@ public class PlaceService {
         this.eventRepository = eventRepository;
     }
 
-    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces() {
-        List<EntityModel<PlaceResponse>> places = placeRepository.findAll().stream()
-                .map(place -> {
-                    PlaceResponse response = PlaceResponse.fromEntity(place);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
-                })
-                .collect(Collectors.toList());
+    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String name) {
+        if (name != null && !name.isEmpty()) {
+            // Search for a specific place by name
+            Place place = placeRepository.findByName(name)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with name: " + name));
 
-        return CollectionModel.of(places,
-                linkTo(methodOn(PlaceController.class).getAllPlaces()).withSelfRel(),
-                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null)).withRel("events"));
+            EntityModel<PlaceResponse> placeModel = EntityModel.of(PlaceResponse.fromEntity(place),
+                    linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
+
+            // Return a collection containing the single result
+            return CollectionModel.of(Collections.singletonList(placeModel),
+                    linkTo(methodOn(PlaceController.class).findPlaces(name)).withSelfRel());
+
+        } else {
+            // Return the list of all places
+            List<EntityModel<PlaceResponse>> places = placeRepository.findAll().stream()
+                    .map(place -> {
+                        PlaceResponse response = PlaceResponse.fromEntity(place);
+                        return EntityModel.of(response,
+                                linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
+                    })
+                    .collect(Collectors.toList());
+
+            return CollectionModel.of(places,
+                    linkTo(methodOn(PlaceController.class).findPlaces(null)).withSelfRel());
+        }
     }
 
     public EntityModel<PlaceResponse> getPlaceById(Long id) {
@@ -61,7 +75,7 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
     }
@@ -122,7 +136,7 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(),null , null, null, null,null)).withRel("events"));
     }
@@ -154,7 +168,7 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces()).withRel("places"),
+                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(),null , null, null, null,null)).withRel("events"));
     }

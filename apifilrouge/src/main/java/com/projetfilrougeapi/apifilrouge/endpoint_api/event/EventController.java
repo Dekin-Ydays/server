@@ -5,7 +5,6 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,9 +33,13 @@ public class EventController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String[] categories
+            @RequestParam(required = false) String[] categories,
+            @RequestParam(required = false) String[] cities,
+            @RequestParam(required = false) String[] places
+
+
     ) {
-        return eventService.getAllEvents(pageable, minPrice, maxPrice, startDate, endDate, categories);
+        return eventService.getAllEvents(pageable, minPrice, maxPrice, startDate, endDate, categories, cities, places);
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

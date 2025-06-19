@@ -26,11 +26,11 @@ public class CityController {
     public EntityModel<CityResponse> getCityById(@PathVariable Long id) {
         return cityService.getCityById(id);
     }
-    @GetMapping
-    public CollectionModel<EntityModel<CityResponse>> getAllCities() {
-        return cityService.getAllCities();
-    }
 
+    @GetMapping
+    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(required = false) String name, @RequestParam(required = false) String region) {
+        return cityService.findCities(name, region);
+    }
     @PostMapping
     public EntityModel<CityResponse> addCity(@RequestBody CityRequest city) {
         return cityService.addCity(city);

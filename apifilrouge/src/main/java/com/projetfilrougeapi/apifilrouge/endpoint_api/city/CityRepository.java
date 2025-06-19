@@ -4,10 +4,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
 @Repository
 public interface CityRepository extends JpaRepository<City, Long>{
     Optional<City> findById(Long id);
+
+    /**
+     * Get the city by the name, optional because the city could not exist
+     * @param name
+     * @return
+     */
+    Optional<City> findByName(String name);
+
+    List<City> findByRegion(String region);
 }

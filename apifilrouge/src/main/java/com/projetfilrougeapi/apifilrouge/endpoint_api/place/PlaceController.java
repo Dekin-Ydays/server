@@ -28,8 +28,8 @@ public class PlaceController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces() {
-        return placeService.getAllPlaces();
+    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(@RequestParam(required = false) String name) {
+        return placeService.findPlaces(name);
     }
 
     @GetMapping("/{id}")

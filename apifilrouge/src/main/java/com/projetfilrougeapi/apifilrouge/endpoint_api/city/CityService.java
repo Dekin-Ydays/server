@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,13 +46,40 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
                 linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null)).withRel("events"));
     }
 
-    public CollectionModel<EntityModel<CityResponse>> getAllCities() {
-        List<EntityModel<CityResponse>> cities = cityRepository.findAll().stream()
+    public CollectionModel<EntityModel<CityResponse>> findCities(String name, String region) {
+
+        // On cherche une ville par son nom.
+        if (name != null && !name.isEmpty()) {
+            City city = cityRepository.findByName(name)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune ville trouvée avec le nom : " + name));
+
+            CityResponse response = CityResponse.fromEntity(city);
+
+            // on construit un EntityModel avec tous les liens utiles, comme pour getById.
+            EntityModel<CityResponse> cityModel = EntityModel.of(response,
+                    linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
+                    linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
+                    linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null)).withRel("events"));
+
+            // on retourne une collection contenant ce seul élément enrichi.
+            return CollectionModel.of(Collections.singletonList(cityModel),
+                    linkTo(methodOn(CityController.class).findCities(name, null)).withSelfRel());
+        }
+
+        // On cherche par région ou on liste tout.
+        List<City> citiesToReturn;
+        if (region != null && !region.isEmpty()) {
+            citiesToReturn = cityRepository.findByRegion(region);
+        } else {
+            citiesToReturn = cityRepository.findAll();
+        }
+
+        List<EntityModel<CityResponse>> cityModels = citiesToReturn.stream()
                 .map(city -> {
                     CityResponse response = CityResponse.fromEntity(city);
                     return EntityModel.of(response,
@@ -59,8 +87,8 @@ public class CityService {
                 })
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(cities,
-                linkTo(methodOn(CityController.class).getAllCities()).withSelfRel());
+        return CollectionModel.of(cityModels,
+                linkTo(methodOn(CityController.class).findCities(null, region)).withSelfRel());
     }
 
     @Transactional
@@ -94,7 +122,7 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
                 linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null)).withRel("events"));
     }
@@ -132,9 +160,9 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).getAllCities()).withRel("cities"),
+                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null,null,null,null,null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
     public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(Long cityId) {
