@@ -23,6 +23,7 @@ public class EventSummaryResponse {
     private String address;
     private Integer maxCustomers;
     private Boolean isTrending;
+    private Boolean isFirstEdition;
     private Double price;
     private EventStatus status;
     private String imageUrl;
@@ -46,6 +47,7 @@ public class EventSummaryResponse {
                 .address(event.getAddress())
                 .maxCustomers(event.getMaxCustomers())
                 .isTrending(event.getIsTrending())
+                .isFirstEdition(event.getIsFirstEdition())
                 .price(event.getPrice())
                 .status(event.getStatus())
                 .imageUrl(event.getImageUrl())

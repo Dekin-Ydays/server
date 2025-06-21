@@ -55,7 +55,7 @@ public class CityService {
 
         // On cherche une ville par son nom.
         if (name != null && !name.isEmpty()) {
-            City city = cityRepository.findByName(name)
+            City city = cityRepository.findByNameIgnoreCase(name)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune ville trouvée avec le nom : " + name));
 
             CityResponse response = CityResponse.fromEntity(city);
@@ -74,7 +74,7 @@ public class CityService {
         // On cherche par région ou on liste tout.
         List<City> citiesToReturn;
         if (region != null && !region.isEmpty()) {
-            citiesToReturn = cityRepository.findByRegion(region);
+            citiesToReturn = cityRepository.findByRegionIgnoreCase(region);
         } else {
             citiesToReturn = cityRepository.findAll();
         }

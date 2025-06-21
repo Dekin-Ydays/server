@@ -17,7 +17,7 @@ public interface CityRepository extends JpaRepository<City, Long>{
      * @param name
      * @return
      */
-    Optional<City> findByName(String name);
+    Optional<City> findByNameIgnoreCase(String name);
 
-    List<City> findByRegion(String region);
+    List<City> findByRegionIgnoreCase(String region);
 }

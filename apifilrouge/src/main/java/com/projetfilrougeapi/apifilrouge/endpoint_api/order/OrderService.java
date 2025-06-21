@@ -1,9 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.TicketResquest;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
+import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
@@ -68,7 +66,6 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
 
         Order order = new Order();
-        //order.setUser((User) user); // Assuming user is of type User, adjust if necessary
         order.setUser(user);
         order.setTotalPrice(request.getTotalPrice());
         order.setEvent((Event) event);
@@ -154,7 +151,7 @@ public class OrderService {
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
     }
 
-    public EntityModel<Ticket> addTicketToOrder(Long id, TicketResquest ticket) {
+    public EntityModel<Ticket> addTicketToOrder(Long id, TicketRequest ticket) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
@@ -162,7 +159,7 @@ public class OrderService {
         newTicket.setName(ticket.getName());
         newTicket.setLastName(ticket.getLastName());
         newTicket.setDescription(ticket.getDescription());
-        newTicket.setUnit_price(ticket.getUnitPrice());
+        newTicket.setUnitPrice(ticket.getUnitPrice());
         newTicket.setOrder(order);
 
         Ticket savedTicket = ticketRepository.save(newTicket);

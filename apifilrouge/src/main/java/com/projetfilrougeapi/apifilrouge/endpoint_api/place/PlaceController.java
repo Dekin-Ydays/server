@@ -7,6 +7,7 @@ import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -54,13 +55,13 @@ public class PlaceController {
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<PlaceResponse> addPlace(@RequestBody PlaceRequest placeRequest) {
+    public EntityModel<PlaceResponse> addPlace(@Valid @RequestBody PlaceRequest placeRequest) {
         return placeService.addPlace(placeRequest);
     }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EntityModel<PlaceResponse> updatePlace(@PathVariable Long id, @RequestBody PlaceRequest placeRequest) {
+    public EntityModel<PlaceResponse> updatePlace(@PathVariable Long id, @Valid @RequestBody PlaceRequest placeRequest) {
         return placeService.updatePlace(id, placeRequest);
     }
 

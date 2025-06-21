@@ -5,6 +5,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -43,7 +44,7 @@ public class EventController {
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<EventResponse> createEvent(@RequestBody EventRequest request) {
+    public EntityModel<EventResponse> createEvent(@Valid @RequestBody EventRequest request) {
         return eventService.createEvent(request);
     }
 
@@ -82,14 +83,28 @@ public class EventController {
     public CollectionModel<EntityModel<UserSummary>> getParticipantsForEvent(@PathVariable Long eventId) {
         return eventService.getParticipantsForEvent(eventId);
     }
+    /**
+     * It accepts a 'limit' parameter to define the number of results.
+     * @param city The name of the city to filter the results.
+     * @param limit The number of events to display (default is 10).
+     * @return A collection of events.
+     */
+    @GetMapping("/first-editions")
+    public CollectionModel<EntityModel<EventSummaryResponse>> getFirstEditionEvents(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String place,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return eventService.getFirstEditionEvents(city,place, limit);
+    }
 
     @PatchMapping("/{id}")
-    public EntityModel<EventResponse> patchEvent(@PathVariable Long id, @RequestBody EventRequest request) {
+    public EntityModel<EventResponse> patchEvent(@PathVariable Long id, @Valid @RequestBody EventRequest request) {
         return eventService.updateEvent(id, request);
     }
 
     @PostMapping("/{eventId}/participants")
-    public EntityModel<EventSummaryResponse> addParticipants(@PathVariable Long eventId, @RequestBody ParticipantListRequest request) {
+    public EntityModel<EventSummaryResponse> addParticipants(@PathVariable Long eventId, @Valid @RequestBody ParticipantListRequest request) {
         return eventService.addParticipantsToEvent(eventId, request.getUserIds());
     }
 

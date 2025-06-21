@@ -6,6 +6,7 @@ import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -32,11 +33,11 @@ public class CityController {
         return cityService.findCities(name, region);
     }
     @PostMapping
-    public EntityModel<CityResponse> addCity(@RequestBody CityRequest city) {
+    public EntityModel<CityResponse> addCity(@Valid @RequestBody CityRequest city) {
         return cityService.addCity(city);
     }
     @PatchMapping("/{id}")
-    public EntityModel<CityResponse> updateCity(@PathVariable Long id, @RequestBody CityRequest city) {
+    public EntityModel<CityResponse> updateCity(@PathVariable Long id, @Valid @RequestBody CityRequest city) {
         return cityService.updateCity(id, city);
     }
     @GetMapping("/{id}/places")

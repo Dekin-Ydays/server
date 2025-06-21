@@ -17,7 +17,9 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -29,9 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -106,6 +106,17 @@ public class EventService {
         event.setPrice(request.getPrice());
         event.setContentHtml(request.getContentHtml());
         event.setImageUrl(request.getImageUrl());
+
+        boolean alreadyHasEventsInCity = eventRepository.existsByOrganizerIdAndCityId(
+                organizer.getId(),
+                request.getCityId()
+        );
+        // first_edition
+        if (alreadyHasEventsInCity) {
+            event.setIsFirstEdition(false);
+        } else {
+            event.setIsFirstEdition(true);
+        }
         // Place
         Place place = placeRepository.findById(request.getPlaceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));
@@ -141,6 +152,41 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getId())).withRel("categories"),
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(savedEvent.getId())).withRel("participants"));
     }
+    /**
+     * Retrieves a list of "first edition" events with a fixed limit,
+     * The results are shuffled to provide a random order.
+     * @param city Optional name of the city to filter results.
+     * @param place Optional name of the place to filter results.
+     * @param limit The maximum number of events to return.
+     * @return A CollectionModel of EventSummaryResponse DTOs.
+     */
+    public CollectionModel<EntityModel<EventSummaryResponse>> getFirstEditionEvents(String city, String place, int limit) {
+        Specification<Event> spec = EventSpecification.isFirstEdition();
+
+        if (city != null && !city.isEmpty()) {
+            spec = spec.and(EventSpecification.hasCityNames(new String[]{city}));
+        }
+        if (place != null && !place.isEmpty()) {
+            spec = spec.and(EventSpecification.hasPlaceNames(new String[]{place}));
+        }
+
+        // L'optimisation @EntityGraph garantit que cela se fait en une seule requête.
+        List<Event> allMatchingEvents = eventRepository.findAll(spec);
+
+        // random shuffle
+        Collections.shuffle(allMatchingEvents);
+
+        // Keep the limit
+        List<EntityModel<EventSummaryResponse>> eventModels = allMatchingEvents.stream()
+                .limit(limit)
+                .map(EventSummaryResponse::fromEntity)
+                .map(eventSummaryResponseAssembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(eventModels,
+                linkTo(methodOn(EventController.class).getFirstEditionEvents(city, place, limit)).withSelfRel());
+    }
+
 
     public EntityModel<EventSummaryResponse> addParticipantsToEvent(Long eventId, List<Long> userIds) {
         Event event = eventRepository.findById(eventId)

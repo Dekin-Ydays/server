@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.report;
 
 import com.projetfilrougeapi.apifilrouge.DTO.ReportRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,7 @@ public class ReportController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Report> createReport(@RequestBody ReportRequest report) {
+    public EntityModel<Report> createReport(@Valid @RequestBody ReportRequest report) {
         return reportService.createReport(report);
 
     }
@@ -34,12 +35,12 @@ public class ReportController {
         return reportService.getAllReports();
     }
 
-    @GetMapping("/{id}/senderUser")
+    @GetMapping("/{id}/sender-user")
     public EntityModel<User> getSenderUserByReportId(@PathVariable Long id) {
         return reportService.getSenderUserByReportId(id);
     }
 
-    @GetMapping("/{id}/reportedUser")
+    @GetMapping("/{id}/reported-user")
     public EntityModel<User> getReportedUserByReportId(@PathVariable Long id) {
         return reportService.getReportedUserByReportId(id);
     }
