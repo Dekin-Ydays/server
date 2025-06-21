@@ -8,6 +8,9 @@ import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class EventSpecification {
 
@@ -58,6 +61,8 @@ public class EventSpecification {
             return categoryJoin.get("key").in((Object[]) categoryKeys);
         };
     }
+
+
     /**
      * Filtre les événements qui ont lieu dans une ou plusieurs villes spécifiques, par leur nom.
      * @param cityNames Un tableau de noms de villes à rechercher.
@@ -69,7 +74,14 @@ public class EventSpecification {
                 return builder.conjunction();
             }
             Join<Event, City> cityJoin = root.join("city");
-            return cityJoin.get("name").in((Object[]) cityNames);
+
+            // On convertit les noms de villes de la requête en minuscules
+            List<String> lowerCaseCityNames = Arrays.stream(cityNames)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toList());
+
+            // On compare avec le nom de la ville en base de données, également en minuscules
+            return builder.lower(cityJoin.get("name")).in(lowerCaseCityNames);
         };
     }
 
@@ -84,7 +96,12 @@ public class EventSpecification {
                 return builder.conjunction();
             }
             Join<Event, Place> placeJoin = root.join("place");
-            return placeJoin.get("name").in((Object[]) placeNames);
+
+            List<String> lowerCasePlaceNames = Arrays.stream(placeNames)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toList());
+
+            return builder.lower(placeJoin.get("name")).in(lowerCasePlaceNames);
         };
     }
 
@@ -114,5 +131,13 @@ public class EventSpecification {
             }
             return builder.equal(root.get("city").get("id"), cityId);
         };
+    }
+
+    /**
+     * Filtre les événements qui sont marqués comme "première édition".
+     * @return Une Specification pour JPA qui vérifie si le champ isFirstEdition est à true.
+     */
+    public static Specification<Event> isFirstEdition() {
+        return (root, query, builder) -> builder.isTrue(root.get("isFirstEdition"));
     }
 }

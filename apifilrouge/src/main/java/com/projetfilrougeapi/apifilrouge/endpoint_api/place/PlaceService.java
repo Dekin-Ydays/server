@@ -42,7 +42,7 @@ public class PlaceService {
     public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String name) {
         if (name != null && !name.isEmpty()) {
             // Search for a specific place by name
-            Place place = placeRepository.findByName(name)
+            Place place = placeRepository.findByNameIgnoreCase(name)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with name: " + name));
 
             EntityModel<PlaceResponse> placeModel = EntityModel.of(PlaceResponse.fromEntity(place),
@@ -114,6 +114,14 @@ public class PlaceService {
     }
 
     public EntityModel<PlaceResponse> addPlace(PlaceRequest request) {
+        if (placeRepository.existsByNameAndAddressAndLatitudeAndLongitude(
+                request.getName(),
+                request.getAddress(),
+                request.getLatitude(),
+                request.getLongitude()
+        )) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A place with this name at this exact address already exists.");
+        }
         City city = cityRepository.findById(request.getCityId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvée"));
 
@@ -138,13 +146,25 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(),null , null, null, null,null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<PlaceResponse> updatePlace(Long id, PlaceRequest request) {
+
         Place existingPlace = placeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));
-
+        if (request.getName() != null && !request.getName().equals(existingPlace.getName())) {
+            // if the name change we verify that it will not create an identic entry
+            if (placeRepository.existsByNameAndAddressAndLatitudeAndLongitude(
+                    request.getName(),
+                    existingPlace.getAddress(),
+                    existingPlace.getLatitude(),
+                    existingPlace.getLongitude()
+            )) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "A place with this name at this exact address already exists.");
+            }
+            existingPlace.setName(request.getName());
+        }
         if (request.getName() != null) existingPlace.setName(request.getName());
         if (request.getCityName() != null) existingPlace.setCityName(request.getCityName());
         if (request.getType() != null) existingPlace.setType(request.getType());
@@ -170,7 +190,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(),null , null, null, null,null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
     public void deletePlace(Long id) {

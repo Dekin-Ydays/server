@@ -20,7 +20,7 @@ public class Place {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "place_id", nullable = false, updatable = false, unique = true)
     private Long id;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     private String description;

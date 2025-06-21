@@ -75,8 +75,8 @@ public class City {
     }
 
     /**
-     *  Delete a nearest city while assuring the symetric for the relation
-     * @param city the city to delte from the nearestCities
+     *  Delete the nearest city while assuring the symetric for the relation
+     * @param city the city to delete from the nearestCities
      */
     public void removeNearestCity(City city) {
         this.nearestCities.remove(city);

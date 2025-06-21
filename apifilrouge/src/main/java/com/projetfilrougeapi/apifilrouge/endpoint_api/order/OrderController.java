@@ -1,10 +1,11 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.TicketResquest;
+import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +51,7 @@ public class OrderController {
         return orderService.getTicketsByOrderId(id);}
 
     @PostMapping("/{id}/tickets")
-    public EntityModel<Ticket> addTicketToOrder(@PathVariable Long id, @RequestBody TicketResquest ticket) {
+    public EntityModel<Ticket> addTicketToOrder(@PathVariable Long id, @Valid @RequestBody TicketRequest ticket) {
         return orderService.addTicketToOrder(id, ticket);
     }
 

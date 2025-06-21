@@ -6,6 +6,6 @@ import java.util.Optional;
 
 public interface PlaceRepository extends JpaRepository<Place, Long> {
     Optional<Place> findById(Long id);
-    Optional<Place> findByName(String name);
-    boolean existsByName(String name);
+    Optional<Place> findByNameIgnoreCase(String name);
+    boolean existsByNameAndAddressAndLatitudeAndLongitude(String name, String address, Double latitude, Double longitude);
 }
