@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,6 +25,7 @@ public class Review {
 
     private String content;
     private Double rating;
+    Date createdAt = new Date();
 
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)

@@ -37,7 +37,7 @@ public class ReviewService {
         Review savedReview = reviewRepository.save(review);
 
         return EntityModel.of(savedReview,
-                linkTo(methodOn(ReviewController.class).getAllReview()).withSelfRel(),
+                linkTo(methodOn(ReviewController.class).getReviewById(savedReview.getReview_id())).withSelfRel(),
                 linkTo(methodOn(ReviewController.class).getAllReview()).withRel("reviews"),
                 linkTo(methodOn(UserController.class).getUserById(review.getSenderReviewUser().getId())).withRel("senderUser"),
                 linkTo(methodOn(UserController.class).getUserById(review.getReviewedUser().getId())).withRel("reviewedUser")
@@ -47,7 +47,7 @@ public class ReviewService {
     public CollectionModel<EntityModel<Review>> getAllReview() {
         var reviews = reviewRepository.findAll().stream()
                 .map(review -> EntityModel.of(review,
-                        linkTo(methodOn(ReviewController.class).getAllReview()).withSelfRel(),
+                        linkTo(methodOn(ReviewController.class).getReviewById(review.getReview_id())).withSelfRel(),
                         linkTo(methodOn(UserController.class).getUserById(review.getSenderReviewUser().getId())).withRel("senderUser"),
                         linkTo(methodOn(UserController.class).getUserById(review.getReviewedUser().getId())).withRel("reviewedUser")))
                 .toList();
