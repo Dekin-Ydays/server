@@ -1,13 +1,18 @@
 package com.projetfilrougeapi.apifilrouge.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Configuration
@@ -96,4 +101,37 @@ public class InitDB {
             }
         };
     }
+
+    /*@Bean
+    CommandLineRunner initEvent (EventRepository eventRepository,
+                                 UserRepository userRepository,
+                                 CategoryRepository categoryRepository) {
+        return args -> {
+            if (eventRepository.count() == 0) {
+                try {
+                    // Charger le fichier events.json depuis les ressources
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    InputStream inputStream = getClass().getResourceAsStream("/json/events.json");
+                    if (inputStream == null) {
+                        System.err.println("Fichier events.json non trouvé dans les ressources");
+                        return;
+                    }
+
+                    // Convertir le JSON en liste d'événements
+                    List<Event> events = objectMapper.readValue(
+                            inputStream,
+                            new TypeReference<List<Event>>() {}
+                    );
+
+                    // Sauvegarder tous les événements
+                    eventRepository.saveAll(events);
+                    System.out.println(events.size() + " événements chargés avec succès");
+                } catch (Exception e) {
+                    System.err.println("Erreur lors du chargement des événements: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        };
+    }*/
+
 }

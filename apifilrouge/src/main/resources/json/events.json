@@ -1,0 +1,274 @@
+{
+  "events": [
+    {
+      "date": "2025-06-20T19:00:00Z",
+      "name": "Concert Rock Symphonique",
+      "description": "Un concert unique mêlant rock et musique classique",
+      "address": "Palais des Congrès, Paris",
+      "maxCustomers": 2500,
+      "currentParticipants": 1200,
+      "price": 45.0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "musique", "name": "Musique", "isTrending": true },
+        { "key": "concert", "name": "Concert", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<h2>Une odyssée musicale inédite : le Concert Rock Symphonique</h2><p>Le Concert Rock Symphonique est bien plus qu'un simple spectacle, c'est une véritable immersion sensorielle où deux univers musicaux se rencontrent pour créer une alchimie époustouflante. Conçu par le producteur renommé Elena Rossi, ce projet unique associe la puissance brute des riffs électriques de la guitare rock à la finesse et à la richesse harmonique d'un orchestre symphonique de 80 musiciens.</p>",
+      "_links": { "self": { "href": "/events/1" } }
+    },
+    {
+      "date": "2025-06-22T14:00:00Z",
+      "name": "Atelier Cuisine Italienne",
+      "description": "Apprenez à cuisiner de vrais plats italiens",
+      "address": "École de Cuisine Milano, Lyon",
+      "maxCustomers": 20,
+      "currentParticipants": 15,
+      "price": 85.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "gastronomie", "name": "Gastronomie", "isTrending": true },
+        { "key": "cuisine", "name": "Cuisine", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "maria_gastro", "name": "Maria Rodriguez" },
+      "contentHtml": "<p>Atelier de cuisine italienne</p>",
+      "_links": { "self": { "href": "/events/2" } }
+    },
+    {
+      "date": "2025-07-12T10:00:00Z",
+      "name": "Atelier de Poterie",
+      "description": "Initiation à la poterie",
+      "address": "Atelier Terre et Feu, Strasbourg",
+      "maxCustomers": 12,
+      "currentParticipants": 8,
+      "price": 45.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "art", "name": "Art", "isTrending": true },
+        { "key": "atelier", "name": "Atelier", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<p>Atelier de poterie pour débutants</p>",
+      "_links": { "self": { "href": "/events/10" } }
+    },
+    {
+      "date": "2025-07-15T20:00:00Z",
+      "name": "Spectacle de Danse Contemporaine",
+      "description": "Performance artistique de danse moderne",
+      "address": "Opéra de Lille, Lille",
+      "maxCustomers": 1500,
+      "currentParticipants": 950,
+      "price": 40.0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "danse", "name": "Danse", "isTrending": true },
+        { "key": "spectacle", "name": "Spectacle", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<p>Spectacle de danse contemporaine</p>",
+      "_links": { "self": { "href": "/events/11" } }
+    },
+    {
+      "date": "2025-07-20T11:00:00Z",
+      "name": "Marché Bio et Local",
+      "description": "Marché de producteurs locaux et bio",
+      "address": "Place Bellecour, Lyon",
+      "maxCustomers": 2000,
+      "currentParticipants": 1200,
+      "price": 0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "bien-etre", "name": "Bien-être", "isTrending": true },
+        { "key": "bio", "name": "Bio", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "tom_nature", "name": "Thomas Johnson" },
+      "contentHtml": "<p>Marché de producteurs bio</p>",
+      "_links": { "self": { "href": "/events/12" } }
+    },
+    {
+      "date": "2025-07-22T19:00:00Z",
+      "name": "Concert de Musique Classique",
+      "description": "Orchestre symphonique de Bordeaux",
+      "address": "Auditorium de Bordeaux, Bordeaux",
+      "maxCustomers": 2000,
+      "currentParticipants": 1500,
+      "price": 60.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "musique", "name": "Musique", "isTrending": true },
+        { "key": "classique", "name": "Classique", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<p>Concert de musique classique</p>",
+      "_links": { "self": { "href": "/events/13" } }
+    },
+    {
+      "date": "2025-07-25T14:30:00Z",
+      "name": "Tournoi de Tennis Amateur",
+      "description": "Tournoi ouvert à tous les niveaux",
+      "address": "Tennis Club de Cannes, Cannes",
+      "maxCustomers": 64,
+      "currentParticipants": 48,
+      "price": 25.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "sport", "name": "Sport", "isTrending": true },
+        { "key": "tennis", "name": "Tennis", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "alex_sports", "name": "Alexandre Dubois" },
+      "contentHtml": "<p>Tournoi de tennis amateur</p>",
+      "_links": { "self": { "href": "/events/14" } }
+    },
+    {
+      "date": "2025-07-28T18:30:00Z",
+      "name": "Dégustation de Vins de Loire",
+      "description": "Découverte des vins de la vallée de la Loire",
+      "address": "Cave à Vins, Tours",
+      "maxCustomers": 40,
+      "currentParticipants": 32,
+      "price": 35.0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "gastronomie", "name": "Gastronomie", "isTrending": true },
+        { "key": "vin", "name": "Vin", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "maria_gastro", "name": "Maria Rodriguez" },
+      "contentHtml": "<p>Dégustation de vins de Loire</p>",
+      "_links": { "self": { "href": "/events/15" } }
+    },
+    {
+      "date": "2025-08-01T10:00:00Z",
+      "name": "Randonnée en Montagne",
+      "description": "Randonnée guidée dans les Alpes",
+      "address": "Chamonix, Haute-Savoie",
+      "maxCustomers": 25,
+      "currentParticipants": 18,
+      "price": 0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "sport", "name": "Sport", "isTrending": true },
+        { "key": "nature", "name": "Nature", "isTrending": true }
+      ],
+      "organizer": { "pseudo": "tom_nature", "name": "Thomas Johnson" },
+      "contentHtml": "<p>Randonnée en montagne</p>",
+      "_links": { "self": { "href": "/events/16" } }
+    },
+    {
+      "date": "2025-08-05T17:00:00Z",
+      "name": "Festival de Street Art",
+      "description": "Exposition et démonstrations d'art urbain",
+      "address": "Quartier Belleville, Paris",
+      "maxCustomers": 1000,
+      "currentParticipants": 600,
+      "price": 0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "art", "name": "Art", "isTrending": true },
+        { "key": "street-art", "name": "Street Art", "isTrending": true }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<p>Festival de street art</p>",
+      "_links": { "self": { "href": "/events/17" } }
+    },
+    {
+      "date": "2025-08-08T20:30:00Z",
+      "name": "Comédie: Le Dîner de Cons",
+      "description": "Adaptation théâtrale du célèbre film",
+      "address": "Théâtre du Châtelet, Paris",
+      "maxCustomers": 1200,
+      "currentParticipants": 980,
+      "price": 42.0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "culture", "name": "Culture", "isTrending": true },
+        { "key": "comedie", "name": "Comédie", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<p>Pièce de théâtre comique</p>",
+      "_links": { "self": { "href": "/events/18" } }
+    },
+    {
+      "date": "2025-08-10T13:00:00Z",
+      "name": "Cours de Yoga en Plein Air",
+      "description": "Séance de yoga dans un parc",
+      "address": "Parc Montsouris, Paris",
+      "maxCustomers": 50,
+      "currentParticipants": 35,
+      "price": 15.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "sport", "name": "Sport", "isTrending": true },
+        { "key": "bien-etre", "name": "Bien-être", "isTrending": true }
+      ],
+      "organizer": { "pseudo": "alex_sports", "name": "Alexandre Dubois" },
+      "contentHtml": "<p>Cours de yoga en plein air</p>",
+      "_links": { "self": { "href": "/events/19" } }
+    },
+    {
+      "date": "2025-10-25T14:00:00Z",
+      "name": "Compétition d'Escalade",
+      "description": "Championnat régional d'escalade sportive",
+      "address": "Salle d'Escalade Block'Out, Chambéry",
+      "maxCustomers": 100,
+      "currentParticipants": 75,
+      "price": 20.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "sport", "name": "Sport", "isTrending": true },
+        { "key": "escalade", "name": "Escalade", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "alex_sports", "name": "Alexandre Dubois" },
+      "contentHtml": "<p>Compétition d'escalade</p>",
+      "_links": { "self": { "href": "/events/48" } }
+    },
+    {
+      "date": "2025-10-30T21:00:00Z",
+      "name": "Soirée Halloween Party",
+      "description": "Fête d'Halloween avec concours de déguisements",
+      "address": "Boîte de Nuit Le Rex, Reims",
+      "maxCustomers": 400,
+      "currentParticipants": 300,
+      "price": 15.0,
+      "status": "NOT_STARTED",
+      "isTrending": true,
+      "categories": [
+        { "key": "fete", "name": "Fête", "isTrending": true },
+        { "key": "halloween", "name": "Halloween", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "sophie_events", "name": "Sophie Martin" },
+      "contentHtml": "<p>Soirée Halloween</p>",
+      "_links": { "self": { "href": "/events/49" } }
+    },
+    {
+      "date": "2025-11-02T15:45:00Z",
+      "name": "Atelier Méditation Pleine Conscience",
+      "description": "Initiation à la méditation de pleine conscience",
+      "address": "Centre de Bien-être, Avignon",
+      "maxCustomers": 25,
+      "currentParticipants": 18,
+      "price": 30.0,
+      "status": "NOT_STARTED",
+      "isTrending": false,
+      "categories": [
+        { "key": "bien-etre", "name": "Bien-être", "isTrending": true },
+        { "key": "meditation", "name": "Méditation", "isTrending": false }
+      ],
+      "organizer": { "pseudo": "alex_sports", "name": "Alexandre Dubois" },
+      "contentHtml": "<p>Atelier de méditation</p>",
+      "_links": { "self": { "href": "/events/50" } }
+    }
+  ]
+}
