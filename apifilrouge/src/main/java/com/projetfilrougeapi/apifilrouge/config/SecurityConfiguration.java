@@ -73,6 +73,7 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.POST, "/orders").hasAnyRole("Admin", "AuthService", "User")
                             .requestMatchers(HttpMethod.POST, "/reports").hasAnyRole("Admin", "AuthService", "User")
                             .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("Admin", "AuthService")
+                            .requestMatchers(HttpMethod.POST, "/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
 
 
                             .requestMatchers(HttpMethod.GET, "/invitations/**").hasAnyRole("Admin", "AuthService", "Organizer")
@@ -80,6 +81,8 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.GET, "/orders").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("Admin", "AuthService") //tickets mais faut pas récup les tikets d'une autre personne
                             .requestMatchers(HttpMethod.GET, "/reports").hasAnyRole("Admin", "AuthService")
+                            .requestMatchers(HttpMethod.GET, "/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
+
 
                             .requestMatchers(HttpMethod.PATCH, "/places").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.PATCH, "/cities").hasAnyRole("Admin", "AuthService")
@@ -98,6 +101,8 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.DELETE, "/orders").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.DELETE, "/reports").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.DELETE, "/users").hasAnyRole("Admin", "AuthService")
+                            .requestMatchers(HttpMethod.DELETE, "/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
+
 
 
                             .anyRequest().authenticated();
