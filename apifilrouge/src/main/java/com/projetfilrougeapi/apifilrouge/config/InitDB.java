@@ -41,7 +41,7 @@ public class InitDB {
         this.cityRepository = cityRepository;
     }
 
-    @Bean
+/*    @Bean
     CommandLineRunner initCategories(CategoryRepository categoryRepository) {
         return args -> {
             if (categoryRepository.count() == 0) {
@@ -81,7 +81,7 @@ public class InitDB {
             }
         };
 
-    }
+    }*/
 
     @Bean
     CommandLineRunner initUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
