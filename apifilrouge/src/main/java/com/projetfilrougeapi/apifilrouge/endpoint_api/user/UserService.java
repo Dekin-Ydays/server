@@ -166,8 +166,8 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel());
     }
 
-    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(Long userId) {
-        User user = userRepository.findById(userId)
+    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         List<EntityModel<EventSummaryResponse>> events = user.getParticipatedEvents().stream()
@@ -179,7 +179,7 @@ public class UserService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(events,
-                linkTo(methodOn(UserController.class).getParticipatingEvents(userId)).withSelfRel());
+                linkTo(methodOn(UserController.class).getParticipatingEvents(id)).withSelfRel());
     }
 
     public CollectionModel<EntityModel<Report>> getReportsSentByUser(Long id) {

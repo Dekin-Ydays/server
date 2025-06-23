@@ -29,38 +29,38 @@ public class UserController {
         return userService.getCurrentUserProfile();
     }
     @GetMapping("/{id}")
-    public EntityModel<UserResponse> getUserById(@PathVariable Long id) {
+    public EntityModel<UserResponse> getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id);
     }
 
     @GetMapping("/{id}/events")
-    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(@PathVariable Long id) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(@PathVariable("id") Long id) {
         return userService.getEventsForUser(id);
     }
     @GetMapping("/{id}/invitations")
-    public CollectionModel<EntityModel<Invitation>> getInvitationsForUser(@PathVariable Long id) {
+    public CollectionModel<EntityModel<Invitation>> getInvitationsForUser(@PathVariable("id") Long id) {
         return userService.getInvitationsForUser(id);
     }
     @GetMapping("/{id}/categories")
-    public CollectionModel<EntityModel<Category>> getCategoriesForUser(@PathVariable Long id) {
+    public CollectionModel<EntityModel<Category>> getCategoriesForUser(@PathVariable("id") Long id) {
         return userService.getCategoriesForUser(id);
     }
 
-    @GetMapping("/{userId}/participating-events")
-    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(@PathVariable Long userId) {
-        return userService.getParticipatingEvents(userId);
+    @GetMapping("/{id}/participating-events")
+    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(@PathVariable("id") Long id) {
+        return userService.getParticipatingEvents(id);
     }
     @PatchMapping("/{id}")
-    public EntityModel<UserResponse> patchUser(@PathVariable Long id, @RequestBody UserRequest request) {
+    public EntityModel<UserResponse> patchUser(@PathVariable("id") Long id, @RequestBody UserRequest request) {
         return userService.updateUser(id, request);
     }
     @GetMapping("/{id}/reports-sent")
-    public CollectionModel<EntityModel<Report>> getReportsSentByUser(@PathVariable Long id) {
+    public CollectionModel<EntityModel<Report>> getReportsSentByUser(@PathVariable("id") Long id) {
         return userService.getReportsSentByUser(id);
     }
 
     @GetMapping("/{id}/reports-received")
-    public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(@PathVariable Long id) {
+    public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(@PathVariable("id") Long id) {
         return userService.getReportsReceivedByUser(id);
     }
 

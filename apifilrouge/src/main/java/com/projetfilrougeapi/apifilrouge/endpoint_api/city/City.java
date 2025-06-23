@@ -26,6 +26,9 @@ public class City {
     @Column(nullable = false, unique = true)
     private String name;
 
+//    @Column(unique = true, nullable = false)
+//    private String slug;
+
     @Column(name = "postal_code")
     private String postalCode;
 
@@ -68,7 +71,7 @@ public class City {
 
     public void addNearestCity(City city) {
         if (this.equals(city)) {
-            return; // E do nothing if the city is the same
+            return; // Do nothing if the city is the same
         }
         this.nearestCities.add(city);
         city.getNearestCities().add(this);

@@ -24,12 +24,12 @@ public class CityController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<CityResponse> getCityById(@PathVariable Long id) {
+    public EntityModel<CityResponse> getCityById(@PathVariable("id") Long id) {
         return cityService.getCityById(id);
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(required = false) String name, @RequestParam(required = false) String region) {
+    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(value = "name",required = false) String name, @RequestParam(value = "region",required = false) String region) {
         return cityService.findCities(name, region);
     }
     @PostMapping
@@ -37,26 +37,26 @@ public class CityController {
         return cityService.addCity(city);
     }
     @PatchMapping("/{id}")
-    public EntityModel<CityResponse> updateCity(@PathVariable Long id, @Valid @RequestBody CityRequest city) {
+    public EntityModel<CityResponse> updateCity(@PathVariable("id") Long id, @Valid @RequestBody CityRequest city) {
         return cityService.updateCity(id, city);
     }
     @GetMapping("/{id}/places")
-    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(@PathVariable Long id) {
+    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(@PathVariable("id") Long id) {
         return cityService.getPlacesForCity(id);
     }
     @DeleteMapping("/{id}")
-    public void deleteCity(@PathVariable Long id) {
+    public void deleteCity(@PathVariable("id")  Long id) {
         cityService.deleteCity(id);
     }
 
     @GetMapping("/{id}/events")
     public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForCity(
-            @PathVariable Long id,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String[] categories
+            @PathVariable("id") Long id,
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice",required = false) Double maxPrice,
+            @RequestParam(value = "startDate",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(value = "categories",required = false) String[] categories
     ) {
         return cityService.getEventsForCity(id, minPrice, maxPrice, startDate, endDate, categories);
     }

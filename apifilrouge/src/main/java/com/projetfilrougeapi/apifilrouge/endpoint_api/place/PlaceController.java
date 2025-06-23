@@ -29,7 +29,7 @@ public class PlaceController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(@RequestParam(required = false) String name) {
+    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(@RequestParam(value = "name", required = false) String name) {
         return placeService.findPlaces(name);
     }
 
@@ -40,17 +40,17 @@ public class PlaceController {
 
     @GetMapping("/{id}/events")
     public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForPlace(
-            @PathVariable Long id,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String[] categories
+            @PathVariable("id") Long id,
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(value = "categories", required = false) String[] categories
     ) {
         return placeService.getEventsForPlace(id, minPrice, maxPrice, startDate, endDate, categories);
     }
     @GetMapping("/{id}/city")
-    public EntityModel<CityResponse> getCityForPlace(@PathVariable Long id) {
+    public EntityModel<CityResponse> getCityForPlace(@PathVariable("id") Long id) {
         return placeService.getCityForPlace(id);
     }
     @PostMapping
@@ -61,13 +61,13 @@ public class PlaceController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EntityModel<PlaceResponse> updatePlace(@PathVariable Long id, @Valid @RequestBody PlaceRequest placeRequest) {
+    public EntityModel<PlaceResponse> updatePlace(@PathVariable("id") Long id, @Valid @RequestBody PlaceRequest placeRequest) {
         return placeService.updatePlace(id, placeRequest);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePlace(@PathVariable Long id) {
+    public void deletePlace(@PathVariable("id") Long id) {
         placeService.deletePlace(id);
     }
 }

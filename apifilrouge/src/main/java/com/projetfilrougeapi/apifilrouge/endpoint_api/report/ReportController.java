@@ -26,7 +26,7 @@ public class ReportController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EntityModel<Report> getReportById(@PathVariable Long id) {
+    public EntityModel<Report> getReportById(@PathVariable("id") Long id) {
         return reportService.getReportById(id);
     }
 
@@ -36,18 +36,18 @@ public class ReportController {
     }
 
     @GetMapping("/{id}/sender-user")
-    public EntityModel<User> getSenderUserByReportId(@PathVariable Long id) {
+    public EntityModel<User> getSenderUserByReportId(@PathVariable("id") Long id) {
         return reportService.getSenderUserByReportId(id);
     }
 
     @GetMapping("/{id}/reported-user")
-    public EntityModel<User> getReportedUserByReportId(@PathVariable Long id) {
+    public EntityModel<User> getReportedUserByReportId(@PathVariable("id") Long id) {
         return reportService.getReportedUserByReportId(id);
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void deleteReport(@PathVariable Long id) {
+    public void deleteReport(@PathVariable("id") Long id) {
         reportService.deleteReport(id);
     }
 

@@ -12,6 +12,7 @@ public class PlaceResponse {
     private Long id;
     private String name;
     private String address;
+//    private String slug;
     private String type;
     private Location location;
     private int eventsCount;
@@ -29,6 +30,7 @@ public class PlaceResponse {
                 .id(place.getId())
                 .name(place.getName())
                 .address(place.getAddress())
+//                .slug(place.getSlug())
                 .type(place.getType())
                 .location(new Location(place.getLatitude(), place.getLongitude()))
                 .eventsCount(place.getEvents() != null ? place.getEvents().size() : 0)
