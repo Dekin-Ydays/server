@@ -18,7 +18,7 @@ public class CityResponse {
     private String name;
     private Location location;
     private String region;
-//    private String slug;
+    private String slug;
     private String postalCode;
     private String country;
     private String bannerUrl;
@@ -37,7 +37,7 @@ public class CityResponse {
                 .name(city.getName())
                 .location(new Location(city.getLatitude(), city.getLongitude()))
                 .region(city.getRegion())
-//                .slug(city.getSlug())
+                .slug(city.getSlug())
                 .postalCode(city.getPostalCode())
                 .country(city.getCountry())
                 .bannerUrl(city.getBannerUrl())

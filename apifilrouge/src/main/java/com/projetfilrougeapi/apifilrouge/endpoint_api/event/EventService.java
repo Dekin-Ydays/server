@@ -17,17 +17,17 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -58,6 +58,7 @@ public class EventService {
     }
 
     public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories, String[] cities, String[] places) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Specification<Event> spec = Specification.where(null);
 
@@ -73,11 +74,11 @@ public class EventService {
             spec = spec.and(EventSpecification.hasCategories(categories));
         }
 
-        if(cities != null && cities.length > 0) {
+        if (cities != null && cities.length > 0) {
             spec = spec.and(EventSpecification.hasCityNames(cities));
         }
 
-        if(places != null && places.length > 0) {
+        if (places != null && places.length > 0) {
             spec = spec.and(EventSpecification.hasPlaceNames(places));
         }
         // transforme en EventResponse
@@ -144,7 +145,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null,null,null,null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
@@ -152,10 +153,12 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getCategoriesForEvent(savedEvent.getId())).withRel("categories"),
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(savedEvent.getId())).withRel("participants"));
     }
+
     /**
      * Retrieves a list of "first edition" events with a fixed limit,
      * The results are shuffled to provide a random order.
-     * @param city Optional name of the city to filter results.
+     *
+     * @param city  Optional name of the city to filter results.
      * @param place Optional name of the place to filter results.
      * @param limit The maximum number of events to return.
      * @return A CollectionModel of EventSummaryResponse DTOs.
@@ -241,7 +244,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -285,7 +288,8 @@ public class EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé avec l'ID: " + eventId));
 
-        List<Category> categories = new ArrayList<>(event.getCategories());;
+        List<Category> categories = new ArrayList<>(event.getCategories());
+        ;
 
         if (categories.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune catégorie associée à cet événement");
@@ -324,13 +328,14 @@ public class EventService {
                 linkTo(methodOn(UserController.class).getUserById(organizer.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"));
     }
+
     public CollectionModel<EntityModel<UserSummary>> getParticipantsForEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
         List<EntityModel<UserSummary>> participants = event.getParticipants().stream()
                 .map(user -> {
-                    UserSummary summary = new UserSummary(user.getId(),user.getPseudo(), user.getImageUrl());
+                    UserSummary summary = new UserSummary(user.getId(), user.getPseudo(), user.getImageUrl());
                     return EntityModel.of(summary,
                             linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel()
                     );
@@ -400,7 +405,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null,null,null,null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),
@@ -409,6 +414,38 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(updatedEvent.getId())).withRel("participants"));
     }
 
+    @Transactional
+    public EntityModel<EventResponse> cancelEvent(Long id) {
+        try {
+            Event event = eventRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String currentUserEmail = authentication.getName();
+            User currentUser = userRepository.findByEmail(currentUserEmail)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Authenticated user not found"));
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_Admin"));
+
+            boolean isOrganizer = event.getOrganizer().equals(currentUser);
+
+            if (isAdmin || isOrganizer) {
+                event.setStatus(EventStatus.CANCELLED);
+            }
+
+            Event updatedEvent = eventRepository.save(event);
+            EventResponse response = EventResponse.fromEntity(updatedEvent);
+
+            return EntityModel.of(response,
+                    linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel());
+
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred while canceling the event.", e);
+        }
+    }
 
     public void deleteEvent(Long id) {
         Event event = eventRepository.findById(id)

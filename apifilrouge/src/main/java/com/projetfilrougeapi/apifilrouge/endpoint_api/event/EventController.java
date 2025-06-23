@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -99,23 +100,29 @@ public class EventController {
     }
 
     @PatchMapping("/{id}")
-    public EntityModel<EventResponse> patchEvent(@PathVariable Long id, @Valid @RequestBody EventRequest request) {
+    public EntityModel<EventResponse> patchEvent(@PathVariable("id") Long id, @Valid @RequestBody EventRequest request) {
         return eventService.updateEvent(id, request);
     }
 
     @PostMapping("/{eventId}/participants")
-    public EntityModel<EventSummaryResponse> addParticipants(@PathVariable Long eventId, @Valid @RequestBody ParticipantListRequest request) {
+    public EntityModel<EventSummaryResponse> addParticipants(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantListRequest request) {
         return eventService.addParticipantsToEvent(eventId, request.getUserIds());
     }
 
     @DeleteMapping("/{eventId}/participants")
-    public EntityModel<EventSummaryResponse> removeParticipants(@PathVariable Long eventId, @RequestBody ParticipantListRequest request) {
+    public EntityModel<EventSummaryResponse> removeParticipants(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantListRequest request) {
         return eventService.removeParticipantsFromEvent(eventId, request.getUserIds());
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEvent(@PathVariable Long id) {
+    public void deleteEvent(@PathVariable("id") Long id) {
         eventService.deleteEvent(id);
+    }
+
+    @PostMapping("/{id}/cancel")
+    @ResponseStatus(HttpStatus.OK)
+    public EntityModel<EventResponse> cancelEvent(@PathVariable("id") Long id) {
+        return eventService.cancelEvent(id);
     }
 }

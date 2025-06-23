@@ -26,8 +26,8 @@ public class City {
     @Column(nullable = false, unique = true)
     private String name;
 
-//    @Column(unique = true, nullable = false)
-//    private String slug;
+    @Column(unique = true, nullable = false)
+    private String slug;
 
     @Column(name = "postal_code")
     private String postalCode;

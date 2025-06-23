@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "commandes", path = "commandes")
+@RepositoryRestResource(collectionResourceRel = "orders", path = "orders")
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 

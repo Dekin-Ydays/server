@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
+import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.CityRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
@@ -33,6 +34,7 @@ public class CityService {
     private final CityRepository cityRepository;
     private final EventRepository eventRepository;
 
+    private final Slugify slugify = Slugify.builder().build();
     public CityService(CityRepository cityRepository, EventRepository eventRepository) {
         this.cityRepository = cityRepository;
         this.eventRepository = eventRepository;
@@ -51,12 +53,12 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null)).withRel("events"));
     }
 
-    public CollectionModel<EntityModel<CityResponse>> findCities(String name, String region) {
+    public CollectionModel<EntityModel<CityResponse>> findCities(String slug, String region) {
 
-        // On cherche une ville par son nom.
-        if (name != null && !name.isEmpty()) {
-            City city = cityRepository.findByNameIgnoreCase(name)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune ville trouvée avec le nom : " + name));
+        // On cherche une ville par son slug.
+        if (slug != null && !slug.isEmpty()) {
+            City city = cityRepository.findBySlug(slug)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune ville trouvée avec le slug : " + slug));
 
             CityResponse response = CityResponse.fromEntity(city);
 
@@ -68,7 +70,7 @@ public class CityService {
 
             // on retourne une collection contenant ce seul élément enrichi.
             return CollectionModel.of(Collections.singletonList(cityModel),
-                    linkTo(methodOn(CityController.class).findCities(name, null)).withSelfRel());
+                    linkTo(methodOn(CityController.class).findCities(slug, null)).withSelfRel());
         }
 
         // On cherche par région ou on liste tout.
@@ -93,10 +95,14 @@ public class CityService {
 
     @Transactional
     public EntityModel<CityResponse> addCity(CityRequest request) {
+
+        String slug = slugify.slugify(request.getName());
+
         City city = City.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .region(request.getRegion())
+                .slug(slug)
                 .postalCode(request.getPostalCode())
                 .country(request.getCountry())
                 .latitude(request.getLatitude())
@@ -129,10 +135,16 @@ public class CityService {
 
     @Transactional
     public EntityModel<CityResponse> updateCity(Long id, CityRequest request) {
+
+        String slug = slugify.slugify(request.getName());
+
         City existingCity = cityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (request.getName() != null) existingCity.setName(request.getName());
+        if (request.getName() != null) {
+            existingCity.setName(request.getName());
+            existingCity.setSlug(slug);
+        }
         if (request.getDescription() != null) existingCity.setDescription(request.getDescription());
         if (request.getRegion() != null) existingCity.setRegion(request.getRegion());
         if (request.getPostalCode() != null) existingCity.setPostalCode(request.getPostalCode());

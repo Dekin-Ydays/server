@@ -29,8 +29,8 @@ public class PlaceController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(@RequestParam(value = "name", required = false) String name) {
-        return placeService.findPlaces(name);
+    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(@RequestParam(value = "slug", required = false) String slug) {
+        return placeService.findPlaces(slug);
     }
 
     @GetMapping("/{id}")

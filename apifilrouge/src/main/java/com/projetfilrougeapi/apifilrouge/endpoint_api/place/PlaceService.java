@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
+import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.PlaceRequest;
@@ -32,6 +33,7 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
     private final CityRepository cityRepository;
     private final EventRepository eventRepository;
+    private final Slugify slugify = Slugify.builder().build();
 
     public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository) {
         this.placeRepository = placeRepository;
@@ -39,18 +41,18 @@ public class PlaceService {
         this.eventRepository = eventRepository;
     }
 
-    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String name) {
-        if (name != null && !name.isEmpty()) {
-            // Search for a specific place by name
-            Place place = placeRepository.findByNameIgnoreCase(name)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with name: " + name));
+    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String slug) {
+        if (slug != null && !slug.isEmpty()) {
+            // Search for a specific place by slug
+            Place place = placeRepository.findBySlug(slug)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with slug: " + slug));
 
             EntityModel<PlaceResponse> placeModel = EntityModel.of(PlaceResponse.fromEntity(place),
                     linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
 
             // Return a collection containing the single result
             return CollectionModel.of(Collections.singletonList(placeModel),
-                    linkTo(methodOn(PlaceController.class).findPlaces(name)).withSelfRel());
+                    linkTo(methodOn(PlaceController.class).findPlaces(slug)).withSelfRel());
 
         } else {
             // Return the list of all places
@@ -114,6 +116,8 @@ public class PlaceService {
     }
 
     public EntityModel<PlaceResponse> addPlace(PlaceRequest request) {
+        String slug = slugify.slugify(request.getName());
+
         if (placeRepository.existsByNameAndAddressAndLatitudeAndLongitude(
                 request.getName(),
                 request.getAddress(),
@@ -128,6 +132,7 @@ public class PlaceService {
         Place place = Place.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .slug(slug)
                 .address(request.getAddress())
                 .type(request.getType())
                 .cityName(request.getCityName())
@@ -150,6 +155,8 @@ public class PlaceService {
     }
 
     public EntityModel<PlaceResponse> updatePlace(Long id, PlaceRequest request) {
+
+        String slug = slugify.slugify(request.getName());
 
         Place existingPlace = placeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));

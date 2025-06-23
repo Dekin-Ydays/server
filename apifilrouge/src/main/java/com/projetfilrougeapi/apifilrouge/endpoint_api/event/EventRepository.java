@@ -35,6 +35,14 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     List<Event> findByCityId(Long cityId);
 
     /**
+     * Searches for events whose name contains the provided string,
+     * ignoring case.
+     * @param query The string to search for.
+     * @return A list of matching events.
+     */
+    List<Event> findByNameContainingIgnoreCase(String query);
+
+    /**
      * Get all the events for a place
      * in one query
      */

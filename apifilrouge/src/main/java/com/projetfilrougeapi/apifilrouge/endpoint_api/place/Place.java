@@ -23,8 +23,8 @@ public class Place {
     @Column(nullable = false)
     private String name;
 
-//    @Column(unique = true, nullable = false)
-//    private String slug;
+    @Column(unique = true, nullable = false)
+    private String slug;
 
     private String description;
 

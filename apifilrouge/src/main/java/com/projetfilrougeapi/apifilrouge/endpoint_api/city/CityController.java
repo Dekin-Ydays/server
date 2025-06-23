@@ -4,8 +4,6 @@ import com.projetfilrougeapi.apifilrouge.DTO.CityRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
@@ -29,8 +27,8 @@ public class CityController {
     }
 
     @GetMapping
-    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(value = "name",required = false) String name, @RequestParam(value = "region",required = false) String region) {
-        return cityService.findCities(name, region);
+    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(value = "slug",required = false) String slug, @RequestParam(value = "region",required = false) String region) {
+        return cityService.findCities(slug, region);
     }
     @PostMapping
     public EntityModel<CityResponse> addCity(@Valid @RequestBody CityRequest city) {
