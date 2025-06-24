@@ -120,7 +120,7 @@ public class InvitationService {
             existingInvitation.setStatus(invitation.getStatus());
             
             // Si le statut est "ACCEPTED", on ajoute l'utilisateur comme participant
-            if ("ACCEPTED".equals(invitation.getStatus())) {
+            if ("ACCEPTED".equals(invitation.getStatus().toString())) {
                 User userToAdd = existingInvitation.getUser();
                 
                 // Vérification si l'événement a atteint sa capacité maximale
