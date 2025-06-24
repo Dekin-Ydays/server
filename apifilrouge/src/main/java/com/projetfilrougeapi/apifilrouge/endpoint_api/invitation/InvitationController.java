@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 
+import com.projetfilrougeapi.apifilrouge.DTO.InvitationRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -44,7 +45,7 @@ public class InvitationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Invitation> addInvitation(@RequestBody Invitation invitation) {
+    public EntityModel<Invitation> addInvitation(@RequestBody InvitationRequest invitation) {
         return invitationService.addInvitation(invitation);
     }
 }

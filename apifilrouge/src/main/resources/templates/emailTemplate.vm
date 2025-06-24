@@ -1,60 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Notification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande de participation - ${nomEvenement}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            color: #333333;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
+            color: #333;
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f4f4f4;
         }
-        .banner {
-            width: 100%;
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .logo-section {
+            text-align: center;
             margin-bottom: 20px;
         }
-        .content {
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .event-title {
+            color: #3498db;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .request-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        .motivation-section {
+            background-color: #f8f9fa;
             padding: 20px;
-            background-color: #f9f9f9;
             border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .personal-info {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .reminder-message {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
         }
         .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
+        }
+        .signature {
             margin-top: 20px;
-            font-size: 12px;
-            text-align: center;
-            color: #888888;
+            font-weight: bold;
+        }
+        .contact-info {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- Emplacement pour l'image de bannière -->
-    <div class="banner">
-        <img src="$bannerImageUrl" alt="Bannière" style="max-width: 100%; height: auto;">
+    <div class="logo-section">
+        <img src="[https://veevent.vercel.app/veevent.svg]" alt="Logo" class="logo">
     </div>
 
-    <!-- Contenu de l'email avec placeholder pour le texte personnalisé -->
-    <div class="content">
-        <h2>Bonjour $name,</h2>
-
-        <!-- Placeholder pour le texte personnalisé -->
-        <div class="message">
-            $message
-        </div>
-
-        <p>Cordialement,<br>L'équipe</p>
+    <div class="header">
+        <h1 class="event-title">Demande de participation</h1>
+        <h2 style="color: #666; font-size: 18px; margin: 0;">${nomEvenement}</h2>
     </div>
 
-    <div class="footer">
-        <p>Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
-        <p>&copy; $currentYear Tous droits réservés.</p>
+    <div class="request-text">
+        <p>Bonjour,</p>
+
+        <p>Une nouvelle personne souhaite rejoindre l'évènement : <strong>${nomEvenement}</strong>.</p>
+
+    </div>
+
+    <div class="personal-info">
+        <h3 style="color: #3498db; margin-top: 0;">Info du participant :</h3>
+        <p><strong>👤 Nom :</strong> ${nom}</p>
+        <p><strong>👤 Prénom :</strong> ${prenom}</p>
+        <p><strong>📧 Email :</strong> ${emailExpediteur}</p>
+    </div>
+
+    <div class="reminder-message">
+        ⚠️ Pensez à accepter ou rejeter la demande.
+    </div>
+
+    <div class="contact-info">
+        📅 Candidature envoyée le [date du jour]
     </div>
 </div>
 </body>

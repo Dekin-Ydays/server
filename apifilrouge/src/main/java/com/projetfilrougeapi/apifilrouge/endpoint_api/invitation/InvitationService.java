@@ -1,7 +1,12 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 
+import com.projetfilrougeapi.apifilrouge.DTO.InvitationRequest;
+import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -17,9 +22,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 public class InvitationService {
 
     private final InvitationRepository invitationRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
 
-    public InvitationService(InvitationRepository invitationRepository) {
+
+    public InvitationService(InvitationRepository invitationRepository, EventRepository eventRepository, UserRepository userRepository) {
         this.invitationRepository = invitationRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
     }
 
     public CollectionModel<EntityModel<Invitation>> getAllInvitations() {
@@ -57,9 +67,26 @@ public class InvitationService {
                 linkTo(methodOn(InvitationController.class).getInvitationById(id)).withRel("invitation"));
     }
 
+    // création d'une invitation
+    public EntityModel<Invitation> addInvitation(InvitationRequest invitation) throws Exception {
+        Event event = eventRepository.findById(invitation.getEventId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+        User user = userRepository.findById(invitation.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User receiver = userRepository.findById(event.getOrganizer().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver not found"));
 
-    public EntityModel<Invitation> addInvitation(Invitation invitation) {
-        Invitation savedInvitation = invitationRepository.save(invitation);
+        Invitation newInvitation = Invitation.builder()
+                .event(event)
+                .user(user)
+                .status(invitation.getStatus())
+                .description(invitation.getDescription())
+                .build();
+
+        Invitation savedInvitation = invitationRepository.save(newInvitation);
+
+        EmailSender emailSender = new EmailSender("marchalquentin06@gmail.com");
+        emailSender.sendInvitationEmail(user,receiver,event);
 
         return EntityModel.of(savedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(savedInvitation.getId())).withSelfRel(),
