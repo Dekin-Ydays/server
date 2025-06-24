@@ -1,10 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
 import com.github.slugify.Slugify;
-import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.PlaceRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityController;
@@ -12,6 +9,9 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -34,11 +34,13 @@ public class PlaceService {
     private final CityRepository cityRepository;
     private final EventRepository eventRepository;
     private final Slugify slugify = Slugify.builder().build();
+    private final UserRepository userRepository;
 
-    public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository) {
+    public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository) {
         this.placeRepository = placeRepository;
         this.cityRepository = cityRepository;
         this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
     }
 
     public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String slug) {
@@ -79,6 +81,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
@@ -151,6 +154,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
@@ -197,6 +201,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
     }
 
@@ -221,4 +226,23 @@ public class PlaceService {
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel());
     }
+    public CollectionModel<EntityModel<UserResponse>> getOrganizersForPlace(Long placeId) {
+        if (!placeRepository.existsById(placeId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Place not found");
+        }
+
+        List<User> organizers = userRepository.findOrganizersByPlace(placeId);
+
+        List<EntityModel<UserResponse>> organizerModels = organizers.stream()
+                .map(organizer -> {
+                    UserResponse response = UserResponse.fromEntity(organizer);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(UserController.class).getUserById(organizer.getId())).withSelfRel());
+                })
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(organizerModels,
+                linkTo(methodOn(PlaceController.class).getOrganizersForPlace(placeId)).withSelfRel());
+    }
+
 }

@@ -1,9 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 
-import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.PlaceRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -65,6 +62,15 @@ public class PlaceController {
         return placeService.updatePlace(id, placeRequest);
     }
 
+    /**
+     * Retrieves all active organizers at a given location.
+     * @param id The ID of the location.
+     * @return A collection of organizer profiles.
+     */
+    @GetMapping("/{id}/organizers")
+    public CollectionModel<EntityModel<UserResponse>> getOrganizersForPlace(@PathVariable("id") Long id) {
+        return placeService.getOrganizersForPlace(id);
+    }
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePlace(@PathVariable("id") Long id) {

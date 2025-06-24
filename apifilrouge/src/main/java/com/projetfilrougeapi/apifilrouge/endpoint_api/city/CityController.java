@@ -1,9 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
-import com.projetfilrougeapi.apifilrouge.DTO.CityRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
@@ -57,6 +54,16 @@ public class CityController {
             @RequestParam(value = "categories",required = false) String[] categories
     ) {
         return cityService.getEventsForCity(id, minPrice, maxPrice, startDate, endDate, categories);
+    }
+
+    /**
+     * Retrieves all active organizers in a given city.
+     * @param id The ID of the city.
+     * @return A collection of organizer profiles.
+     */
+    @GetMapping("/{id}/organizers")
+    public CollectionModel<EntityModel<UserResponse>> getOrganizersForCity(@PathVariable("id") Long id) {
+        return cityService.getOrganizersForCity(id);
     }
 
 }

@@ -8,10 +8,31 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
 import java.util.Optional;
+
 @RepositoryRestResource(collectionResourceRel = "users", path = "users")
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     //User findByUsername(String username);
     Optional<User> findByEmail(String email);
+
     Optional<User> findById(Long id);
 
+    /**
+     * Retrieves a list of all unique organizers who have at least
+     * one event in the specified city.
+     *
+     * @param cityId The ID of the city.
+     * @return A list of unique User entities.
+     */
+    @Query("SELECT DISTINCT e.organizer FROM Event e WHERE e.city.id = :cityId")
+    List<User> findOrganizersByCity(@Param("cityId") Long cityId);
+
+    /**
+     * Retrieves a list of all unique organizers who have at least
+     * one event in the specified place.
+     *
+     * @param placeId The ID of the place.
+     * @return A list of unique User entities.
+     */
+    @Query("SELECT DISTINCT e.organizer FROM Event e WHERE e.place.id = :placeId")
+    List<User> findOrganizersByPlace(@Param("placeId") Long placeId);
 }
