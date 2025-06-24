@@ -45,7 +45,7 @@ public class InvitationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Invitation> addInvitation(@RequestBody InvitationRequest invitation) {
+    public EntityModel<Invitation> addInvitation(@RequestBody InvitationRequest invitation) throws Exception {
         return invitationService.addInvitation(invitation);
     }
 }
