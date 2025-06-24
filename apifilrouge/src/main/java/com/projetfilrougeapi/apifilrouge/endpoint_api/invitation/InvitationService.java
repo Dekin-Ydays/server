@@ -106,11 +106,20 @@ public class InvitationService {
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
         }
-        /*if (invitation.getType() != null) {
-            existingInvitation.setType(invitation.getType());
-        }*/
+
         if (invitation.getStatus() != null) {
-            existingInvitation.setStatus(invitation.getStatus());
+            if (invitation.getStatus().equals("ACCEPTED")) {
+                existingInvitation.setStatus(invitation.getStatus());
+                Event event = eventRepository.findById(invitation.getEventId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+                User user = userRepository.findById(invitation.getUserId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                event.getParticipants().add(user);
+                eventRepository.save(event);
+            }else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+            }
+
         }
 
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
