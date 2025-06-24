@@ -216,6 +216,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel(),
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
     }
+
     // ADD 1 PARTICIPANT TO EVENT
     public EntityModel<EventSummaryResponse> addParticipantToEvent(Long eventId, Long userIds) {
         Event event = eventRepository.findById(eventId)

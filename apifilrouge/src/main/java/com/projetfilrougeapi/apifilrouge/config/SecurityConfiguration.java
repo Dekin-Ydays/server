@@ -67,6 +67,8 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.POST, "/places").hasAnyRole("Admin", "Organizer", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/cities").hasAnyRole("Admin", "Organizer", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/events/*").hasAnyRole("Admin", "Organizer", "AuthService")
+                            .requestMatchers(HttpMethod.POST, "/events/*/participant").hasAnyRole("Admin", "Organizer", "AuthService")
+                            .requestMatchers(HttpMethod.POST, "/events/*/participants").hasAnyRole("Admin", "Organizer", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/invitations").hasAnyRole("Admin", "Organizer", "AuthService", "User")
                             .requestMatchers(HttpMethod.POST, "/categories").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyRole("Admin", "AuthService", "User") //Tickets

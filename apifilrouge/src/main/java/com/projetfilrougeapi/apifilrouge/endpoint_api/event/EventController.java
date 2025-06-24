@@ -106,21 +106,22 @@ public class EventController {
         return eventService.updateEvent(id, request);
     }
     // Adds multiple participants to an event.
-    @PostMapping("/{eventId}/participants")
+    @PostMapping("/{id}/participants")
     public EntityModel<EventSummaryResponse> addParticipants(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantListRequest request) {
         return eventService.addParticipantsToEvent(eventId, request.getUserIds());
     }
 
-    // Adds a single participant to an event.
-    @PostMapping("/{eventId}/participant")
+    @DeleteMapping("/{id}/participants")
+    public EntityModel<EventSummaryResponse> removeParticipants(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantListRequest request) {
+        return eventService.removeParticipantsFromEvent(eventId, request.getUserIds());
+    }
+
+    // add 1 participant to an event.
+     @PostMapping("/{id}/participant")
     public EntityModel<EventSummaryResponse> addParticipant(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantRequest request) {
         return eventService.addParticipantToEvent(eventId, request.getUserId());
     }
 
-    @DeleteMapping("/{eventId}/participants")
-    public EntityModel<EventSummaryResponse> removeParticipants(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantListRequest request) {
-        return eventService.removeParticipantsFromEvent(eventId, request.getUserIds());
-    }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -10,6 +10,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import java.io.StringWriter;
 
+import java.util.Date;
 import java.util.Properties;
 
 @Getter
@@ -46,7 +47,7 @@ public class EmailSender {
         context.put("nom", sender.getLastName());
         context.put("prenom", sender.getFirstName());
         context.put("emailExpediteur", sender.getEmail());
-        context.put("dateEnvoi", sender.getEmail());
+        context.put("dateEnvoi", new Date().getDay()+"/" + new Date().getMonth() + "/" + new Date().getYear());
 
 
         // Chargement et rendu du template
