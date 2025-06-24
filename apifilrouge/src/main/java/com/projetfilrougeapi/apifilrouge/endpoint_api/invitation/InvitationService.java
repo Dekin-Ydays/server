@@ -77,9 +77,9 @@ public class InvitationService {
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
         }
-        if (invitation.getType() != null) {
+        /*if (invitation.getType() != null) {
             existingInvitation.setType(invitation.getType());
-        }
+        }*/
         if (invitation.getStatus() != null) {
             existingInvitation.setStatus(invitation.getStatus());
         }
