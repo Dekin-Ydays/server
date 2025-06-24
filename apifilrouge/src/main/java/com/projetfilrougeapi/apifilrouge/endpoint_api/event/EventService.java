@@ -190,6 +190,7 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getFirstEditionEvents(city, place, limit)).withSelfRel());
     }
 
+    // ADD MULTIPLE PARTICIPANTS TO EVENT
 
     public EntityModel<EventSummaryResponse> addParticipantsToEvent(Long eventId, List<Long> userIds) {
         Event event = eventRepository.findById(eventId)
@@ -207,6 +208,27 @@ public class EventService {
         }
 
         event.getParticipants().addAll(newParticipants);
+        Event savedEvent = eventRepository.save(event);
+
+        EventSummaryResponse response = EventSummaryResponse.fromEntity(savedEvent);
+
+        return EntityModel.of(response,
+                linkTo(methodOn(EventController.class).getEventById(eventId)).withSelfRel(),
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
+    }
+    // ADD 1 PARTICIPANT TO EVENT
+    public EntityModel<EventSummaryResponse> addParticipantToEvent(Long eventId, Long userIds) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+        User userToAdd = userRepository.findById(userIds)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        int totalAfterAdd = event.getParticipants().size() + 1;
+        if (event.getMaxCustomers() != null && totalAfterAdd > event.getMaxCustomers()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Max participants reached");
+        }
+
+        event.getParticipants().add(userToAdd);
         Event savedEvent = eventRepository.save(event);
 
         EventSummaryResponse response = EventSummaryResponse.fromEntity(savedEvent);

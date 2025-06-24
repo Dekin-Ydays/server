@@ -84,6 +84,8 @@ public class EventController {
     public CollectionModel<EntityModel<UserSummary>> getParticipantsForEvent(@PathVariable Long eventId) {
         return eventService.getParticipantsForEvent(eventId);
     }
+
+
     /**
      * It accepts a 'limit' parameter to define the number of results.
      * @param city The name of the city to filter the results.
@@ -103,10 +105,16 @@ public class EventController {
     public EntityModel<EventResponse> patchEvent(@PathVariable("id") Long id, @Valid @RequestBody EventRequest request) {
         return eventService.updateEvent(id, request);
     }
-
+    // Adds multiple participants to an event.
     @PostMapping("/{eventId}/participants")
     public EntityModel<EventSummaryResponse> addParticipants(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantListRequest request) {
         return eventService.addParticipantsToEvent(eventId, request.getUserIds());
+    }
+
+    // Adds a single participant to an event.
+    @PostMapping("/{eventId}/participant")
+    public EntityModel<EventSummaryResponse> addParticipant(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantRequest request) {
+        return eventService.addParticipantToEvent(eventId, request.getUserId());
     }
 
     @DeleteMapping("/{eventId}/participants")

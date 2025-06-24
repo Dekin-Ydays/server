@@ -5,6 +5,7 @@ import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
@@ -24,12 +25,14 @@ public class InvitationService {
     private final InvitationRepository invitationRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final EventService eventService;
 
 
-    public InvitationService(InvitationRepository invitationRepository, EventRepository eventRepository, UserRepository userRepository) {
+    public InvitationService(InvitationRepository invitationRepository, EventRepository eventRepository, UserRepository userRepository, EventService eventService) {
         this.invitationRepository = invitationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.eventService = eventService;
     }
 
     public CollectionModel<EntityModel<Invitation>> getAllInvitations() {
@@ -108,16 +111,9 @@ public class InvitationService {
         }
 
         if (invitation.getStatus() != null) {
+            existingInvitation.setStatus(invitation.getStatus());
             if (invitation.getStatus().equals("ACCEPTED")) {
-                existingInvitation.setStatus(invitation.getStatus());
-                Event event = eventRepository.findById(invitation.getEventId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
-                User user = userRepository.findById(invitation.getUserId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-                event.getParticipants().add(user);
-                eventRepository.save(event);
-            }else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+                eventService.addParticipantToEvent(invitation.getEventId(), invitation.getUserId());
             }
 
         }
