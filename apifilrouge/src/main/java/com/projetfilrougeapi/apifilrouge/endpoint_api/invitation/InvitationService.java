@@ -98,33 +98,60 @@ public class InvitationService {
     }
 
     public EntityModel<Invitation> updateInvitation(Long id, InvitationRequest invitation) {
+        // Récupération de l'invitation existante
         Invitation existingInvitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation non trouvée"));
+        
+        // Mise à jour de l'événement si spécifié
+        Event event = existingInvitation.getEvent();
         if (invitation.getEventId() != null) {
-            Event event = eventRepository.findById(invitation.getEventId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+            event = eventRepository.findById(invitation.getEventId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé"));
             existingInvitation.setEvent(event);
         }
+        
+        // Mise à jour de la description si spécifiée
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
         }
-
+        
+        // Mise à jour du statut et gestion de l'ajout du participant
         if (invitation.getStatus() != null) {
             existingInvitation.setStatus(invitation.getStatus());
-            if (invitation.getStatus().equals("ACCEPTED")) {
-                eventService.addParticipantToEvent(invitation.getEventId(), invitation.getUserId());
+            
+            // Si le statut est "ACCEPTED", on ajoute l'utilisateur comme participant
+            if ("ACCEPTED".equals(invitation.getStatus())) {
+                User userToAdd = existingInvitation.getUser();
+                
+                // Vérification si l'événement a atteint sa capacité maximale
+                if (event.getMaxCustomers() != null) {
+                    long currentParticipantsCount = event.getParticipants().stream()
+                            .filter(user -> !user.getId().equals(userToAdd.getId()))
+                            .count();
+                    
+                    if (currentParticipantsCount >= event.getMaxCustomers()) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre maximum de participants atteint");
+                    }
+                }
+                
+                // Utilisation du service event pour ajouter le participant
+                event.getParticipants().add(userToAdd);
+                eventRepository.save(event);
+                //eventService.addParticipantToEvent(event.getId(), userToAdd.getId());
             }
-
         }
-
+        
+        // Sauvegarde des modifications
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
-
+        
+        // Construction de la réponse
         return EntityModel.of(updatedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getId())).withRel("event"));
     }
+
+    // Suppression d'une invitation
     public void deleteInvitation(Long id) {
         Invitation invitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
