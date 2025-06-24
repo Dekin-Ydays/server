@@ -95,7 +95,7 @@
 <body>
 <div class="container">
     <div class="logo-section">
-        <img src="[https://veevent.vercel.app/veevent.svg]" alt="Logo" class="logo">
+        <img src="https://veevent.vercel.app/veevent.svg" alt="Logo" class="logo">
     </div>
 
     <div class="header">
@@ -112,17 +112,17 @@
 
     <div class="personal-info">
         <h3 style="color: #3498db; margin-top: 0;">Info du participant :</h3>
-        <p><strong>👤 Nom :</strong> ${nom}</p>
-        <p><strong>👤 Prénom :</strong> ${prenom}</p>
-        <p><strong>📧 Email :</strong> ${emailExpediteur}</p>
+        <p><strong>&#x1F464; Nom :</strong> ${nom}</p>
+        <p><strong>&#x1F464; Prénom :</strong> ${prenom}</p>
+        <p><strong>&#x1F4E7; Email :</strong> ${emailExpediteur}</p>
     </div>
 
     <div class="reminder-message">
-        ⚠️ Pensez à accepter ou rejeter la demande.
+        &#x26A0;&#xFE0F; Pensez à accepter ou rejeter la demande.
     </div>
 
     <div class="contact-info">
-        📅 Candidature envoyée le [date du jour]
+        &#x1F4C5; Candidature envoyée le ${dateEnvoi}
     </div>
 </div>
 </body>

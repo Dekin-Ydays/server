@@ -46,6 +46,8 @@ public class EmailSender {
         context.put("nom", sender.getLastName());
         context.put("prenom", sender.getFirstName());
         context.put("emailExpediteur", sender.getEmail());
+        context.put("dateEnvoi", sender.getEmail());
+
 
         // Chargement et rendu du template
         Template template = ve.getTemplate("templates/emailTemplate.vm", "UTF-8");

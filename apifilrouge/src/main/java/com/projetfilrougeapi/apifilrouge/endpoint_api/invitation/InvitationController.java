@@ -34,7 +34,7 @@ public class InvitationController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EntityModel<Invitation> updateInvitation(@PathVariable Long id, @RequestBody Invitation invitation) {
+    public EntityModel<Invitation> updateInvitation(@PathVariable Long id, @RequestBody InvitationRequest invitation) {
         return invitationService.updateInvitation(id, invitation);
     }
     @DeleteMapping("/{id}")

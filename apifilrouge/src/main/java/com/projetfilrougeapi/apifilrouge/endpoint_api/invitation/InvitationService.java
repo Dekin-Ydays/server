@@ -94,12 +94,14 @@ public class InvitationService {
                 linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getId())).withRel("event"));
     }
 
-    public EntityModel<Invitation> updateInvitation(Long id, Invitation invitation) {
+    public EntityModel<Invitation> updateInvitation(Long id, InvitationRequest invitation) {
         Invitation existingInvitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (invitation.getEvent() != null) {
-            existingInvitation.setEvent(invitation.getEvent());
+        if (invitation.getEventId() != null) {
+            Event event = eventRepository.findById(invitation.getEventId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+            existingInvitation.setEvent(event);
         }
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
