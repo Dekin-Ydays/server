@@ -16,6 +16,8 @@ import java.util.Optional;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
     Optional<Event> findById(Long id);
+
+    Optional<List<Event>> findByOrganizerId(Long organizerId);
     boolean existsByOrganizerIdAndCityId(Long organizerId, Long cityId);
 
      // En surchargeant la méthode findAll, on dit à Spring d'appliquer

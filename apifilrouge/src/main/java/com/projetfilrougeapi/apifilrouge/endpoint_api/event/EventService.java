@@ -46,8 +46,10 @@ public class EventService {
     private final CityRepository cityRepository;
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
+    private final EventEmailUpdateManager eventEmailUpdateManager ;
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
+
+    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, EventEmailUpdateManager eventEmailUpdateManager) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -55,6 +57,7 @@ public class EventService {
         this.cityRepository = cityRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
+        this.eventEmailUpdateManager = eventEmailUpdateManager;
     }
 
     public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories, String[] cities, String[] places) {
@@ -426,6 +429,9 @@ public class EventService {
         Event updatedEvent = eventRepository.save(event);
 
         EventResponse response = EventResponse.fromEntity(updatedEvent);
+
+        // Envoi des emails de mise à jour aux participants
+        eventEmailUpdateManager.sendMultipleMailToParticipants(updatedEvent);
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),

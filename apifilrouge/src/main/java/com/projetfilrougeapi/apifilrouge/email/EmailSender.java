@@ -56,8 +56,42 @@ public class EmailSender {
         template.merge(context, writer);
 
         // Configuration de l'email
-        email.setFrom(sender.getEmail());
+        email.setFrom("marchalquentin06@gmail.com");
         email.setSubject("Invitation concernant l'événement : " + event.getName());
+        email.setHtmlMsg(writer.toString());
+
+        email.addTo(receiver.getEmail());
+        System.out.println("Email envoyé à : " + receiver.getEmail());
+
+        // Envoi de l'email
+        email.send();
+    }
+
+    public void sendIUpdateEventEmail(User receiver, Event event) throws Exception {
+        // Configuration de Velocity
+        VelocityEngine ve = new VelocityEngine();
+        Properties props = new Properties();
+        props.setProperty("resource.loader", "class");
+        props.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        ve.init(props);
+
+        // Création du contexte Velocity
+        VelocityContext context = new VelocityContext();
+        context.put("nomEvenement", event.getName());
+        context.put("dateEvenement", event.getDate().getDayOfMonth() + "/" + event.getDate().getMonth() + "/" + event.getDate().getYear());
+        context.put("emplacementEvenement", event.getPlace().getAddress());
+        context.put("dateNotification", new Date().getDay()+"/" + new Date().getMonth() + "/" + new Date().getYear());
+
+
+        // Chargement et rendu du template
+        Template template = ve.getTemplate("templates/emailTemplateUpdateEvent.vm", "UTF-8");
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+
+        // Configuration de l'email
+        email.setFrom("marchalquentin06@gmail.com");
+        email.setSubject("Mise à jour concernant l'événement : " + event.getName());
         email.setHtmlMsg(writer.toString());
 
         email.addTo(receiver.getEmail());
