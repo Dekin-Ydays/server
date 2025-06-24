@@ -24,6 +24,4 @@ public class ReportManagerService {
             return false;
         }
     }
-
-
 }

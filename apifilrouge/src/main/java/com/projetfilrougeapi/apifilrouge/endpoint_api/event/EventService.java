@@ -241,7 +241,7 @@ public class EventService {
     public EntityModel<EventSummaryResponse> removeParticipantsFromEvent(Long eventId, List<Long> userIds) {
         try {
             Event event = eventRepository.findById(eventId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evénement introuvable"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
 
             List<User> usersToRemove = userRepository.findAllById(userIds);
             event.getParticipants().removeAll(usersToRemove);
@@ -253,7 +253,7 @@ public class EventService {
                     linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
 
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Une erreur est survenue lors de la suppression des participants ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error has occured while removing participants ", e);
         }
     }
 

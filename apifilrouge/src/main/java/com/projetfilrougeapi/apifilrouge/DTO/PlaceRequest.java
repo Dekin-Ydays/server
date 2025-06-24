@@ -30,10 +30,8 @@ public class PlaceRequest {
 
     private String cityName;
 
-    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "The banner URL must be a valid URL format.")
     private String bannerUrl;
 
-    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "The image URL must be a valid URL format.")
     private String imageUrl;
 
     private String content;

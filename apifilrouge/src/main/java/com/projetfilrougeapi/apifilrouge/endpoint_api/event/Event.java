@@ -49,11 +49,12 @@ public class Event {
     private Integer maxCustomers;
     @Column(name = "is_trending")
     private Boolean isTrending;
+    @Column(name = "is_first_edition")
     private Boolean isFirstEdition;
     private Double price;
     @Enumerated(EnumType.STRING)
     private EventStatus status;
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "content_html")
     private String contentHtml;
     @Column(name = "image_url")
     private String imageUrl;

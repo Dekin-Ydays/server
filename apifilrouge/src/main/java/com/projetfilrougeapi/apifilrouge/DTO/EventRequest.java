@@ -51,6 +51,5 @@ public class EventRequest {
 
     private String contentHtml;
 
-    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "The image URL must be a valid URL format.")
     private String imageUrl;
 }

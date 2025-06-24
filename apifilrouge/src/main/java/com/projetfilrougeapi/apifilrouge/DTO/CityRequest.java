@@ -25,9 +25,7 @@ public class CityRequest {
     private Double latitude;
     @NotNull(message = "Longitude is required.")
     private Double longitude;
-    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "The banner URL must be a valid URL format.")
     private String bannerUrl;
-    @Pattern(regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$", message = "The image URL must be a valid URL format.")
     private String imageUrl;
     private String content;
 
