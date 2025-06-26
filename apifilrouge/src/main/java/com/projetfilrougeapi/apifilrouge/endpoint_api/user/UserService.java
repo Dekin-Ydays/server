@@ -16,6 +16,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,21 +30,26 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class UserService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, CategoryRepository categoryRepository) {
+    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Retrieves the profile of the currently authenticated user.
+     *
+     * <p>This method fetches the user's email from the security context, looks up the corresponding
+     * {@link User} entity in the database, maps it to a {@link UserResponse}, and wraps it in an
+     * {@link EntityModel} with a self-referencing HATEOAS link.</p>
+     *
+     * @return an {@link EntityModel} containing the current user's profile
+     * @throws ResponseStatusException if the user is not found in the database
+     */
     public EntityModel<UserResponse> getCurrentUserProfile() {
-        Object current= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        String userEmail;
-        if (current instanceof UserDetails) {
-            userEmail = ((UserDetails) current).getUsername();
-        } else {
-            userEmail = current.toString();
-        }
+        String userEmail = getCurrentUserEmail();
 
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : " + userEmail));
@@ -53,6 +59,63 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel());
     }
+
+    /**
+     * Updates the profile of the currently authenticated user with the provided data.
+     *
+     * @param request the fields to update (only non-null fields will be modified)
+     * @return an {@link EntityModel} containing the updated user profile
+     */
+    public EntityModel<UserResponse> updateCurrentUserProfile(UserRequest request) {
+        try {
+            String email = getCurrentUserEmail();
+
+            User existingUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + email));
+
+            if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
+            if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
+            if (request.getPseudo() != null) existingUser.setPseudo(request.getPseudo());
+            if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
+            if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
+            if (request.getDescription() != null) existingUser.setDescription(request.getDescription());
+            if (request.getImageUrl() != null) existingUser.setImageUrl(request.getImageUrl());
+            if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
+            if (request.getNote() != null) existingUser.setNote(request.getNote());
+            if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
+
+            if (request.getCategoryKeys() != null) {
+                List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
+
+                if (categories.size() != request.getCategoryKeys().size()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more category keys are invalid.");
+                }
+
+                existingUser.setCategories(categories);
+            }
+
+            User updatedUser = userRepository.save(existingUser);
+            UserResponse response = UserResponse.fromEntity(updatedUser);
+
+            return EntityModel.of(response,
+                    linkTo(methodOn(UserController.class).getCurrentUserProfile()).withSelfRel());
+
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error while updating profile", e);
+        }
+    }
+
+    /**
+     * Set the current authenticated user to dosabled.
+     * Throws an exception if the user is not found.
+     */
+//    public void disableCurrentUser() {
+//
+//    }
+
     public EntityModel<UserResponse> getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -140,8 +203,7 @@ public class UserService {
         if (request.getPseudo() != null) existingUser.setPseudo(request.getPseudo());
         if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
 
-        if (request.getPassword() != null) existingUser.setPassword(request.getPassword());
-
+        if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
         if (request.getDescription() != null) existingUser.setDescription(request.getDescription());
         if (request.getImageUrl() != null) existingUser.setImageUrl(request.getImageUrl());
@@ -211,4 +273,19 @@ public class UserService {
         return CollectionModel.of(reports,
                 linkTo(methodOn(UserController.class).getReportsReceivedByUser(id)).withSelfRel());
     }
+
+    /**
+     * Retrieves the email of the currently authenticated user from the security context.
+     *
+     * @return the email address of the logged-in user
+     */
+    private String getCurrentUserEmail() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        } else {
+            return principal.toString();
+        }
+    }
+
 }

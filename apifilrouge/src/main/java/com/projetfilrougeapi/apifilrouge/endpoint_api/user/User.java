@@ -10,7 +10,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
@@ -66,6 +65,9 @@ public class User implements UserDetails {
     private int countReportsReceived=0;
 
     private boolean isBanned = false;
+
+//    @Column(name = "token_valid_after")
+//    private instant tokenValidAfter;
 
     @Enumerated(EnumType.STRING)
     private Role role;
