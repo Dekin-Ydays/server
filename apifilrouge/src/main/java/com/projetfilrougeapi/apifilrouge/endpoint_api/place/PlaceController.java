@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/places")
+@RequestMapping("/api/v1/places")
 public class PlaceController {
 
     private final PlaceService placeService;

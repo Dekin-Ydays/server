@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/invitations")
+@RequestMapping("/api/v1/invitations")
 public class InvitationController {
 
     private final InvitationService invitationService;
