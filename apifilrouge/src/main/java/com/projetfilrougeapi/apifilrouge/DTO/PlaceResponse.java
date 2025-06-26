@@ -20,6 +20,7 @@ public class PlaceResponse {
     private String cityName;
     private String bannerUrl;
     private String imageUrl;
+    private String description;
     private String content;
 
     public static PlaceResponse fromEntity(Place place) {
@@ -38,6 +39,7 @@ public class PlaceResponse {
                 .cityName(place.getCityName())
                 .bannerUrl(place.getBannerUrl())
                 .imageUrl(place.getImageUrl())
+                .description(place.getDescription())
                 .content(place.getContent())
                 .build();
     }

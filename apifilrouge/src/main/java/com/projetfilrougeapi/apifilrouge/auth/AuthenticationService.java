@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.auth;
 
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
@@ -25,6 +26,7 @@ public class AuthenticationService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
+                .provider(AuthProvider.LOCAL)
                 .pseudo(request.getPseudo())
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)

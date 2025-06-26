@@ -7,6 +7,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -55,6 +56,7 @@ public class User implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @NotNull
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -67,6 +69,10 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider provider;
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-events")

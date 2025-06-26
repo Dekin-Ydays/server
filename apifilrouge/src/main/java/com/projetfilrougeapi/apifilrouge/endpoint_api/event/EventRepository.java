@@ -30,25 +30,11 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     Page<Event> findAll(Specification<Event> spec, Pageable pageable);
 
     /**
-     * Get all the events for a city
-     * in one query
-     */
-    @EntityGraph(value = "Event.withDetails", type = EntityGraph.EntityGraphType.FETCH)
-    List<Event> findByCityId(Long cityId);
-
-    /**
      * Searches for events whose name contains the provided string,
      * ignoring case.
      * @param query The string to search for.
      * @return A list of matching events.
      */
     List<Event> findByNameContainingIgnoreCase(String query);
-
-    /**
-     * Get all the events for a place
-     * in one query
-     */
-    @EntityGraph(value = "Event.withDetails", type = EntityGraph.EntityGraphType.FETCH)
-    List<Event> findByPlaceId(Long placeId);
 }
 
