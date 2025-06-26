@@ -65,7 +65,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 existingUser.setFirstName(firstName);
                 existingUser.setLastName(lastName);
                 existingUser.setImageUrl(imageUrl);
-                userRepository.save(existingUser);
+                userRepository.saveAndFlush(existingUser);
 
             } else {
                 // The user does not exist, so we create a new one
@@ -80,7 +80,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         // Generate a secure, random password
                         .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .build();
-                userRepository.save(newUser);
+                userRepository.saveAndFlush(newUser);
             }
 
             // Return the OAuth2User object for Spring Security to continue the process
