@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
      * @throws OAuth2AuthenticationException if the user cannot be authenticated or if a security policy is violated.
      */
     @Override
+    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         try {
             // Fetch user details from the OAuth2 provider
