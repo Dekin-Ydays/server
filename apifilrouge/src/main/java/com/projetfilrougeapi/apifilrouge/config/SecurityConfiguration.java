@@ -35,7 +35,7 @@ public class SecurityConfiguration {
             "/api/v1/places/**",
             "/api/v1/cities/**",
             "/api/v1/events/**",
-            "/api/v1/categories",
+            "/api/v1/categories/**",
             "/api/v1/users/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",

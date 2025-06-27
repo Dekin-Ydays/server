@@ -48,6 +48,7 @@ public class Place {
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "place-events")
+    @JsonIgnore
     private List<Event> events;
 
     @ManyToOne(optional = false)

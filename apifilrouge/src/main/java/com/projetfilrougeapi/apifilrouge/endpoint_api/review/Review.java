@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.review;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,11 +31,13 @@ public class Review {
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)
     @JsonBackReference("user-reports-sent")
+    @JsonIgnore
     private User senderReviewUser;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id", nullable = false)
     @JsonBackReference("user-reports-received")
+    @JsonIgnore
     private User reviewedUser;
 
 

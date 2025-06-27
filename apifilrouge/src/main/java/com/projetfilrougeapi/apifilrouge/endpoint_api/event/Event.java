@@ -62,11 +62,13 @@ public class Event {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     @JsonBackReference(value = "place-events")
+    @JsonIgnore
     private Place place;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     @JsonBackReference(value = "city-events")
+    @JsonIgnore
     private City city;
 
     @CreationTimestamp
@@ -79,11 +81,13 @@ public class Event {
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "invitation-events")
+    @JsonIgnore
     private List<Invitation> invitations;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference(value = "user-events")
+    @JsonIgnore
     private User organizer;
 
     // On utilise un Set pour les catégories pour éviter l'erreur "MultipleBagFetchException"
@@ -105,5 +109,6 @@ public class Event {
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "event-orders")
+    @JsonIgnore
     private List<Order> orders;
 }

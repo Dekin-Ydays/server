@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
@@ -57,6 +58,7 @@ public class City {
 
     @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "city-events")
+    @JsonIgnore
     private List<Event> events;
 
     @ManyToMany

@@ -78,14 +78,17 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-events")
+    @JsonIgnore
     private List<Event> events;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-invitations")
+    @JsonIgnore
     private List<Invitation> invitations;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-orders")
+    @JsonIgnore
     private List<Order> orders;
 
     @ManyToMany
@@ -95,18 +98,22 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     @JsonIgnoreProperties("users")
+    @JsonIgnore
     private List<Category> categories = new ArrayList<>();
 
     @ManyToMany(mappedBy = "participants")
     @JsonIgnoreProperties("participants")
+    @JsonIgnore
     private List<Event> participatedEvents = new ArrayList<>();
 
     @OneToMany(mappedBy = "senderUser", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-reports-sent")
+    @JsonIgnore
     private List<Report> reportsSent;
 
     @OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-reports-received")
+    @JsonIgnore
     private List<Report> reportsReceived;
 
     // === Spring Security methods ===
