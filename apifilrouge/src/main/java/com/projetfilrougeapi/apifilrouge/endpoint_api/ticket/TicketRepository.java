@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "tickets", path = "tickets")
+@RepositoryRestResource(collectionResourceRel = "tickets", path = "tickets",exported = false)
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Optional<Ticket> findById(Long id);

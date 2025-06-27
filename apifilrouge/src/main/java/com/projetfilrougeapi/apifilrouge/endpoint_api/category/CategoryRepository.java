@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "categories", path = "categories")
+@RepositoryRestResource(collectionResourceRel = "categories", path = "categories",exported = false)
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findById(Long id);

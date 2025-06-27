@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "events", path = "events")
+@RepositoryRestResource(collectionResourceRel = "events", path = "events",exported = false)
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
     Optional<Event> findById(Long id);

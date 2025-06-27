@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
+@RepositoryRestResource(collectionResourceRel = "cities", path = "cities",exported = false)
 @Repository
 public interface CityRepository extends JpaRepository<City, Long>{
     Optional<City> findById(Long id);

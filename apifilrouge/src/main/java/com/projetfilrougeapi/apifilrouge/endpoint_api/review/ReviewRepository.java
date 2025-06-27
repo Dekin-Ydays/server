@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "reviews", path = "reviews")
+@RepositoryRestResource(collectionResourceRel = "reviews", path = "reviews",exported = false)
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
