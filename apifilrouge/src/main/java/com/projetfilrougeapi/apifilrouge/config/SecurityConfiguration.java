@@ -19,7 +19,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-
+/**
+ * Configuration de sécurité de l'application.
+ * <p>
+ * Cette classe définit les règles d'autorisation et d'authentification pour l'application.
+ * Elle configure les accès aux différentes API en fonction des rôles utilisateurs,
+ * gère l'authentification par JWT et OAuth2, et paramètre les règles CORS.
+ * </p>
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -30,7 +37,9 @@ public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-
+    /**
+     * Liste des URL accessibles sans authentification.
+     */
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/places/**",
             "/api/v1/cities/**",
@@ -40,7 +49,15 @@ public class SecurityConfiguration {
             "/v3/api-docs/**",
             "/swagger-ui/**",
     };
-
+    /**
+     * Configure la source de configuration CORS.
+     * <p>
+     * Définit les origines, méthodes et en-têtes autorisés pour les requêtes
+     * cross-origin, ainsi que la durée de mise en cache des pré-vérifications.
+     * </p>
+     *
+     * @return La source de configuration CORS
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -54,7 +71,22 @@ public class SecurityConfiguration {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
+    /**
+     * Configure la chaîne de filtres de sécurité.
+     * <p>
+     * Cette méthode définit l'ensemble des règles de sécurité de l'application :
+     * - Désactive CSRF
+     * - Configure CORS
+     * - Définit les règles d'autorisation pour chaque endpoint API selon les rôles
+     * - Configure la gestion des sessions (stateless)
+     * - Ajoute les filtres d'authentification JWT
+     * - Configure l'authentification OAuth2
+     * </p>
+     *
+     * @param http La configuration HTTP à modifier
+     * @return La chaîne de filtres de sécurité configurée
+     * @throws Exception Si une erreur survient pendant la configuration
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http

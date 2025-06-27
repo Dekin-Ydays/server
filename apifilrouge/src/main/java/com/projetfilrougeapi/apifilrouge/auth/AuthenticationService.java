@@ -11,7 +11,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+/**
+ * Service qui gère les opérations d'authentification des utilisateurs.
+ * <p>
+ * Ce service fournit des méthodes pour l'enregistrement de nouveaux utilisateurs et l'authentification
+ * des utilisateurs existants. Il s'occupe également de la génération des tokens JWT pour les
+ * sessions authentifiées.
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -19,7 +26,12 @@ public class AuthenticationService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-
+    /**
+     * Enregistre un nouvel utilisateur dans le système.
+     *
+     * @param request Les informations du nouvel utilisateur à enregistrer
+     * @return Une réponse contenant le token JWT généré pour l'utilisateur enregistré
+     */
     public AuthenticationResponse register(UserRequest request) {
 
         User user = User.builder()
@@ -38,7 +50,13 @@ public class AuthenticationService {
                 .token(jwtToken)
                 .build();
     }
-
+    /**
+     * Authentifie un utilisateur existant.
+     *
+     * @param request Les informations d'authentification (email et mot de passe)
+     * @return Une réponse contenant le token JWT généré pour l'utilisateur authentifié
+     * @throws org.springframework.security.core.AuthenticationException Si l'authentification échoue
+     */
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
