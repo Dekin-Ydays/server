@@ -48,6 +48,8 @@ public class User implements UserDetails {
     private String bannerUrl;
 
     private Double note;
+    private int totalReviews;
+    private Double sumTotalNoteReviews;
 
     @Column(columnDefinition = "TEXT")
     private String socials;
@@ -65,9 +67,6 @@ public class User implements UserDetails {
     private int countReportsReceived=0;
 
     private boolean isBanned = false;
-
-//    @Column(name = "token_valid_after")
-//    private instant tokenValidAfter;
 
     @Enumerated(EnumType.STRING)
     private Role role;

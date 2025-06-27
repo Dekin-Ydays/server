@@ -17,9 +17,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository) {
+    private final ReviewManagerService reviewManagerService;
+
+    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository, ReviewManagerService reviewManagerService) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.reviewManagerService = reviewManagerService;
     }
 
     public EntityModel<Review> createReview(ReviewRequest requestReview) {
@@ -33,8 +36,8 @@ public class ReviewService {
         Review review = new Review(requestReview.getContent(), requestReview.getRating(), sender, reportedUser);
 
 
-
         Review savedReview = reviewRepository.save(review);
+        reviewManagerService.manageReviewNote(savedReview);
 
         return EntityModel.of(savedReview,
                 linkTo(methodOn(ReviewController.class).getReviewById(savedReview.getReview_id())).withSelfRel(),
