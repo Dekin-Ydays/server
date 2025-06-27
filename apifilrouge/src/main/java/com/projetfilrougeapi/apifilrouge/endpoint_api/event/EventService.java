@@ -69,7 +69,7 @@ public class EventService {
             spec = spec.and(EventSpecification.hasPriceBetween(minPrice, maxPrice));
         }
 
-        if (startDate != null && endDate != null) {
+        if (startDate != null || endDate != null) {
             spec = spec.and(EventSpecification.hasDateBetween(startDate, endDate));
         }
 
