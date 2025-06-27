@@ -33,7 +33,9 @@ public class CategoryService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(categories,
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel());
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel(),
+                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
+
     }
 
     public EntityModel<Category> getCategoryById(Long id) {
