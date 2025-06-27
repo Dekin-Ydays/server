@@ -2,9 +2,13 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -45,15 +49,16 @@ public class CityController {
     }
 
     @GetMapping("/{id}/events")
-    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForCity(
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForCity(
             @PathVariable("id") Long id,
-            @RequestParam(value = "minPrice", required = false) Double minPrice,
-            @RequestParam(value = "maxPrice",required = false) Double maxPrice,
-            @RequestParam(value = "startDate",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(value = "endDate",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(value = "categories",required = false) String[] categories
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String[] categories
     ) {
-        return cityService.getEventsForCity(id, minPrice, maxPrice, startDate, endDate, categories);
+        return cityService.getEventsForCity(id, pageable, minPrice, maxPrice, startDate, endDate, categories);
     }
 
     /**

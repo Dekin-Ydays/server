@@ -3,22 +3,26 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
+import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.springframework.hateoas.PagedModel;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -35,12 +39,16 @@ public class PlaceService {
     private final EventRepository eventRepository;
     private final Slugify slugify = Slugify.builder().build();
     private final UserRepository userRepository;
+    private final PagedResourcesAssembler pagedResourcesAssembler;
+    private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
 
-    public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository) {
+    public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
         this.placeRepository = placeRepository;
         this.cityRepository = cityRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
     }
 
     public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String slug) {
@@ -82,11 +90,11 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
     }
 
 
-    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForPlace(Long id, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForPlace(Long id, Pageable pageable,  Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
         if (!placeRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé");
         }
@@ -103,19 +111,15 @@ public class PlaceService {
             spec = spec.and(EventSpecification.hasCategories(categories));
         }
 
-        List<Event> events = eventRepository.findAll(spec);
+        Page<Event> events = eventRepository.findAll(spec, pageable);
 
-        List<EntityModel<EventSummaryResponse>> eventModels = events.stream()
-                .map(event -> {
-                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel());
-                })
-                .collect(Collectors.toList());
+        Page<EventSummaryResponse> eventsDto = events.map(EventSummaryResponse::fromEntity);
 
-        return CollectionModel.of(eventModels,
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(id, minPrice, maxPrice, startDate, endDate, categories)).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getPlaceById(id)).withRel("place"));
+        PagedModel<EntityModel<EventSummaryResponse>> pagedModel = pagedResourcesAssembler.toModel(eventsDto, eventSummaryResponseAssembler);
+
+        pagedModel.add(linkTo(methodOn(PlaceController.class).getPlaceById(id)).withRel("place"));
+
+        return pagedModel;
     }
 
     public EntityModel<PlaceResponse> addPlace(PlaceRequest request) {
@@ -155,7 +159,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<PlaceResponse> updatePlace(Long id, PlaceRequest request) {
@@ -202,7 +206,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
     }
 
     public void deletePlace(Long id) {
