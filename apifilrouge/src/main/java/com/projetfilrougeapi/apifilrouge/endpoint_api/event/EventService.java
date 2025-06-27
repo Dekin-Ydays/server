@@ -281,35 +281,41 @@ public class EventService {
     }
 
 
-    public EntityModel<Place> getPlaceForEvent(Long id) {
+    public EntityModel<PlaceResponse> getPlaceForEvent(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé"));
 
         Place place = event.getPlace();
         if (place == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun lieu trouvé pour cet événement");
         }
 
-        return EntityModel.of(place,
-                linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
+        // On convertit l'entité Place en DTO PlaceResponse.
+        PlaceResponse response = PlaceResponse.fromEntity(place);
+
+        return EntityModel.of(response,
+                linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
                 linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"));
     }
 
-    public EntityModel<City> getCityForEvent(Long id) {
+    public EntityModel<CityResponse> getCityForEvent(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
 
         City city = event.getCity();
         if (city == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun lieu trouvé pour cet événement");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No city found for this event");
         }
 
-        return EntityModel.of(city,
+        CityResponse response = CityResponse.fromEntity(city);
+
+        return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
                 linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"));
     }
+
 
     public CollectionModel<Category> getCategoriesForEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)

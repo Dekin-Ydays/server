@@ -55,15 +55,14 @@ public class EventController {
     }
 
     @GetMapping("/{id}/place")
-    public EntityModel<Place> getPlaceForEvent(@PathVariable Long id) {
+    public EntityModel<PlaceResponse> getPlaceForEvent(@PathVariable("id") Long id) {
         return eventService.getPlaceForEvent(id);
     }
 
     @GetMapping("/{id}/city")
-    public EntityModel<City> getCityForEvent(@PathVariable Long id) {
+    public EntityModel<CityResponse> getCityForEvent(@PathVariable("id") Long id) {
         return eventService.getCityForEvent(id);
     }
-
 
     @GetMapping("/{id}/invitations")
     public CollectionModel<EntityModel<Invitation>> getInvitationsForEvent(@PathVariable Long id) {

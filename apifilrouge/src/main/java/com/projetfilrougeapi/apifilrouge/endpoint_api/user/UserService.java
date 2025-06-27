@@ -57,7 +57,11 @@ public class UserService {
         UserResponse response = UserResponse.fromEntity(user);
 
         return EntityModel.of(response,
-                linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel());
+                linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
+                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
     }
 
     /**
