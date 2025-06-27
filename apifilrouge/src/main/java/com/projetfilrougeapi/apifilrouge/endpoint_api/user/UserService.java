@@ -9,6 +9,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepositor
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
 import org.springframework.hateoas.CollectionModel;
@@ -61,6 +63,7 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
                 linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
+                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
     }
 
@@ -130,6 +133,7 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
                 linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
+                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
 
     }
@@ -260,7 +264,7 @@ public class UserService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(reports,
-                linkTo(methodOn(UserController.class).getReportsSentByUser(id)).withSelfRel());
+                linkTo(methodOn(ReportController.class).getAllReports()).withRel("reports"));
     }
 
     public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(Long id) {
@@ -275,7 +279,7 @@ public class UserService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(reports,
-                linkTo(methodOn(UserController.class).getReportsReceivedByUser(id)).withSelfRel());
+                linkTo(methodOn(ReportController.class).getAllReports()).withRel("reports"));
     }
 
     /**
@@ -292,4 +296,18 @@ public class UserService {
         }
     }
 
+    public CollectionModel<EntityModel<Order>> getOrderByUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        List<EntityModel<Order>> orders = user.getOrders().stream()
+                .map(order -> EntityModel.of(order,
+                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user"),
+                        linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel()
+                ))
+                .collect(Collectors.toList());
+        return CollectionModel.of(orders,
+                linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
+    }
 }

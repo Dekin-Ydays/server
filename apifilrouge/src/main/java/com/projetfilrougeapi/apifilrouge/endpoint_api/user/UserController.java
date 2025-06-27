@@ -5,6 +5,7 @@ import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -30,6 +31,7 @@ public class UserController {
     public EntityModel<UserResponse> getCurrentUserProfile() {
         return userService.getCurrentUserProfile();
     }
+
 
     @PatchMapping("/me")
     public EntityModel<UserResponse> updateCurrentUser(@RequestBody UserRequest request) {
@@ -81,6 +83,11 @@ public class UserController {
     @GetMapping("/{id}/reports-received")
     public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(@PathVariable("id") Long id) {
         return userService.getReportsReceivedByUser(id);
+    }
+
+    @GetMapping("/{id}/orders")
+    public CollectionModel<EntityModel<Order>> getOrderByUser(@PathVariable("id") Long id) {
+        return userService.getOrderByUser(id);
     }
 
 }
