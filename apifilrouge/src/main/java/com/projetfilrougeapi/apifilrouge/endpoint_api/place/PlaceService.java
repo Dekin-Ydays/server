@@ -58,7 +58,12 @@ public class PlaceService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with slug: " + slug));
 
             EntityModel<PlaceResponse> placeModel = EntityModel.of(PlaceResponse.fromEntity(place),
-                    linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
+                    linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
+                    linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
+                    linkTo(methodOn(PlaceController.class).getCityForPlace(place.getId())).withRel("city"),
+                    linkTo(methodOn(CityController.class).getOrganizersForCity(place.getId())).withRel("organizers"),
+                    linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getId(), null,null, null, null, null, null)).withRel("events"));
+
 
             // Return a collection containing the single result
             return CollectionModel.of(Collections.singletonList(placeModel),
