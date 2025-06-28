@@ -8,14 +8,15 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepositor
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import com.projetfilrougeapi.apifilrouge.validator.DateValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,10 +32,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class EventService {
@@ -46,7 +51,7 @@ public class EventService {
     private final CityRepository cityRepository;
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
-    private final EventEmailUpdateManager eventEmailUpdateManager ;
+    private final EventEmailUpdateManager eventEmailUpdateManager;
 
 
     public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, EventEmailUpdateManager eventEmailUpdateManager) {
@@ -94,6 +99,10 @@ public class EventService {
     }
 
     public EntityModel<EventResponse> createEvent(EventRequest request) {
+
+        if (!DateValidator.isAfterToday(request.getDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
+        }
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         User organizer = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
@@ -233,7 +242,7 @@ public class EventService {
         }
 
         event.getParticipants().add(userToAdd);
-        System.out.println("participants : "+event.getParticipants().size());
+        System.out.println("participants : " + event.getParticipants().size());
         Event savedEvent = eventRepository.save(event);
 
         EventSummaryResponse response = EventSummaryResponse.fromEntity(savedEvent);
@@ -382,6 +391,9 @@ public class EventService {
 
 
     public EntityModel<EventResponse> updateEvent(Long id, EventRequest request) {
+        if (!DateValidator.isAfterToday(request.getDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
+        }
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
