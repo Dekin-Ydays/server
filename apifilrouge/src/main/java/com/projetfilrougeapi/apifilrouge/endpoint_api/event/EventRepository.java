@@ -35,6 +35,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
      * @param query The string to search for.
      * @return A list of matching events.
      */
-    List<Event> findByNameContainingIgnoreCase(String query);
+    Page<Event> findByNameContainingIgnoreCase(String query, Pageable pageable);
 }
 

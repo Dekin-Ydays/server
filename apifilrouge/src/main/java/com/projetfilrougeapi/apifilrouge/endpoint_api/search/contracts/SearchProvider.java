@@ -1,6 +1,8 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.search.contracts;
 
 import com.projetfilrougeapi.apifilrouge.DTO.SearchResultResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -17,9 +19,21 @@ public interface SearchProvider {
     boolean supports(String type);
 
     /**
-     * Performs the search for the given term.
-     *
+     * Performs a non-paginated search, returning all results.
+     * This is used for the global search feature, where results from all providers
+     * are combined, shuffled, and then limited.
      * @param query The search term.
+     * @return A list of all matching search results.
      */
     List<SearchResultResponse> search(String query);
+
+    /**
+     * Performs a paginated search.
+     * This is used for typed searches (e.g., ?types=user), providing full
+     * pagination capabilities for a specific entity type.
+     * @param query The search term.
+     * @param pageable The pagination information (page, size, sort).
+     * @return A Page of search results.
+     */
+    Page<SearchResultResponse> search(String query, Pageable pageable);
 }
