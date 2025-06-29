@@ -4,6 +4,7 @@ import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
+import com.projetfilrougeapi.apifilrouge.assembler.PlaceResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityRepository;
@@ -41,14 +42,16 @@ public class PlaceService {
     private final UserRepository userRepository;
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
+    private final PlaceResponseAssembler placeResponseAssembler;
 
-    public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
+    public PlaceService(PlaceRepository placeRepository, CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, PlaceResponseAssembler placeResponseAssembler) {
         this.placeRepository = placeRepository;
         this.cityRepository = cityRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
+        this.placeResponseAssembler = placeResponseAssembler;
     }
 
     public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String slug) {
@@ -254,4 +257,11 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getOrganizersForPlace(placeId)).withSelfRel());
     }
 
+    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(Pageable pageable) {
+        Page<Place> places = placeRepository.findAll(pageable);
+
+        Page<PlaceResponse> placesDto = places.map(PlaceResponse::fromEntity);
+
+        return pagedResourcesAssembler.toModel(placesDto, placeResponseAssembler);
+    }
 }

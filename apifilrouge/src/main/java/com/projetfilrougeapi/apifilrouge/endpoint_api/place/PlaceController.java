@@ -29,9 +29,19 @@ public class PlaceController {
         this.cityService = cityService;
     }
 
-    @GetMapping
-    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(@RequestParam(value = "slug", required = false) String slug) {
+    @GetMapping("/slug")
+    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(
+            @RequestParam(value = "slug", required = false) String slug
+            ) {
+
         return placeService.findPlaces(slug);
+    }
+    @GetMapping
+    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(
+            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+
+        return placeService.getAllPlaces(pageable);
     }
 
     @GetMapping("/{id}")
