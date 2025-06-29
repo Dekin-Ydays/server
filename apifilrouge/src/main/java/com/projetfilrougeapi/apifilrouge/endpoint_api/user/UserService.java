@@ -1,8 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
-import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
@@ -309,5 +307,20 @@ public class UserService {
         return CollectionModel.of(orders,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
+    }
+
+    public CollectionModel<EntityModel<OrganizerResponse>> getAllOrganizers() {
+
+        List<EntityModel<OrganizerResponse>> organizers = userRepository.findByRole(Role.Organizer).stream()
+                .map(user -> {
+                    OrganizerResponse response = OrganizerResponse.fromEntity(user);
+                    return EntityModel.of(response,
+                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
+                            linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"));
+                })
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(organizers,
+                linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel());
     }
 }

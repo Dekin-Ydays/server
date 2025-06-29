@@ -27,7 +27,7 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    // Retourne une liste d"évenements avec des filtres optionnels. Si aucun paramètre n'est fourni, renvoie tous les événements sans filtre.
+    // Retourne une liste d'évènements avec des filtres optionnels. Si aucun paramètre n'est fourni, renvoie tous les événements sans filtre.
     @GetMapping
     public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable,

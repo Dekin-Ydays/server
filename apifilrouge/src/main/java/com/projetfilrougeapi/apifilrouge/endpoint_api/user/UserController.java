@@ -1,8 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
-import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
@@ -37,13 +35,11 @@ public class UserController {
     public EntityModel<UserResponse> updateCurrentUser(@RequestBody UserRequest request) {
         return userService.updateCurrentUserProfile(request);
     }
+    @GetMapping("/organizers")
+    public CollectionModel<EntityModel<OrganizerResponse>> getAllOrganizers() {
+        return userService.getAllOrganizers();
+    }
 
-    /**
-     * Set the current authenticated user to dosabled.
-     */
-//    @DeleteMapping("/me")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    public void disableCurrentUser() {userService.disableCurrentUser();}
 
     @GetMapping("/{id}")
     public EntityModel<UserResponse> getUserById(@PathVariable("id") Long id) {

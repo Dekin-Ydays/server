@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,4 +36,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query("SELECT DISTINCT e.organizer FROM Event e WHERE e.place.id = :placeId")
     List<User> findOrganizersByPlace(@Param("placeId") Long placeId);
+
+    /**
+     * Retrieves a list of users by their role.
+     *
+     * @param role The role to filter users by.
+     * @return A list of users with the specified role.
+     */
+    List<User> findByRole(Role role);
 }
