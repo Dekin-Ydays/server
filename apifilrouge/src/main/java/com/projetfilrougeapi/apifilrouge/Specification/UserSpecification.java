@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.Specification;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
@@ -15,6 +16,7 @@ public class UserSpecification {
     /**
      * Creates a specification that searches for a string in the user's username,
      * first name, or last name, ignoring case.
+     *
      * @param query The user's search term.
      * @return A JPA Specification.
      */
@@ -34,6 +36,23 @@ public class UserSpecification {
                 predicates.add(cb.or(pPseudo, pFirstName, pLastName));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    /**
+     * Creates a specification to filter users by one or more roles.
+     * This method will be used by the SearchService to apply permission logic.
+     *
+     * @param roles The roles to filter by.
+     * @return A JPA Specification.
+     */
+    public static Specification<User> hasRole(Role... roles) {
+        return (root, query, builder) -> {
+            if (roles == null || roles.length == 0) {
+                return builder.conjunction();
+            }
+            // Uses the 'in' clause to match any of the provided roles
+            return root.get("role").in((Object[]) roles);
         };
     }
 }

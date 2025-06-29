@@ -1,12 +1,16 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.search.providers;
 
 import com.projetfilrougeapi.apifilrouge.DTO.CityResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.PlaceResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.SearchResultResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.CityRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.search.contracts.SearchProvider;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -28,18 +32,26 @@ public class CitySearchProvider implements SearchProvider {
     }
 
     /**
-     * Performs a non-paginated search by delegating to the paginated method.
+     * Performs a limited search for the global search.
+     * It creates a PageRequest to fetch only the top 'limit' results.
      */
     @Override
-    public List<SearchResultResponse> search(String query) {
-        return search(query, Pageable.unpaged()).getContent();
+    public List<SearchResultResponse> search(String query, int limit, Role... roles) {
+        Pageable pageRequest = PageRequest.of(0, limit);
+
+        return cityRepository.findByNameContainingIgnoreCase(query, pageRequest)
+                .map(city -> SearchResultResponse.builder()
+                        .type("city")
+                        .city(CityResponse.fromEntity(city))
+                        .build())
+                .getContent();
     }
 
     /**
      * Performs a paginated search for cities based on the query.
      */
     @Override
-    public Page<SearchResultResponse> search(String query, Pageable pageable) {
+    public Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles) {
         Page<City> cityPage = cityRepository.findByNameContainingIgnoreCase(query, pageable);
 
         return cityPage.map(city -> SearchResultResponse.builder()

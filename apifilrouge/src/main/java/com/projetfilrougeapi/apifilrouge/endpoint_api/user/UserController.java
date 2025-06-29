@@ -40,7 +40,6 @@ public class UserController {
         return userService.getAllOrganizers();
     }
 
-
     @GetMapping("/{id}")
     public EntityModel<UserResponse> getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id);

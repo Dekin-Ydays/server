@@ -5,8 +5,10 @@ import com.projetfilrougeapi.apifilrouge.DTO.SearchResultResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.search.contracts.SearchProvider;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +34,14 @@ public class PlaceSearchProvider implements SearchProvider {
      * This is used for the global search feature.
      */
     @Override
-    public List<SearchResultResponse> search(String query) {
-        return search(query, Pageable.unpaged()).getContent();
+    public List<SearchResultResponse> search(String query, int limit, Role... roles) {
+        Pageable pageRequest = PageRequest.of(0, limit);
+        return placeRepository.findByNameContainingIgnoreCase(query, pageRequest)
+                .map(place -> SearchResultResponse.builder()
+                        .type("place")
+                        .place(PlaceResponse.fromEntity(place))
+                        .build())
+                .getContent();
     }
 
     /**
@@ -41,7 +49,7 @@ public class PlaceSearchProvider implements SearchProvider {
      * This is used for typed searches (e.g., ?types=place).
      */
     @Override
-    public Page<SearchResultResponse> search(String query, Pageable pageable) {
+    public Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles) {
         // We call the paginated search method on the repository.
         Page<Place> placePage = placeRepository.findByNameContainingIgnoreCase(query, pageable);
 

@@ -24,17 +24,15 @@ public class SearchController {
     public ResponseEntity<?> search(
             @RequestParam("query") String query,
             @RequestParam(required = false) String[] types,
-            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "3", name = "limitPerType") int limitPerType,
             Pageable pageable
     ) {
         boolean isSingleTypeSearch = types != null && types.length == 1;
 
         if (isSingleTypeSearch) {
-            // Typed search -> return a paginated response
             return ResponseEntity.ok(searchService.typedSearch(query, types[0], pageable));
         } else {
-            // Global search -> return a limited list
-            return ResponseEntity.ok(searchService.globalSearch(query, types, limit));
+            return ResponseEntity.ok(searchService.globalSearch(query, types, limitPerType));
         }
     }
 }
