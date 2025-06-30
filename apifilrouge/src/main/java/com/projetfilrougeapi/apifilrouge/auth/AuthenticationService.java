@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.auth;
 
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
+import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -26,13 +27,14 @@ public class AuthenticationService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailSender emailSender;
     /**
      * Enregistre un nouvel utilisateur dans le système.
      *
      * @param request Les informations du nouvel utilisateur à enregistrer
      * @return Une réponse contenant le token JWT généré pour l'utilisateur enregistré
      */
-    public AuthenticationResponse register(UserRequest request) {
+    public AuthenticationResponse register(UserRequest request) throws Exception {
 
         User user = User.builder()
                 .firstName(request.getFirstName())
@@ -44,6 +46,7 @@ public class AuthenticationService {
                 .role(Role.User)
                 .build();
 
+        emailSender.sendWelcomeEmail(user);
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()

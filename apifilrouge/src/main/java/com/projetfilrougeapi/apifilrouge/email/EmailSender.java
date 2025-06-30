@@ -8,23 +8,23 @@ import org.apache.commons.mail.HtmlEmail;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.springframework.stereotype.Service;
+
 import java.io.StringWriter;
 
 import java.util.Date;
 import java.util.Properties;
 
-@Getter
-@Setter
+@Service
 public class EmailSender {
     private HtmlEmail email = new HtmlEmail();
     private String host = "smtp.gmail.com";
     private String port = "587";
-    private String username = "";
+    private String username = "marchalquentin06@gmail.com";
     private String password = "mjqgtkjjwwcapdps";
 
 
-    public EmailSender(String username) {
-        this.username = username;
+    public EmailSender() {
         email.setHostName(host);
         email.setSmtpPort(Integer.parseInt(port));
         email.setAuthentication(username, password);
@@ -61,8 +61,6 @@ public class EmailSender {
         email.setHtmlMsg(writer.toString());
 
         email.addTo(receiver.getEmail());
-        System.out.println("Email envoyé à : " + receiver.getEmail());
-
         // Envoi de l'email
         email.send();
     }
@@ -101,4 +99,36 @@ public class EmailSender {
         email.send();
     }
 
+
+    public void sendWelcomeEmail(User newAccount) throws Exception {
+        // Configuration de Velocity
+        VelocityEngine ve = new VelocityEngine();
+        Properties props = new Properties();
+        props.setProperty("resource.loader", "class");
+        props.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        ve.init(props);
+
+        // Création du contexte Velocity
+        VelocityContext context = new VelocityContext();
+        context.put("email", newAccount.getEmail());
+        context.put("nom", newAccount.getLastName());
+        context.put("prenom", newAccount.getFirstName());
+        context.put("pseudo", newAccount.getPseudo());
+
+
+        // Chargement et rendu du template
+        Template template = ve.getTemplate("templates/welcomeMailTemplate.vm", "UTF-8");
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+
+        // Configuration de l'email
+        email.setFrom("marchalquentin06@gmail.com");
+        email.setSubject("Création de votre compte sur notre plateforme");
+        email.setHtmlMsg(writer.toString());
+
+        email.addTo(newAccount.getEmail());
+        // Envoi de l'email
+        email.send();
+    }
 }

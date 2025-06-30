@@ -13,7 +13,7 @@ public class EventEmailUpdateManager {
 
     public void sendMultipleMailToParticipants(Event event) {
         event.getParticipants().forEach(participant -> {
-            EmailSender emailSender = new EmailSender(participant.getEmail());
+            EmailSender emailSender = new EmailSender();
             try {
                 emailSender.sendIUpdateEventEmail(participant, event);
             } catch (Exception e) {

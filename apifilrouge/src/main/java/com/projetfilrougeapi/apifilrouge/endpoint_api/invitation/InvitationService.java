@@ -88,7 +88,7 @@ public class InvitationService {
 
         Invitation savedInvitation = invitationRepository.save(newInvitation);
 
-        EmailSender emailSender = new EmailSender("marchalquentin06@gmail.com");
+        EmailSender emailSender = new EmailSender();
         emailSender.sendInvitationEmail(user,receiver,event);
 
         return EntityModel.of(savedInvitation,
