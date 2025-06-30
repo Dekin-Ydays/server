@@ -27,24 +27,33 @@ public class CityController {
         return cityService.getCityById(id);
     }
 
-    @GetMapping
-    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(value = "slug",required = false) String slug, @RequestParam(value = "region",required = false) String region) {
+    @GetMapping("/slug")
+    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(value = "slug", required = false) String slug, @RequestParam(value = "region", required = false) String region) {
         return cityService.findCities(slug, region);
     }
+
+    @GetMapping
+    public CollectionModel<EntityModel<CityResponse>> getAllCities(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.DESC) Pageable pageable) {
+        return cityService.getAllCities(pageable);
+    }
+
     @PostMapping
     public EntityModel<CityResponse> addCity(@Valid @RequestBody CityRequest city) {
         return cityService.addCity(city);
     }
+
     @PatchMapping("/{id}")
     public EntityModel<CityResponse> updateCity(@PathVariable("id") Long id, @Valid @RequestBody CityRequest city) {
         return cityService.updateCity(id, city);
     }
+
     @GetMapping("/{id}/places")
     public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(@PathVariable("id") Long id) {
         return cityService.getPlacesForCity(id);
     }
+
     @DeleteMapping("/{id}")
-    public void deleteCity(@PathVariable("id")  Long id) {
+    public void deleteCity(@PathVariable("id") Long id) {
         cityService.deleteCity(id);
     }
 
@@ -63,6 +72,7 @@ public class CityController {
 
     /**
      * Retrieves all active organizers in a given city.
+     *
      * @param id The ID of the city.
      * @return A collection of organizer profiles.
      */

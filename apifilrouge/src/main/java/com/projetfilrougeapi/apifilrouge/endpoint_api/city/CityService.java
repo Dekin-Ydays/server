@@ -3,10 +3,12 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
+import com.projetfilrougeapi.apifilrouge.assembler.CityResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
@@ -43,13 +45,15 @@ public class CityService {
     private final UserRepository userRepository;
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
+    private final CityResponseAssembler cityResponseAssembler;
 
-    public CityService(CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
+    public CityService(CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, CityResponseAssembler cityResponseAssembler) {
         this.cityRepository = cityRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
+        this.cityResponseAssembler = cityResponseAssembler;
     }
 
     public EntityModel<CityResponse> getCityById(Long id) {
@@ -262,5 +266,13 @@ public class CityService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         cityRepository.delete(city);
+    }
+
+    public CollectionModel<EntityModel<CityResponse>> getAllCities(Pageable pageable) {
+        Page<City> cities = cityRepository.findAll(pageable);
+
+        Page<CityResponse> placesDto = cities.map(CityResponse::fromEntity);
+
+        return pagedResourcesAssembler.toModel(placesDto, cityResponseAssembler);
     }
 }
