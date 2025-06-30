@@ -216,7 +216,7 @@ public class UserService {
         if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
         if (request.getNote() != null) existingUser.setNote(request.getNote());
         if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
-        if (request.getRole() != null) existingUser.setRole(request.getRole());
+        if (request.getRole() != null || existingUser.getRole()!=Role.Admin) existingUser.setRole(request.getRole());
 
         if (request.getCategoryKeys() != null) {
             List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
