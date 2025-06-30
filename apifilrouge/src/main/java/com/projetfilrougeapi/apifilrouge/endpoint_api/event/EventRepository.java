@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.event;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,11 +12,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RepositoryRestResource(collectionResourceRel = "events", path = "events",exported = false)
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
     Optional<Event> findById(Long id);
+
 
     Optional<List<Event>> findByOrganizerId(Long organizerId);
     boolean existsByOrganizerIdAndCityId(Long organizerId, Long cityId);

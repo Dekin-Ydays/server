@@ -10,18 +10,23 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
     OrderService orderService;
+
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
+
     @GetMapping
     public CollectionModel<EntityModel<Order>> getAllOrders() {
         return orderService.getAllOrders();
     }
+
     @GetMapping("/{id}")
     public EntityModel<Order> getOrderById(@PathVariable Long id) {
         return orderService.getOrderById(id);
@@ -46,9 +51,11 @@ public class OrderController {
     public EntityModel<User> getUserByOrderId(@PathVariable Long id) {
         return orderService.getUserByOrderId(id);
     }
+
     @GetMapping("/{id}/tickets")
     public CollectionModel<EntityModel<Ticket>> getTicketsByOrderId(@PathVariable Long id) {
-        return orderService.getTicketsByOrderId(id);}
+        return orderService.getTicketsByOrderId(id);
+    }
 
     @PostMapping("/{id}/tickets")
     public EntityModel<Ticket> addTicketToOrder(@PathVariable Long id, @Valid @RequestBody TicketRequest ticket) {
@@ -59,4 +66,5 @@ public class OrderController {
     public CollectionModel<EntityModel<Event>> getEventsByOrderId(@PathVariable Long id) {
         return orderService.getEventsByOrderId(id);
     }
+
 }

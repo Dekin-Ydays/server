@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -88,4 +89,11 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
+    public Map<String, Long> getCountOfCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        Map<String, Long> categoryCountMap = categories.stream()
+                .collect(Collectors.toMap(Category::getKey, category -> (long) category.getEvents().size()));
+
+        return categoryCountMap;
+    }
 }
