@@ -142,7 +142,7 @@ public class UserService {
                 .map(user -> {
                     UserResponse response = UserResponse.fromEntity(user);
                     return EntityModel.of(response,
-                            linkTo(methodOn(EventController.class).getEventById(user.getId())).withSelfRel());
+                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel());
                 })
                 .collect(Collectors.toList());
         return CollectionModel.of(users,
