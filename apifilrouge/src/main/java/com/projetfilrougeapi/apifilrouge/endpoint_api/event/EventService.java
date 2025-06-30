@@ -119,7 +119,9 @@ public class EventService {
         event.setPrice(request.getPrice());
         event.setContentHtml(request.getContentHtml());
         event.setImageUrl(request.getImageUrl());
-
+        if (request.getIsInvitationOnly() != null) {
+            event.setIsInvitationOnly(request.getIsInvitationOnly());
+        }
         boolean alreadyHasEventsInCity = eventRepository.existsByOrganizerIdAndCityId(
                 organizer.getId(),
                 request.getCityId()
@@ -406,6 +408,8 @@ public class EventService {
         if (request.getStatus() != null) event.setStatus(request.getStatus());
         if (request.getContentHtml() != null) event.setContentHtml(request.getContentHtml());
         if (request.getImageUrl() != null) event.setImageUrl(request.getImageUrl());
+        if (request.getIsInvitationOnly() != null) event.setIsInvitationOnly(request.getIsInvitationOnly());
+
 
         // place
         if (request.getPlaceId() != null) {

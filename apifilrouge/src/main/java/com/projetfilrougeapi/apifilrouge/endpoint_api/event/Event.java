@@ -49,6 +49,8 @@ public class Event {
     private Integer maxCustomers;
     @Column(name = "is_trending")
     private Boolean isTrending;
+    @Column(name = "is_invitation_only")
+    private Boolean isInvitationOnly = false; // par défaut, l'événement n'est pas sur invitation
     @Column(name = "is_first_edition")
     private Boolean isFirstEdition;
     private Double price;

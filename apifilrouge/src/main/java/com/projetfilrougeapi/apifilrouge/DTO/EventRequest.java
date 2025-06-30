@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.DTO;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventStatus;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class EventRequest {
     private Boolean isTrending;
 
     private Boolean isFirstEdition;
+
+    private Boolean isInvitationOnly;
 
     private EventStatus status;
 

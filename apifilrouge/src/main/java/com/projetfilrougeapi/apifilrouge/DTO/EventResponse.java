@@ -23,6 +23,7 @@ public class EventResponse {
     private String address;
     private Integer maxCustomers;
     private Boolean isTrending;
+    private Boolean isInvitationOnly;
     private Double price;
     private EventStatus status;
     private String contentHtml;
@@ -55,6 +56,7 @@ public class EventResponse {
                 .organizer(organizer)
                 .cityName(cityName)
                 .categories(categories)
+                .isInvitationOnly(event.getIsInvitationOnly())
                 .build();
     }
 }
