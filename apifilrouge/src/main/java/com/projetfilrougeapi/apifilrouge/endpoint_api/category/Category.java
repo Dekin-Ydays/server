@@ -31,6 +31,7 @@ public class Category {
     @Column(name = "is_trending")
     private boolean isTrending;
 
+    @Column(nullable = false, unique = true)
     private String key;
 
     @ManyToMany(mappedBy = "categories")

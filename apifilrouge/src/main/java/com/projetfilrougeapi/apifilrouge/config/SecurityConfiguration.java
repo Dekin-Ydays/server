@@ -45,8 +45,10 @@ public class SecurityConfiguration {
             "/api/v1/cities/**",
             "/api/v1/events/**",
             "/api/v1/categories/**",
-            "/api/v1/users/organizers",
+            "/api/v1/users/**",
+            "/api/v1/reviews/**",
             "/api/v1/search/**",
+            "/reviews/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
     };
@@ -115,12 +117,11 @@ public class SecurityConfiguration {
 
                             .requestMatchers(HttpMethod.GET, "/api/v1/invitations/**").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").hasAnyRole("Admin", "AuthService")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/orders").hasAnyRole("Admin", "AuthService")
+                            //.requestMatchers(HttpMethod.GET, "/api/v1/orders").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").hasAnyRole("Admin", "AuthService") //tickets mais faut pas récup les tikets d'une autre personne
                             .requestMatchers(HttpMethod.GET, "/api/v1/reports").hasAnyRole("Admin", "AuthService")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyRole("Admin", "AuthService", "User", "Organizer")
+                            //.requestMatchers(HttpMethod.GET, "/api/v1/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
+                            //.requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyRole("Admin", "AuthService", "User", "Organizer")
 
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/places").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/cities").hasAnyRole("Admin", "AuthService")
