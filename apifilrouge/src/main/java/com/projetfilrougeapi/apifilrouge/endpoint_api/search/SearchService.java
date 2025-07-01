@@ -1,9 +1,13 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.search;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventSummaryResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.SearchResultResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
+import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.Specification.UserSpecification;
 import com.projetfilrougeapi.apifilrouge.assembler.SearchResultAssembler;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.search.contracts.SearchProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -33,6 +37,7 @@ public class SearchService {
     private final PagedResourcesAssembler<SearchResultResponse> pagedResourcesAssembler;
     private final SearchResultAssembler searchResultAssembler;
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
 
     /**
      * Performs a global search across multiple types, returning a limited list.
@@ -85,46 +90,71 @@ public class SearchService {
     }
 
     /**
-     * Performs a paginated search for a single type, applying permission-based logic for users.
+     * Performs a paginated search for a single, specific type.
+     * This method now handles special cases for "event" and "user" searches
+     * to apply additional filters and permission logic.
      *
      * @param query    The search term.
      * @param type     The specific type to search for.
      * @param pageable Pagination information.
+     * @param cities   Optional filter for event search.
+     * @param places   Optional filter for event search.
      * @return A PagedModel of the search results.
      */
-    public PagedModel<EntityModel<SearchResultResponse>> typedSearch(String query, String type, Pageable pageable) {
+    public PagedModel<EntityModel<SearchResultResponse>> typedSearch(String query, String type, Pageable pageable, String[] cities, String[] places) {
 
-        if ("user".equalsIgnoreCase(type) || "organizer".equalsIgnoreCase(type)) {
+        // Search of events
+        if ("event".equalsIgnoreCase(type)) {
+            Specification<Event> spec = EventSpecification.hasTextInName(query);
+
+            if (cities != null && cities.length > 0) {
+                spec = spec.and(EventSpecification.hasCityNames(cities));
+            }
+            if (places != null && places.length > 0) {
+                spec = spec.and(EventSpecification.hasPlaceNames(places));
+            }
+
+            Page<Event> eventPage = eventRepository.findAll(spec, pageable);
+            Page<SearchResultResponse> resultPage = eventPage.map(event -> SearchResultResponse.builder()
+                    .type("event")
+                    .event(EventSummaryResponse.fromEntity(event))
+                    .build());
+
+            return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
+        }
+
+        // Search of users / Organizers
+        else if ("user".equalsIgnoreCase(type) || "organizer".equalsIgnoreCase(type)) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) authentication.getPrincipal();
+
             Specification<User> spec = UserSpecification.hasTextInNameOrPseudo(query);
 
-            if (!(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated()) {
-                User currentUser = (User) authentication.getPrincipal();
-                if (currentUser.getRole() != Role.Admin && currentUser.getRole() != Role.AuthService) {
-                    spec = spec.and(UserSpecification.hasRole(Role.Organizer));
-                } else if ("organizer".equalsIgnoreCase(type)) {
-                    spec = spec.and(UserSpecification.hasRole(Role.Organizer));
-                }
-            } else {
-                // Anonymous user can only search for organizers
+            if (currentUser.getRole() != Role.Admin && currentUser.getRole() != Role.AuthService) {
+                spec = spec.and(UserSpecification.hasRole(Role.Organizer));
+            } else if ("organizer".equalsIgnoreCase(type)) {
                 spec = spec.and(UserSpecification.hasRole(Role.Organizer));
             }
 
             Page<User> userPage = userRepository.findAll(spec, pageable);
             Page<SearchResultResponse> resultPage = userPage.map(user -> SearchResultResponse.builder()
-                    .type("user").user(UserResponse.fromEntity(user)).build());
+                    .type("user")
+                    .user(UserResponse.fromEntity(user))
+                    .build());
 
             return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
         }
 
-        // Standard logic for other types (city, place, event).
-        SearchProvider provider = searchProviders.stream()
-                .filter(p -> p.supports(type))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown search type: " + type));
+        // Standard for other types (city, place)
+        else {
+            SearchProvider provider = searchProviders.stream()
+                    .filter(p -> p.supports(type))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown or unsupported search type: " + type));
 
-        Page<SearchResultResponse> resultPage = provider.search(query, pageable);
-        return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
+            Page<SearchResultResponse> resultPage = provider.search(query, pageable);
+            return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
+        }
     }
 
     /**

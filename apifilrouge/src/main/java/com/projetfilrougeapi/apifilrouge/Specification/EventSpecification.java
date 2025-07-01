@@ -14,7 +14,12 @@ import java.util.stream.Collectors;
 
 public class EventSpecification {
 
-    // filtre les événements selon une plage de dates
+    /**
+     * Creates a specification to filter events that occur between a start and end date.
+     * @param start The start date of the range.
+     * @param end The end date of the range.
+     * @return A JPA Specification for the date range.
+     */
     public static Specification<Event> hasDateBetween(LocalDate start, LocalDate end) {
         return (root, query, builder) -> {
             if (start != null && end != null) { // Si les deux filtres sont définis, alors on filtre entre les deux dates
@@ -29,7 +34,12 @@ public class EventSpecification {
         };
     }
 
-    // filtre les événements selon une fourchette de prix
+    /**
+     * Creates a specification to filter events within a given price range.
+     * @param min The minimum price.
+     * @param max The maximum price.
+     * @return A JPA Specification for the price range.
+     */
     public static Specification<Event> hasPriceBetween(Double min, Double max) {
         return (root, query, builder) -> {
             if (min != null && max != null) {
@@ -45,11 +55,10 @@ public class EventSpecification {
     }
 
     /**
-     * Filtre les événements qui appartiennent à au moins une des catégories spécifiées.
-     * Cette méthode est conçue pour une relation @ManyToMany entre Event et Category.
-     *
-     * @param categoryKeys Un tableau de noms de catégories sur lesquels filtrer.
-     * @return Une Specification pour JPA.
+     * Creates a specification to filter events that belong to at least one of the specified categories.
+     * This method is designed for a @ManyToMany relationship between Event and Category.
+     * @param categoryKeys An array of category keys to filter by.
+     * @return A JPA Specification.
      */
     public static Specification<Event> hasCategories(String[] categoryKeys) {
         return (root, query, builder) -> {
@@ -64,9 +73,9 @@ public class EventSpecification {
 
 
     /**
-     * Filtre les événements qui ont lieu dans une ou plusieurs villes spécifiques, par leur nom.
-     * @param cityNames Un tableau de noms de villes à rechercher.
-     * @return Une Specification pour JPA.
+     * Creates a specification to filter events that occur in one or more specific cities by name.
+     * @param cityNames An array of city names to search for.
+     * @return A JPA Specification.
      */
     public static Specification<Event> hasCityNames(String[] cityNames) {
         return (root, query, builder) -> {
@@ -86,9 +95,9 @@ public class EventSpecification {
     }
 
     /**
-     * Filtre les événements qui ont lieu dans un ou plusieurs lieux spécifiques, par leur nom.
-     * @param placeNames Un tableau de noms de lieux à rechercher.
-     * @return Une Specification pour JPA.
+     * Creates a specification to filter events that occur at one or more specific places by name.
+     * @param placeNames An array of place names to search for.
+     * @return A JPA Specification.
      */
     public static Specification<Event> hasPlaceNames(String[] placeNames) {
         return (root, query, builder) -> {
@@ -106,9 +115,9 @@ public class EventSpecification {
     }
 
     /**
-     * getEventsForPlace
-     * @param placeId
-     * @return
+     * Creates a specification to filter events by a specific place ID.
+     * @param placeId The ID of the place.
+     * @return A JPA Specification.
      */
     public static Specification<Event> hasPlace(Long placeId) {
         return (root, query, builder) -> {
@@ -120,9 +129,9 @@ public class EventSpecification {
     }
 
     /**
-     * getEventsForCity
-     * @param cityId
-     * @return
+     * Creates a specification to filter events by a specific city ID.
+     * @param cityId The ID of the city.
+     * @return A JPA Specification.
      */
     public static Specification<Event> hasCity(Long cityId) {
         return (root, query, builder) -> {
@@ -139,5 +148,20 @@ public class EventSpecification {
      */
     public static Specification<Event> isFirstEdition() {
         return (root, query, builder) -> builder.isTrue(root.get("isFirstEdition"));
+    }
+
+    /**
+     * Creates a specification to search for text within the event's name.
+     * The search is case-insensitive and matches partial text.
+     * @param query The search term.
+     * @return A JPA Specification.
+     */
+    public static Specification<Event> hasTextInName(String query) {
+        return (root, cq, cb) -> {
+            if (query == null || query.trim().isEmpty()) {
+                return cb.conjunction(); // Does nothing if the query is empty
+            }
+            return cb.like(cb.lower(root.get("name")), "%" + query.toLowerCase() + "%");
+        };
     }
 }
