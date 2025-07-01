@@ -17,6 +17,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import com.projetfilrougeapi.apifilrouge.validator.DateValidator;
+import com.projetfilrougeapi.apifilrouge.validator.NameValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -103,6 +104,11 @@ public class EventService {
         if (!DateValidator.isAfterToday(request.getDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
         }
+
+        if (!NameValidator.isValidName(request.getName()) || !NameValidator.isValidName(request.getDescription())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "l'évènement contient des mots interdits.");
+        }
+
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         User organizer = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));

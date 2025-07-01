@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.ticket;
 
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class TicketService {
     private final TicketRepository ticketRepository;
+    private final OrderRepository orderRepository;
 
-    public TicketService(TicketRepository ticketRepository) {
+
+    public TicketService(TicketRepository ticketRepository, OrderRepository orderRepository) {
         this.ticketRepository = ticketRepository;
+        this.orderRepository = orderRepository;
     }
 
     public EntityModel<Ticket> getTicketById(Long id) {
@@ -33,7 +37,7 @@ public class TicketService {
 
     public EntityModel<Ticket> createTicket(Ticket ticket) {
         Ticket savedTicket = ticketRepository.save(ticket);
-
+        orderRepository.findById(ticket.getOrder().getId()).get().getTickets().add(savedTicket);
         return EntityModel.of(savedTicket,
                 linkTo(methodOn(TicketController.class).getAllTickets()).withSelfRel(),
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
