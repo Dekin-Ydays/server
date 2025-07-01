@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.ticket;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import jakarta.persistence.*;
@@ -19,11 +20,13 @@ public class Ticket {
     private String name;
     private String lastName;
     private String description;
-    private Double unit_price;
+    @Column(name = "unit_price")
+    private Double unitPrice;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = true)
     @JsonBackReference(value = "order-tickets")
+    @JsonIgnore
     private Order order;
 
 }

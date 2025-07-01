@@ -1,0 +1,134 @@
+package com.projetfilrougeapi.apifilrouge.email;
+
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.mail.HtmlEmail;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.springframework.stereotype.Service;
+
+import java.io.StringWriter;
+
+import java.util.Date;
+import java.util.Properties;
+
+@Service
+public class EmailSender {
+    private HtmlEmail email = new HtmlEmail();
+    private String host = "smtp.gmail.com";
+    private String port = "587";
+    private String username = "marchalquentin06@gmail.com";
+    private String password = "mjqgtkjjwwcapdps";
+
+
+    public EmailSender() {
+        email.setHostName(host);
+        email.setSmtpPort(Integer.parseInt(port));
+        email.setAuthentication(username, password);
+        email.setSSLOnConnect(true);
+    }
+
+
+    public void sendInvitationEmail(User sender, User receiver, Event event) throws Exception {
+        // Configuration de Velocity
+        VelocityEngine ve = new VelocityEngine();
+        Properties props = new Properties();
+        props.setProperty("resource.loader", "class");
+        props.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        ve.init(props);
+
+        // Création du contexte Velocity
+        VelocityContext context = new VelocityContext();
+        context.put("nomEvenement", event.getName());
+        context.put("nom", sender.getLastName());
+        context.put("prenom", sender.getFirstName());
+        context.put("emailExpediteur", sender.getEmail());
+        context.put("dateEnvoi", new Date().getDay()+"/" + new Date().getMonth() + "/" + new Date().getYear());
+
+
+        // Chargement et rendu du template
+        Template template = ve.getTemplate("templates/emailTemplate.vm", "UTF-8");
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+
+        // Configuration de l'email
+        email.setFrom("marchalquentin06@gmail.com");
+        email.setSubject("Invitation concernant l'événement : " + event.getName());
+        email.setHtmlMsg(writer.toString());
+
+        email.addTo(receiver.getEmail());
+        // Envoi de l'email
+        email.send();
+    }
+
+    public void sendIUpdateEventEmail(User receiver, Event event) throws Exception {
+        // Configuration de Velocity
+        VelocityEngine ve = new VelocityEngine();
+        Properties props = new Properties();
+        props.setProperty("resource.loader", "class");
+        props.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        ve.init(props);
+
+        // Création du contexte Velocity
+        VelocityContext context = new VelocityContext();
+        context.put("nomEvenement", event.getName());
+        context.put("dateEvenement", event.getDate().getDayOfMonth() + "/" + event.getDate().getMonth() + "/" + event.getDate().getYear());
+        context.put("emplacementEvenement", event.getPlace().getAddress());
+        context.put("dateNotification", new Date().getDay()+"/" + new Date().getMonth() + "/" + new Date().getYear());
+
+
+        // Chargement et rendu du template
+        Template template = ve.getTemplate("templates/emailTemplateUpdateEvent.vm", "UTF-8");
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+
+        // Configuration de l'email
+        email.setFrom("marchalquentin06@gmail.com");
+        email.setSubject("Mise à jour concernant l'événement : " + event.getName());
+        email.setHtmlMsg(writer.toString());
+
+        email.addTo(receiver.getEmail());
+        System.out.println("Email envoyé à : " + receiver.getEmail());
+
+        // Envoi de l'email
+        email.send();
+    }
+
+
+    public void sendWelcomeEmail(User newAccount) throws Exception {
+        // Configuration de Velocity
+        VelocityEngine ve = new VelocityEngine();
+        Properties props = new Properties();
+        props.setProperty("resource.loader", "class");
+        props.setProperty("class.resource.loader.class",
+                "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        ve.init(props);
+
+        // Création du contexte Velocity
+        VelocityContext context = new VelocityContext();
+        context.put("email", newAccount.getEmail());
+        context.put("nom", newAccount.getLastName());
+        context.put("prenom", newAccount.getFirstName());
+        context.put("pseudo", newAccount.getPseudo());
+
+
+        // Chargement et rendu du template
+        Template template = ve.getTemplate("templates/welcomeMailTemplate.vm", "UTF-8");
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+
+        // Configuration de l'email
+        email.setFrom("marchalquentin06@gmail.com");
+        email.setSubject("Création de votre compte sur notre plateforme");
+        email.setHtmlMsg(writer.toString());
+
+        email.addTo(newAccount.getEmail());
+        // Envoi de l'email
+        email.send();
+    }
+}

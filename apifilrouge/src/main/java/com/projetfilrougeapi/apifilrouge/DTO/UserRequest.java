@@ -11,6 +11,15 @@ public class UserRequest {
     private String lastName;
     private String email;
     private String password;
+    private String pseudo;
+
     private Role role;
-    private List<Long> categoryIds;
+    private Boolean isOrganizer;
+    private String phone;
+    private String description;
+    private String imageUrl;
+    private String bannerUrl;
+    private Double note;
+    private List<String> categoryKeys;
+    private String socials;
 }

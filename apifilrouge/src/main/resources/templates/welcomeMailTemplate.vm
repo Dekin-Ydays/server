@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur Veevent - ${prenom} ${nom}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .welcome-title {
+            color: #3498db;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .welcome-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        .celebration-section {
+            background-color: #e8f8f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #27ae60;
+            text-align: center;
+        }
+        .personal-info {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .welcome-features {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        .signature {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #3498db;
+            text-align: center;
+        }
+        .contact-info {
+            font-style: italic;
+            color: #666;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .emoji {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo-section">
+        <img src="https://veevent.vercel.app/veevent.png" alt="Logo VeEvent" class="logo">
+    </div>
+
+    <div class="header">
+        <h1 class="welcome-title">&#x1F389; Bienvenue sur VeEvent ! &#x1F389;</h1>
+        <h2 style="color: #666; font-size: 18px; margin: 0;">Félicitations ${prenom} !</h2>
+    </div>
+
+    <div class="celebration-section">
+        <div class="emoji">&#x1F973; &#x1F38A; &#x2728;</div>
+        <h3 style="color: #27ae60; margin: 15px 0;">Votre compte a été créé avec succès !</h3>
+        <p style="font-size: 18px; margin: 0;">Prêt(e) à vivre des expériences inoubliables ?</p>
+    </div>
+
+    <div class="welcome-text">
+        <p>Salut ${prenom} ! &#x1F44D;</p>
+
+        <p>Nous sommes <strong>ravis</strong> de t'accueillir dans la grande famille VeEvent ! &#x1F31F;</p>
+
+        <p>Ton aventure commence maintenant et nous sommes impatients de voir tous les événements fantastiques auxquels tu vas participer et organiser !</p>
+    </div>
+
+    <div class="personal-info">
+        <h3 style="color: #3498db; margin-top: 0;">&#x1F4DD; Récapitulatif de ton compte :</h3>
+        <p><strong>&#x1F464; Nom :</strong> ${nom}</p>
+        <p><strong>&#x1F464; Prénom :</strong> ${prenom}</p>
+        <p><strong>&#x1F4E7; Email :</strong> ${email}</p>
+        <p><strong>&#x1F3AD; Pseudo :</strong> ${pseudo}</p>
+    </div>
+
+    <div class="welcome-features">
+        <h3 style="color: #3498db; margin-top: 0;">&#x1F680; Ce qui t'attend :</h3>
+        <p><strong>&#x1F3AA; Découvrir</strong> des événements passionnants près de chez toi</p>
+        <p><strong>&#x1F3A8; Créer</strong> tes propres événements et rassembler ta communauté</p>
+        <p><strong>&#x1F91D; Connecter</strong> avec d'autres passionnés qui partagent tes centres d'intérêt</p>
+        <p><strong>&#x1F4F1; Gérer</strong> facilement toutes tes participations en un seul endroit</p>
+    </div>
+
+    <div class="highlight">
+        <p style="margin: 0;"><strong>&#x1F3AF; Prêt(e) à commencer ?</strong></p>
+        <p style="margin: 5px 0 0 0;">Connecte-toi dès maintenant et explore ton premier événement !</p>
+    </div>
+
+    <div class="footer">
+        <div class="signature">
+            L'équipe Veevent &#x1F499;
+        </div>
+    </div>
+</div>
+</body>
+</html>

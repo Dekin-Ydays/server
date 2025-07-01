@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.category;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -30,11 +31,16 @@ public class Category {
     @Column(name = "is_trending")
     private boolean isTrending;
 
+    @Column(nullable = false, unique = true)
+    private String key;
+
     @ManyToMany(mappedBy = "categories")
     @JsonIgnoreProperties("categories-user")
+    @JsonIgnore
     private List<User> users = new ArrayList<>();
 
     @ManyToMany(mappedBy = "categories")
     @JsonIgnoreProperties("categories-events")
+    @JsonIgnore
     private List<Event> events = new ArrayList<>();
 }

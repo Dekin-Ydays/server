@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 
+import com.projetfilrougeapi.apifilrouge.DTO.InvitationRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/invitations")
+@RequestMapping("/api/v1/invitations")
 public class InvitationController {
 
     private final InvitationService invitationService;
@@ -33,7 +34,7 @@ public class InvitationController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public EntityModel<Invitation> updateInvitation(@PathVariable Long id, @RequestBody Invitation invitation) {
+    public EntityModel<Invitation> updateInvitation(@PathVariable Long id, @RequestBody InvitationRequest invitation) {
         return invitationService.updateInvitation(id, invitation);
     }
     @DeleteMapping("/{id}")
@@ -44,7 +45,7 @@ public class InvitationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntityModel<Invitation> addInvitation(@RequestBody Invitation invitation) {
+    public EntityModel<Invitation> addInvitation(@RequestBody InvitationRequest invitation) throws Exception {
         return invitationService.addInvitation(invitation);
     }
 }

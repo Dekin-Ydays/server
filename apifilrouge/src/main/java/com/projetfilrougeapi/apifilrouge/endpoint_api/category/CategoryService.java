@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -33,7 +34,9 @@ public class CategoryService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(categories,
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel());
+                linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel(),
+                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
+
     }
 
     public EntityModel<Category> getCategoryById(Long id) {
@@ -52,15 +55,20 @@ public class CategoryService {
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("categories"));
     }
 
-    public EntityModel<Category> updateCategory(Long id, Category category) {
+    public EntityModel<Category> updateCategory(Long id, Category categoryRequest) {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (existingCategory.getName() != null && !existingCategory.getName().equals(category.getName())) {
-            existingCategory.setName(category.getName());
+        if (categoryRequest.getName() != null) {
+            existingCategory.setName(categoryRequest.getName());
         }
-        if (existingCategory.getDescription() != null && !existingCategory.getDescription().equals(category.getDescription())) {
-            existingCategory.setDescription(category.getDescription());
+
+        if (categoryRequest.getDescription() != null) {
+            existingCategory.setDescription(categoryRequest.getDescription());
+        }
+
+        if (categoryRequest.getKey() != null) {
+            existingCategory.setKey(categoryRequest.getKey());
         }
 
         Category updatedCategory = categoryRepository.save(existingCategory);
@@ -81,4 +89,11 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
+    public Map<String, Long> getCountOfCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        Map<String, Long> categoryCountMap = categories.stream()
+                .collect(Collectors.toMap(Category::getKey, category -> (long) category.getEvents().size()));
+
+        return categoryCountMap;
+    }
 }

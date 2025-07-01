@@ -1,7 +1,13 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 
+import com.projetfilrougeapi.apifilrouge.DTO.InvitationRequest;
+import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventService;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -17,9 +23,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 public class InvitationService {
 
     private final InvitationRepository invitationRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final EventService eventService;
 
-    public InvitationService(InvitationRepository invitationRepository) {
+
+    public InvitationService(InvitationRepository invitationRepository, EventRepository eventRepository, UserRepository userRepository, EventService eventService) {
         this.invitationRepository = invitationRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+        this.eventService = eventService;
     }
 
     public CollectionModel<EntityModel<Invitation>> getAllInvitations() {
@@ -32,7 +45,7 @@ public class InvitationService {
 
         return CollectionModel.of(invitations,
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<Invitation> getInvitationById(Long id) {
@@ -57,9 +70,26 @@ public class InvitationService {
                 linkTo(methodOn(InvitationController.class).getInvitationById(id)).withRel("invitation"));
     }
 
+    // création d'une invitation
+    public EntityModel<Invitation> addInvitation(InvitationRequest invitation) throws Exception {
+        Event event = eventRepository.findById(invitation.getEventId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
+        User user = userRepository.findById(invitation.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User receiver = userRepository.findById(event.getOrganizer().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receiver not found"));
 
-    public EntityModel<Invitation> addInvitation(Invitation invitation) {
-        Invitation savedInvitation = invitationRepository.save(invitation);
+        Invitation newInvitation = Invitation.builder()
+                .event(event)
+                .user(user)
+                .status(invitation.getStatus())
+                .description(invitation.getDescription())
+                .build();
+
+        Invitation savedInvitation = invitationRepository.save(newInvitation);
+
+        EmailSender emailSender = new EmailSender();
+        emailSender.sendInvitationEmail(user,receiver,event);
 
         return EntityModel.of(savedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(savedInvitation.getId())).withSelfRel(),
@@ -67,30 +97,61 @@ public class InvitationService {
                 linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getId())).withRel("event"));
     }
 
-    public EntityModel<Invitation> updateInvitation(Long id, Invitation invitation) {
+    public EntityModel<Invitation> updateInvitation(Long id, InvitationRequest invitation) {
+        // Récupération de l'invitation existante
         Invitation existingInvitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        if (invitation.getEvent() != null) {
-            existingInvitation.setEvent(invitation.getEvent());
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation non trouvée"));
+        
+        // Mise à jour de l'événement si spécifié
+        Event event = existingInvitation.getEvent();
+        if (invitation.getEventId() != null) {
+            event = eventRepository.findById(invitation.getEventId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé"));
+            existingInvitation.setEvent(event);
         }
+        
+        // Mise à jour de la description si spécifiée
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
         }
-        if (invitation.getType() != null) {
-            existingInvitation.setType(invitation.getType());
-        }
+        
+        // Mise à jour du statut et gestion de l'ajout du participant
         if (invitation.getStatus() != null) {
             existingInvitation.setStatus(invitation.getStatus());
+            
+            // Si le statut est "ACCEPTED", on ajoute l'utilisateur comme participant
+            if ("ACCEPTED".equals(invitation.getStatus().toString())) {
+                User userToAdd = existingInvitation.getUser();
+                
+                // Vérification si l'événement a atteint sa capacité maximale
+                if (event.getMaxCustomers() != null) {
+                    long currentParticipantsCount = event.getParticipants().stream()
+                            .filter(user -> !user.getId().equals(userToAdd.getId()))
+                            .count();
+                    
+                    if (currentParticipantsCount >= event.getMaxCustomers()) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre maximum de participants atteint");
+                    }
+                }
+                
+                // Utilisation du service event pour ajouter le participant
+                event.getParticipants().add(userToAdd);
+                eventRepository.save(event);
+                //eventService.addParticipantToEvent(event.getId(), userToAdd.getId());
+            }
         }
-
+        
+        // Sauvegarde des modifications
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
-
+        
+        // Construction de la réponse
         return EntityModel.of(updatedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getId())).withRel("event"));
     }
+
+    // Suppression d'une invitation
     public void deleteInvitation(Long id) {
         Invitation invitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

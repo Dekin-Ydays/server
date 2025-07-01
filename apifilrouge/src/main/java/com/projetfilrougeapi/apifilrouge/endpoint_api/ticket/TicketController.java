@@ -7,7 +7,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/tickets")
+@RequestMapping("/api/v1/tickets")
 public class TicketController {
     private final TicketService ticketService;
 
@@ -26,7 +26,7 @@ public class TicketController {
     }
 
     @GetMapping("/{id}")
-    public EntityModel<Ticket> getTicketById(@PathVariable Long id) {
+    public EntityModel<Ticket> getTicketById(@PathVariable("id") Long id) {
         return ticketService.getTicketById(id);
     }
     /*@GetMapping("/{id}/order")
@@ -35,11 +35,11 @@ public class TicketController {
     }*/
 
     @PatchMapping
-    public EntityModel<Ticket> updateTicket(@PathVariable Long id, Ticket ticket) {
+    public EntityModel<Ticket> updateTicket(@PathVariable("id") Long id, Ticket ticket) {
         return ticketService.updateTicket(id, ticket);
     }
     @DeleteMapping("/{id}")
-    public void deleteTicket(Long id) {
+    public void deleteTicket(@PathVariable("id") Long id) {
         ticketService.deleteTicket(id);
     }
 

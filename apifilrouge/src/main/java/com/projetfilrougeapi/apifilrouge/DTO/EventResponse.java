@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -22,11 +23,22 @@ public class EventResponse {
     private String address;
     private Integer maxCustomers;
     private Boolean isTrending;
+    private Boolean isInvitationOnly;
     private Double price;
     private EventStatus status;
+    private String contentHtml;
+    private String imageUrl;
     private int currentParticipants;
+    private OrganizerSummary organizer;
+    private String cityName;
+    private String placeName;
+    private List<CategorySummary> categories;
 
     public static EventResponse fromEntity(Event event) { // on ne veut pas pouvoir instancier un objet vide de EventResponse
+        String placeName = (event.getPlace() != null) ? event.getPlace().getName() : null;
+        String cityName = (event.getPlace() != null) ? event.getPlace().getCityName() : null;
+        List<CategorySummary> categories = event.getCategories().stream().map(category -> new CategorySummary(category.getName(), category.getKey())).collect(Collectors.toList());
+        OrganizerSummary organizer = (event.getOrganizer() != null) ? OrganizerSummary.builder().pseudo(event.getOrganizer().getPseudo()).imageUrl(event.getOrganizer().getImageUrl()).note(event.getOrganizer().getNote()).firstName(event.getOrganizer().getFirstName()).lastName(event.getOrganizer().getLastName()).build() : null;
         return EventResponse.builder()
                 .id(event.getId())
                 .date(event.getDate())
@@ -37,7 +49,14 @@ public class EventResponse {
                 .isTrending(event.getIsTrending())
                 .price(event.getPrice())
                 .status(event.getStatus())
+                .contentHtml(event.getContentHtml())
+                .imageUrl(event.getImageUrl())
                 .currentParticipants(event.getParticipants().size())
+                .placeName(placeName)
+                .organizer(organizer)
+                .cityName(cityName)
+                .categories(categories)
+                .isInvitationOnly(event.getIsInvitationOnly())
                 .build();
     }
 }

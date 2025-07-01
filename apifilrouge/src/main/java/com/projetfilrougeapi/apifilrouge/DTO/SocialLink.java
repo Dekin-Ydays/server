@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TicketResquest {
+class SocialLink {
     private String name;
-    private String lastName;
-    private String description;
-    private Double unitPrice;
-    private Long orderId;
+    private String url;
 }

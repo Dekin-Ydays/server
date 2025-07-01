@@ -5,8 +5,10 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/v1/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -40,5 +42,10 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable("id") Long id) {
         categoryService.deleteCategory(id);
+    }
+
+    @GetMapping("/counts")
+    public Map<String,Long> getCountOfCategories () {
+        return categoryService.getCountOfCategories();
     }
 }

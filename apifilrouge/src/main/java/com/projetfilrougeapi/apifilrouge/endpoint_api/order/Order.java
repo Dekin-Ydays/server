@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
@@ -32,10 +33,12 @@ public class Order {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_id")
     @JsonBackReference(value = "event-orders")
+    @JsonIgnore
     private Event event;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference(value = "user-orders")
+    @JsonIgnore
     private User user;
 }

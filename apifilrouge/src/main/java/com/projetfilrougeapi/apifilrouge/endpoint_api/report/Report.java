@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.report;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,10 +28,12 @@ public class Report {
         @ManyToOne
         @JoinColumn(name = "sender_id", nullable = false)
         @JsonBackReference("user-reports-sent")
+        @JsonIgnore
         private User senderUser;
 
         @ManyToOne
         @JoinColumn(name = "receiver_id", nullable = false)
         @JsonBackReference("user-reports-received")
+        @JsonIgnore
         private User reportedUser;
 }
