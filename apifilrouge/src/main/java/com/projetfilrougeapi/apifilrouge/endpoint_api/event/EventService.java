@@ -408,15 +408,18 @@ public class EventService {
 
 
     public EntityModel<EventResponse> updateEvent(Long id, EventRequest request) {
-        if (!DateValidator.isAfterToday(request.getDate())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
-        }
+
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (request.getName() != null) event.setName(request.getName());
         if (request.getDescription() != null) event.setDescription(request.getDescription());
-        if (request.getDate() != null) event.setDate(request.getDate());
+        if (request.getDate() != null){
+            if (!DateValidator.isAfterToday(request.getDate())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
+            }
+            event.setDate(request.getDate());
+        };
         if (request.getAddress() != null) event.setAddress(request.getAddress());
         if (request.getMaxCustomers() != null) event.setMaxCustomers(request.getMaxCustomers());
         if (request.getIsTrending() != null) event.setIsTrending(request.getIsTrending());
