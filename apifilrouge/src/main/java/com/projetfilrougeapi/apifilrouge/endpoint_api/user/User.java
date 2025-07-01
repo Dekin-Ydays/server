@@ -113,16 +113,6 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<Event> participatedEvents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "senderUser", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-reports-sent")
-    @JsonIgnore
-    private List<Report> reportsSent;
-
-    @OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-reports-received")
-    @JsonIgnore
-    private List<Report> reportsReceived;
-
     // === Spring Security methods ===
 
     @Override
