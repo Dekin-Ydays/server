@@ -54,37 +54,33 @@ public class PlaceService {
         this.placeResponseAssembler = placeResponseAssembler;
     }
 
-    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(String slug) {
-        if (slug != null && !slug.isEmpty()) {
-            // Search for a specific place by slug
-            Place place = placeRepository.findBySlug(slug)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with slug: " + slug));
+    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(Pageable pageable) {
+        Page<Place> places = placeRepository.findAll(pageable);
 
-            EntityModel<PlaceResponse> placeModel = EntityModel.of(PlaceResponse.fromEntity(place),
-                    linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
-                    linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
-                    linkTo(methodOn(PlaceController.class).getCityForPlace(place.getId())).withRel("city"),
-                    linkTo(methodOn(CityController.class).getOrganizersForCity(place.getId())).withRel("organizers"),
-                    linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getId(), null,null, null, null, null, null)).withRel("events"));
+        Page<PlaceResponse> placesDto = places.map(PlaceResponse::fromEntity);
 
+        return pagedResourcesAssembler.toModel(placesDto, placeResponseAssembler);
+    }
 
-            // Return a collection containing the single result
-            return CollectionModel.of(Collections.singletonList(placeModel),
-                    linkTo(methodOn(PlaceController.class).findPlaces(slug)).withSelfRel());
+    /**
+     * Finds a place by its slug and returns it wrapped in an EntityModel with HATEOAS links.
+     *
+     * @param slug The unique slug identifier for the city.
+     * @return An EntityModel containing the CityResponse and HATEOAS links.
+     * @throws ResponseStatusException If no city is found with the given slug.
+     */
+    public EntityModel<PlaceResponse> findPlaceBySlug(String slug) {
+        Place place = placeRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No place found with the slug: " + slug));
 
-        } else {
-            // Return the list of all places
-            List<EntityModel<PlaceResponse>> places = placeRepository.findAll().stream()
-                    .map(place -> {
-                        PlaceResponse response = PlaceResponse.fromEntity(place);
-                        return EntityModel.of(response,
-                                linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel());
-                    })
-                    .collect(Collectors.toList());
+        PlaceResponse response = PlaceResponse.fromEntity(place);
 
-            return CollectionModel.of(places,
-                    linkTo(methodOn(PlaceController.class).findPlaces(null)).withSelfRel());
-        }
+        return EntityModel.of(response,
+                linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
+                linkTo(methodOn(PlaceController.class).getCityForPlace(place.getId())).withRel("city"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getOrganizersForPlace(place.getId())).withRel("organizers"),
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
     public EntityModel<PlaceResponse> getPlaceById(Long id) {
@@ -95,7 +91,7 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
@@ -164,7 +160,7 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
@@ -211,7 +207,7 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
@@ -255,13 +251,5 @@ public class PlaceService {
 
         return CollectionModel.of(organizerModels,
                 linkTo(methodOn(PlaceController.class).getOrganizersForPlace(placeId)).withSelfRel());
-    }
-
-    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(Pageable pageable) {
-        Page<Place> places = placeRepository.findAll(pageable);
-
-        Page<PlaceResponse> placesDto = places.map(PlaceResponse::fromEntity);
-
-        return pagedResourcesAssembler.toModel(placesDto, placeResponseAssembler);
     }
 }

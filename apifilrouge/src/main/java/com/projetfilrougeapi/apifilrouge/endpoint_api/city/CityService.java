@@ -64,51 +64,55 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"),
+                linkTo(methodOn(CityController.class).getAllCities(null,null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId())).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
-    public CollectionModel<EntityModel<CityResponse>> findCities(String slug, String region) {
+    /**
+     * Retrieves a paginated list of cities, optionally filtered by region.
+     *
+     * @param pageable Pagination and sorting information.
+     * @param region   Optional region name to filter cities by (case-insensitive).
+     * @return A PagedModel containing CityResponse entities wrapped in EntityModels with HATEOAS links.
+     */
+    public PagedModel<EntityModel<CityResponse>> getAllCities(Pageable pageable, String region) {
+        Page<City> cityPage;
 
-        // On cherche une ville par son slug.
-        if (slug != null && !slug.isEmpty()) {
-            City city = cityRepository.findBySlug(slug)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune ville trouvée avec le slug : " + slug));
-
-            CityResponse response = CityResponse.fromEntity(city);
-
-            // on construit un EntityModel avec tous les liens utiles, comme pour getById.
-            EntityModel<CityResponse> cityModel = EntityModel.of(response,
-                    linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
-                    linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
-                    linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId())).withRel("organizers"),
-                    linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null,null, null, null, null, null)).withRel("events"));
-
-            // on retourne une collection contenant ce seul élément enrichi.
-            return CollectionModel.of(Collections.singletonList(cityModel),
-                    linkTo(methodOn(CityController.class).findCities(slug, null)).withSelfRel());
-        }
-
-        // On cherche par région ou on liste tout.
-        List<City> citiesToReturn;
         if (region != null && !region.isEmpty()) {
-            citiesToReturn = cityRepository.findByRegionIgnoreCase(region);
+            // If a region is provided, filter cities by the given region.
+            cityPage = cityRepository.findByRegionIgnoreCase(region, pageable);
         } else {
-            citiesToReturn = cityRepository.findAll();
+            // retrieve all cities.
+            cityPage = cityRepository.findAll(pageable);
         }
 
-        List<EntityModel<CityResponse>> cityModels = citiesToReturn.stream()
-                .map(city -> {
-                    CityResponse response = CityResponse.fromEntity(city);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel());
-                })
-                .collect(Collectors.toList());
+        // Map the Page<City> to Page<CityResponse> DTOs.
+        Page<CityResponse> cityDtoPage = cityPage.map(CityResponse::fromEntity);
 
-        return CollectionModel.of(cityModels,
-                linkTo(methodOn(CityController.class).findCities(null, region)).withSelfRel());
+        // Convert to a HATEOAS-compatible paginated model.
+        return pagedResourcesAssembler.toModel(cityDtoPage, cityResponseAssembler);
+    }
+
+    /**
+     * Finds a city by its slug and returns it wrapped in an EntityModel with HATEOAS links.
+     *
+     * @param slug The unique slug identifier for the city.
+     * @return An EntityModel containing the CityResponse and HATEOAS links.
+     * @throws ResponseStatusException If no city is found with the given slug.
+     */
+    public EntityModel<CityResponse> findCityBySlug(String slug) {
+        City city = cityRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No city found with the slug: " + slug));
+
+        CityResponse response = CityResponse.fromEntity(city);
+
+        return EntityModel.of(response,
+                linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
+                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
     @Transactional
@@ -146,10 +150,10 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"),
+                linkTo(methodOn(CityController.class).getAllCities(null,null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
     @Transactional
@@ -191,10 +195,10 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"),
+                linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
     public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(Long cityId) {
@@ -232,7 +236,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getOrganizersForCity(cityId)).withSelfRel());
     }
 
-    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForCity(Long cityId,Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForCity(Long cityId, Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
         if (!cityRepository.existsById(cityId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found");
         }
@@ -266,13 +270,5 @@ public class CityService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         cityRepository.delete(city);
-    }
-
-    public CollectionModel<EntityModel<CityResponse>> getAllCities(Pageable pageable) {
-        Page<City> cities = cityRepository.findAll(pageable);
-
-        Page<CityResponse> placesDto = cities.map(CityResponse::fromEntity);
-
-        return pagedResourcesAssembler.toModel(placesDto, cityResponseAssembler);
     }
 }

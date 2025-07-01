@@ -29,13 +29,12 @@ public class PlaceController {
         this.cityService = cityService;
     }
 
-    @GetMapping("/slug")
-    public CollectionModel<EntityModel<PlaceResponse>> findPlaces(
-            @RequestParam(value = "slug", required = false) String slug
-            ) {
+    @GetMapping("/slug/{slug}")
+    public EntityModel<PlaceResponse> findPlaceBySlug(@PathVariable("slug") String slug) {
 
-        return placeService.findPlaces(slug);
+        return placeService.findPlaceBySlug(slug);
     }
+
     @GetMapping
     public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(
             @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
@@ -61,10 +60,12 @@ public class PlaceController {
     ) {
         return placeService.getEventsForPlace(id, pageable, minPrice, maxPrice, startDate, endDate, categories);
     }
+
     @GetMapping("/{id}/city")
     public EntityModel<CityResponse> getCityForPlace(@PathVariable("id") Long id) {
         return placeService.getCityForPlace(id);
     }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EntityModel<PlaceResponse> addPlace(@Valid @RequestBody PlaceRequest placeRequest) {
@@ -79,6 +80,7 @@ public class PlaceController {
 
     /**
      * Retrieves all active organizers at a given location.
+     *
      * @param id The ID of the location.
      * @return A collection of organizer profiles.
      */
@@ -86,6 +88,7 @@ public class PlaceController {
     public CollectionModel<EntityModel<UserResponse>> getOrganizersForPlace(@PathVariable("id") Long id) {
         return placeService.getOrganizersForPlace(id);
     }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePlace(@PathVariable("id") Long id) {

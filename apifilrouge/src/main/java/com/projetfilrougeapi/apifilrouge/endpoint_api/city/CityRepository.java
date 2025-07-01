@@ -25,7 +25,7 @@ public interface CityRepository extends JpaRepository<City, Long> {
      */
     Optional<City> findBySlug(String slug);
 
-    List<City> findByRegionIgnoreCase(String region);
+    Page<City> findByRegionIgnoreCase(String region, Pageable pageable);
 
     /**
      * Searches for cities whose name contains the provided string,

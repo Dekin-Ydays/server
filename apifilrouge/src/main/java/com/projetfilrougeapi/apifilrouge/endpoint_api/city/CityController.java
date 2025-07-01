@@ -22,19 +22,41 @@ public class CityController {
         this.cityService = cityService;
     }
 
+    /**
+     * GET endpoint to retrieve a city by its numeric ID.
+     *
+     * @param id The ID of the city.
+     * @return An EntityModel containing the CityResponse and related HATEOAS links.
+     */
     @GetMapping("/{id}")
     public EntityModel<CityResponse> getCityById(@PathVariable("id") Long id) {
         return cityService.getCityById(id);
     }
 
-    @GetMapping("/slug")
-    public CollectionModel<EntityModel<CityResponse>> findCities(@RequestParam(value = "slug", required = false) String slug, @RequestParam(value = "region", required = false) String region) {
-        return cityService.findCities(slug, region);
+    /**
+     * GET endpoint to retrieve a city by its slug.
+     *
+     * @param slug The unique slug of the city.
+     * @return An EntityModel containing the CityResponse and related HATEOAS links.
+     */
+    @GetMapping("/slug/{slug}")
+    public EntityModel<CityResponse> findCityBySlug(@PathVariable("slug") String slug) {
+        return cityService.findCityBySlug(slug);
     }
 
+    /**
+     * GET endpoint to retrieve a paginated list of cities, optionally filtered by region.
+     *
+     * @param pageable Pagination and sorting information (default: 10 cities per page, sorted by name ascending).
+     * @param region   Optional query parameter to filter cities by region.
+     * @return A PagedModel containing CityResponse entities wrapped in EntityModels with HATEOAS links.
+     */
     @GetMapping
-    public CollectionModel<EntityModel<CityResponse>> getAllCities(@PageableDefault(size = 10, sort = "name", direction = Sort.Direction.DESC) Pageable pageable) {
-        return cityService.getAllCities(pageable);
+    public PagedModel<EntityModel<CityResponse>> getAllCities(
+            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(required = false) String region
+    ) {
+        return cityService.getAllCities(pageable, region);
     }
 
     @PostMapping

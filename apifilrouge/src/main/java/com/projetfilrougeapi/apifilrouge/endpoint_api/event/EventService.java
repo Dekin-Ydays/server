@@ -134,12 +134,12 @@ public class EventService {
         }
         // Place
         Place place = placeRepository.findById(request.getPlaceId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Place not found"));
         event.setPlace(place);
 
         // City
         City city = cityRepository.findById(request.getCityId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found"));
         event.setCity(city);
 
         // Catégories
@@ -147,7 +147,7 @@ public class EventService {
             List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
 
             if (categories.size() != request.getCategoryKeys().size()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une ou plusieurs clés de catégorie sont invalides.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiple category keys are invalid");
             }
             event.setCategories(new HashSet<>(categories));
         }
@@ -204,8 +204,15 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getFirstEditionEvents(city, place, limit)).withSelfRel());
     }
 
-    // ADD MULTIPLE PARTICIPANTS TO EVENT
-
+    /**
+     * Adds multiple participants to a given event.
+     *
+     * @param eventId The ID of the event to which participants will be added.
+     * @param userIds A list of user IDs to be added as participants.
+     * @return The updated EventSummaryResponse wrapped in an EntityModel.
+     * Ignores users who are already participants.
+     * Enforces the maxCustomers constraint if set.
+     */
     public EntityModel<EventSummaryResponse> addParticipantsToEvent(Long eventId, List<Long> userIds) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
@@ -231,7 +238,15 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(eventId)).withRel("participants"));
     }
 
-    // ADD 1 PARTICIPANT TO EVENT
+    /**
+     * Adds one participant to a given event.
+     *
+     * @param eventId The ID of the event to which participants will be added.
+     * @param userIds A user ID to be added as participant.
+     * @return The updated EventSummaryResponse wrapped in an EntityModel.
+     * Ignores users who are already participants.
+     * Enforces the maxCustomers constraint if set.
+     */
     public EntityModel<EventSummaryResponse> addParticipantToEvent(Long eventId, Long userIds) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
@@ -307,7 +322,7 @@ public class EventService {
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
-                linkTo(methodOn(PlaceController.class).findPlaces(null)).withRel("places"));
+                linkTo(methodOn(PlaceController.class).findPlaceBySlug(null)).withRel("places"));
     }
 
     public EntityModel<CityResponse> getCityForEvent(Long id) {
@@ -324,7 +339,7 @@ public class EventService {
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
                 linkTo(methodOn(EventController.class).getEventById(id)).withRel("event"),
-                linkTo(methodOn(CityController.class).findCities(null, null)).withRel("cities"));
+                linkTo(methodOn(CityController.class).findCityBySlug(null)).withRel("cities"));
     }
 
 
