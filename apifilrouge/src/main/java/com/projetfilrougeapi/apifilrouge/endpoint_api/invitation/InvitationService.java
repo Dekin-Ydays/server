@@ -28,14 +28,13 @@ public class InvitationService {
     private final InvitationRepository invitationRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final EventService eventService;
+    private final CreateOrderForInvitationService createOrderForInvitationService;
 
-
-    public InvitationService(InvitationRepository invitationRepository, EventRepository eventRepository, UserRepository userRepository, EventService eventService) {
+    public InvitationService(InvitationRepository invitationRepository, EventRepository eventRepository, UserRepository userRepository, CreateOrderForInvitationService createOrderForInvitationService) {
         this.invitationRepository = invitationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
-        this.eventService = eventService;
+        this.createOrderForInvitationService = createOrderForInvitationService;
     }
 
     public CollectionModel<EntityModel<Invitation>> getAllInvitations() {
@@ -152,6 +151,7 @@ public class InvitationService {
                 .user(user)
                 .status(Status.SENT)
                 .description(invitation.getDescription())
+                .organizerId(event.getOrganizer().getId())
                 .build();
 
         Invitation savedInvitation = invitationRepository.save(newInvitation);
@@ -177,7 +177,7 @@ public class InvitationService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Événement non trouvé"));
             existingInvitation.setEvent(event);
         }
-        
+
         // Mise à jour de la description si spécifiée
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
@@ -201,7 +201,7 @@ public class InvitationService {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre maximum de participants atteint");
                     }
                 }
-                
+
                 // Utilisation du service event pour ajouter le participant
                 event.getParticipants().add(userToAdd);
                 eventRepository.save(event);
@@ -211,7 +211,7 @@ public class InvitationService {
         
         // Sauvegarde des modifications
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
-        
+        createOrderForInvitationService.createOrderForInvitation(updatedInvitation);
         // Construction de la réponse
         return EntityModel.of(updatedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),

@@ -7,6 +7,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepositor
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
@@ -31,11 +32,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder) {
+    private final InvitationRepository invitationRepository;
+    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
+        this.invitationRepository = invitationRepository;
     }
 
     /**
@@ -322,5 +324,23 @@ public class UserService {
 
         return CollectionModel.of(organizers,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel());
+    }
+
+    public CollectionModel<EntityModel<Invitation>> getReceivedInvitations() {
+        String userEmail = getCurrentUserEmail();
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userEmail));
+        List<Invitation> invitations = invitationRepository.findAllByOrganizerId(user.getId());
+
+        List<EntityModel<Invitation>> invitationsResponse = invitations.stream()
+                .map(invitation -> EntityModel.of(invitation,
+                        linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getId())).withSelfRel(),
+                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
+                ))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(invitationsResponse,
+                linkTo(methodOn(UserController.class).getReceivedInvitations()).withSelfRel());
     }
 }

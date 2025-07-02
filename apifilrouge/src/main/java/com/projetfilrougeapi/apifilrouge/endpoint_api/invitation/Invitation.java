@@ -21,8 +21,8 @@ public class Invitation {
 
     private String description;
 
-    /*@Enumerated(EnumType.STRING)
-    private Type type;*/
+    @Column(name = "organizer_id")
+    private Long organizerId;
 
     @Enumerated(EnumType.STRING)
     private Status status;

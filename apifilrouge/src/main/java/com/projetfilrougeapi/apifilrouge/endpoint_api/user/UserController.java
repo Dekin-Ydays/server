@@ -30,11 +30,16 @@ public class UserController {
         return userService.getCurrentUserProfile();
     }
 
+    @GetMapping("/me/received-invitations")
+    public CollectionModel<EntityModel<Invitation>> getReceivedInvitations() {
+        return userService.getReceivedInvitations();
+    }
 
     @PatchMapping("/me")
     public EntityModel<UserResponse> updateCurrentUser(@RequestBody UserRequest request) {
         return userService.updateCurrentUserProfile(request);
     }
+
     @GetMapping("/organizers")
     public CollectionModel<EntityModel<OrganizerResponse>> getAllOrganizers() {
         return userService.getAllOrganizers();

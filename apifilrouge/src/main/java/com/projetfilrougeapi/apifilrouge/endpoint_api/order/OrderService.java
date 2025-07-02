@@ -57,22 +57,19 @@ public class OrderService {
 
     @Transactional
     public EntityModel<Order> createOrder(OrderRequest request) {
-        //String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        //Object user = userRepository.findByEmail(username)
-        //        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
-        Object event = eventRepository.findById(request.getEventId())
+        Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
 
         Order order = new Order();
         order.setUser(user);
         order.setTotalPrice(request.getTotalPrice());
-        order.setEvent((Event) event);
+        order.setEvent(event);
 
 
         Order savedOrder = orderRepository.save(order);
-
+        
         return EntityModel.of(savedOrder,
                 linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
