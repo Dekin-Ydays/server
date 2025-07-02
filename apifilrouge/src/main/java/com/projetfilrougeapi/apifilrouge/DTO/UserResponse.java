@@ -66,7 +66,11 @@ public class UserResponse {
     }
 
     /**
-     * Utilisé pour parser la chaîne JSON des réseaux sociaux en une liste d'objets
+     * Parses the JSON string of social network links into a list of SocialLink objects.
+     *
+     * @param socialsJson The JSON string representing social network links.
+     * @return A list of SocialLink objects parsed from the JSON string,
+     *         or an empty list if the input is null, empty, or invalid JSON.
      */
     private static List<SocialLink> parseSocials(String socialsJson) {
         if (socialsJson == null || socialsJson.trim().isEmpty()) {
@@ -76,8 +80,9 @@ public class UserResponse {
         try {
             return mapper.readValue(socialsJson, new TypeReference<List<SocialLink>>() {});
         } catch (JsonProcessingException e) {
-            System.err.println("Erreur de parsing JSON pour les réseaux sociaux : " + e.getMessage());
+            System.err.println("JSON parsing error for social links: " + e.getMessage());
             return Collections.emptyList();
         }
     }
+
 }

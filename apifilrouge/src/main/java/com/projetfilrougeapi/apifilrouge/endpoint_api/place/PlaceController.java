@@ -35,13 +35,24 @@ public class PlaceController {
         return placeService.findPlaceBySlug(slug);
     }
 
+    /**
+     * The endpoint accepts optional filters 'types' and 'cities'
+     * as arrays of strings.
+     *
+     * @param pageable Pagination information including page size, number, and sort order.
+     * @param types Optional array of place types to filter by.
+     * @param cities Optional array of city names to filter by.
+     * @return A paged model of EntityModel-wrapped PlaceResponse DTOs matching the filters.
+     */
     @GetMapping
-    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(
-            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.DESC) Pageable pageable
+    public PagedModel<EntityModel<PlaceResponse>> getAllPlaces(
+            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(required = false) String[] types,
+            @RequestParam(required = false) String[] cities
     ) {
-
-        return placeService.getAllPlaces(pageable);
+        return placeService.getAllPlaces(pageable, types, cities);
     }
+
 
     @GetMapping("/{id}")
     public EntityModel<PlaceResponse> getPlaceById(@PathVariable("id") Long id) {

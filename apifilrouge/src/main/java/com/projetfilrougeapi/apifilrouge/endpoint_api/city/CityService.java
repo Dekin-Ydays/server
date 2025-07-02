@@ -5,11 +5,13 @@ import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
 import com.projetfilrougeapi.apifilrouge.assembler.CityResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
+import com.projetfilrougeapi.apifilrouge.assembler.PlaceResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
@@ -46,14 +48,18 @@ public class CityService {
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
     private final CityResponseAssembler cityResponseAssembler;
+    private final PlaceRepository placeRepository;
+    private final PlaceResponseAssembler placeResponseAssembler;
 
-    public CityService(CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, CityResponseAssembler cityResponseAssembler) {
+    public CityService(CityRepository cityRepository, EventRepository eventRepository, UserRepository userRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, CityResponseAssembler cityResponseAssembler, PlaceRepository placeRepository, PlaceResponseAssembler placeResponseAssembler) {
         this.cityRepository = cityRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
         this.cityResponseAssembler = cityResponseAssembler;
+        this.placeRepository = placeRepository;
+        this.placeResponseAssembler = placeResponseAssembler;
     }
 
     public EntityModel<CityResponse> getCityById(Long id) {
@@ -64,9 +70,9 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).getAllCities(null,null)).withRel("cities"),
-                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
+                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId(),10)).withRel("places"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
@@ -110,8 +116,8 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getPlacesForCity(city.getId(),10)).withRel("places"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
@@ -150,9 +156,9 @@ public class CityService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
-                linkTo(methodOn(CityController.class).getAllCities(null,null)).withRel("cities"),
-                linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
+                linkTo(methodOn(CityController.class).getPlacesForCity(response.getId(),10)).withRel("places"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
@@ -196,16 +202,25 @@ public class CityService {
         return EntityModel.of(response,
                 linkTo(methodOn(CityController.class).getCityById(response.getId())).withSelfRel(),
                 linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
-                linkTo(methodOn(CityController.class).getPlacesForCity(response.getId())).withRel("places"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getPlacesForCity(response.getId(),10)).withRel("places"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null)).withRel("events"));
     }
 
-    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(Long cityId) {
-        City city = cityRepository.findById(cityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    /**
+     * Retrieves a limited list of places for a given city.
+     * @param cityId The ID of the city.
+     * @param limit  The maximum number of places to return.
+     * @return A simple collection of PlaceResponse DTOs.
+     */
+    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(Long cityId, int limit) {
+        if (!cityRepository.existsById(cityId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found");
+        }
+        List<Place> allPlacesInCity = placeRepository.findAllByCityId(cityId);
 
-        List<EntityModel<PlaceResponse>> places = city.getPlaces().stream()
+        List<EntityModel<PlaceResponse>> placeModels = allPlacesInCity.stream()
+                .limit(limit) // Apply the limit here, in memory.
                 .map(place -> {
                     PlaceResponse response = PlaceResponse.fromEntity(place);
                     return EntityModel.of(response,
@@ -213,18 +228,29 @@ public class CityService {
                 })
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(places,
-                linkTo(methodOn(CityController.class).getPlacesForCity(cityId)).withSelfRel());
+        return CollectionModel.of(placeModels,
+                linkTo(methodOn(CityController.class).getPlacesForCity(cityId, limit)).withSelfRel());
     }
 
-    public CollectionModel<EntityModel<UserResponse>> getOrganizersForCity(Long cityId) {
+
+    /**
+     * Retrieves a limited list of organizers for a given city.
+     *
+     * @param cityId The ID of the city.
+     * @param limit The maximum number of organizers to return.
+     * @return A simple collection of UserResponse DTOs wrapped in EntityModels.
+     */
+    public CollectionModel<EntityModel<UserResponse>> getOrganizersForCity(Long cityId, int limit) {
         if (!cityRepository.existsById(cityId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvée");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found");
         }
 
+        // Retrieve ALL organizers for the given city.
         List<User> organizers = userRepository.findOrganizersByCity(cityId);
 
+        // Transform the list, apply the limit, and map to DTOs.
         List<EntityModel<UserResponse>> organizerModels = organizers.stream()
+                .limit(limit)
                 .map(organizer -> {
                     UserResponse response = UserResponse.fromEntity(organizer);
                     return EntityModel.of(response,
@@ -233,8 +259,9 @@ public class CityService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(organizerModels,
-                linkTo(methodOn(CityController.class).getOrganizersForCity(cityId)).withSelfRel());
+                linkTo(methodOn(CityController.class).getOrganizersForCity(cityId, limit)).withSelfRel());
     }
+
 
     public PagedModel<EntityModel<EventSummaryResponse>> getEventsForCity(Long cityId, Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
         if (!cityRepository.existsById(cityId)) {

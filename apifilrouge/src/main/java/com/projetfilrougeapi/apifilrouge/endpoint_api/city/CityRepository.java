@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.city;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

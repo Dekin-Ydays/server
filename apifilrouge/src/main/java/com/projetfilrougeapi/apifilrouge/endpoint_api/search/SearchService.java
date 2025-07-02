@@ -23,11 +23,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -155,26 +153,5 @@ public class SearchService {
             Page<SearchResultResponse> resultPage = provider.search(query, pageable);
             return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
         }
-    }
-
-    /**
-     * Retrieves the currently authenticated user from the security context.
-     * This method encapsulates the logic you provided.
-     *
-     * @return The authenticated User entity.
-     */
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = authentication.getPrincipal();
-        String userEmail;
-
-        if (principal instanceof UserDetails) {
-            userEmail = ((UserDetails) principal).getUsername();
-        } else {
-            userEmail = principal.toString();
-        }
-
-        return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found in database for email: " + userEmail));
     }
 }

@@ -20,6 +20,7 @@ public class PlaceRequest {
     @NotBlank(message = "The address cannot be empty.")
     private String address;
 
+    @NotNull(message = "The type cannot be empty.")
     private String type;
 
     @NotNull(message = "Latitude is required.")

@@ -69,10 +69,20 @@ public class CityController {
         return cityService.updateCity(id, city);
     }
 
+    /**
+     * @param id The ID of the city.
+     * @param limit The maximum number of places to return (default is 10).
+     * @return A non-paginated collection of PlaceResponse DTOs wrapped in EntityModels.
+     */
     @GetMapping("/{id}/places")
-    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(@PathVariable("id") Long id) {
-        return cityService.getPlacesForCity(id);
+    public CollectionModel<EntityModel<PlaceResponse>> getPlacesForCity(
+            @PathVariable("id") Long id,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return cityService.getPlacesForCity(id, limit);
     }
+
+
 
     @DeleteMapping("/{id}")
     public void deleteCity(@PathVariable("id") Long id) {
@@ -93,14 +103,18 @@ public class CityController {
     }
 
     /**
-     * Retrieves all active organizers in a given city.
-     *
-     * @param id The ID of the city.
-     * @return A collection of organizer profiles.
+     * Returns a limited list of organizers associated with a specific city.
+     * @param id    The ID of the city.
+     * @param limit The maximum number of organizers to return.
+     * @return A simple collection of organizer DTOs associated with the specified city.
      */
     @GetMapping("/{id}/organizers")
-    public CollectionModel<EntityModel<UserResponse>> getOrganizersForCity(@PathVariable("id") Long id) {
-        return cityService.getOrganizersForCity(id);
+    public CollectionModel<EntityModel<UserResponse>> getOrganizersForCity(
+            @PathVariable("id") Long id,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return cityService.getOrganizersForCity(id, limit);
     }
+
 
 }

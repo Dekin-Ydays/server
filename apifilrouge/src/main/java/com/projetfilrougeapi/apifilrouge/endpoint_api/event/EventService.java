@@ -420,12 +420,6 @@ public class EventService {
 
         if (request.getName() != null) event.setName(request.getName());
         if (request.getDescription() != null) event.setDescription(request.getDescription());
-        if (request.getDate() != null){
-            if (!DateValidator.isAfterToday(request.getDate())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
-            }
-            event.setDate(request.getDate());
-        };
         if (request.getAddress() != null) event.setAddress(request.getAddress());
         if (request.getMaxCustomers() != null) event.setMaxCustomers(request.getMaxCustomers());
         if (request.getIsTrending() != null) event.setIsTrending(request.getIsTrending());
@@ -434,18 +428,24 @@ public class EventService {
         if (request.getImageUrl() != null) event.setImageUrl(request.getImageUrl());
         if (request.getIsInvitationOnly() != null) event.setIsInvitationOnly(request.getIsInvitationOnly());
 
+        if (request.getDate() != null) {
+            if (!DateValidator.isAfterToday(request.getDate())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La date de l'événement doit être après aujourd'hui.");
+            }
+            event.setDate(request.getDate());
+        }
 
         // place
         if (request.getPlaceId() != null) {
             Place place = placeRepository.findById(request.getPlaceId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Place not found"));
             event.setPlace(place);
         }
 
         // City
         if (request.getCityId() != null) {
             City city = cityRepository.findById(request.getCityId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ville non trouvé"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found"));
             event.setCity(city);
         }
 
@@ -490,6 +490,22 @@ public class EventService {
                 linkTo(methodOn(EventController.class).getParticipantsForEvent(updatedEvent.getId())).withRel("participants"));
     }
 
+    /**
+     * Cancels an event by updating its status to CANCELLED.
+     * Only the event organizer or an admin is allowed to perform this action.
+     *
+     * @param id The ID of the event to cancel.
+     * @return An EntityModel wrapping the updated EventResponse.
+     *
+     * Allowed if the current user is:
+     *   - The organizer of the event, or
+     *   - An admin (has the role ROLE_Admin).
+     *
+     * - 404 NOT_FOUND: If no event is found with the given ID.
+     * - 500 INTERNAL_SERVER_ERROR:
+     *   - If the authenticated user cannot be found.
+     *   - If an unexpected error occurs during processing.
+     */
     @Transactional
     public EntityModel<EventResponse> cancelEvent(Long id) {
         try {

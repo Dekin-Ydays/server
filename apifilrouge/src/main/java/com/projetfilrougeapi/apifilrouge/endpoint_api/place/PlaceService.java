@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.place;
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.Specification.EventSpecification;
+import com.projetfilrougeapi.apifilrouge.Specification.PlaceSpecification;
 import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.assembler.PlaceResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
@@ -54,12 +55,32 @@ public class PlaceService {
         this.placeResponseAssembler = placeResponseAssembler;
     }
 
-    public CollectionModel<EntityModel<PlaceResponse>> getAllPlaces(Pageable pageable) {
-        Page<Place> places = placeRepository.findAll(pageable);
+    /**
+     * Retrieves a paginated list of places with optional filters
+     * by one or more types and/or city names.
+     *
+     * @param pageable Pagination details including page number, page size, and sorting order.
+     * @param types An array of place types to filter by (case-insensitive). Can be null or empty for no filtering on types.
+     * @param cities An array of city names to filter by (case-insensitive). Can be null or empty for no filtering on cities.
+     * @return A paged model of EntityModel-wrapped PlaceResponse DTOs matching the criteria.
+     */
+    public PagedModel<EntityModel<PlaceResponse>> getAllPlaces(Pageable pageable, String[] types, String[] cities) {
+        // Dynamically build the query specification.
+        Specification<Place> spec = Specification.where(null);
 
-        Page<PlaceResponse> placesDto = places.map(PlaceResponse::fromEntity);
+        if (types != null && types.length > 0) {
+            spec = spec.and(PlaceSpecification.hasTypes(types));
+        }
+        if (cities != null && cities.length > 0) {
+            spec = spec.and(PlaceSpecification.hasCityNames(cities));
+        }
 
-        return pagedResourcesAssembler.toModel(placesDto, placeResponseAssembler);
+        // Execute the search with filters and pagination.
+        Page<Place> placePage = placeRepository.findAll(spec, pageable);
+
+        // Convert the results to DTOs and return the HATEOAS paged model.
+        Page<PlaceResponse> placeDtoPage = placePage.map(PlaceResponse::fromEntity);
+        return pagedResourcesAssembler.toModel(placeDtoPage, placeResponseAssembler);
     }
 
     /**
@@ -78,7 +99,7 @@ public class PlaceService {
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(place.getId())).withSelfRel(),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(place.getId())).withRel("city"),
-                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getOrganizersForPlace(place.getId())).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getId(), null, null, null, null, null, null)).withRel("events"));
     }
@@ -91,9 +112,9 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
     }
 
@@ -160,9 +181,9 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
     }
 
@@ -207,9 +228,9 @@ public class PlaceService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(PlaceController.class).getPlaceById(response.getId())).withSelfRel(),
-                linkTo(methodOn(PlaceController.class).getAllPlaces(null)).withRel("places"),
+                linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
-                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId())).withRel("organizers"),
+                linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
                 linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
     }
 
