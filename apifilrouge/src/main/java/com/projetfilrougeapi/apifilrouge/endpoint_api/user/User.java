@@ -48,8 +48,8 @@ public class User implements UserDetails {
     private String bannerUrl;
 
     private Double note;
-    private int totalReviews;
-    private Double sumTotalNoteReviews;
+    private int totalReviews = 0;
+    private Double sumTotalNoteReviews = 0.0;
 
     @Column(columnDefinition = "TEXT")
     private String socials;
