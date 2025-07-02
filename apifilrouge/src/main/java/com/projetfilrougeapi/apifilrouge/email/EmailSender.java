@@ -1,9 +1,8 @@
+
 package com.projetfilrougeapi.apifilrouge.email;
 
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -17,20 +16,21 @@ import java.util.Properties;
 
 @Service
 public class EmailSender {
-    private HtmlEmail email = new HtmlEmail();
+    // Configuration des paramètres SMTP
     private String host = "smtp.gmail.com";
     private String port = "587";
     private String username = "marchalquentin06@gmail.com";
     private String password = "mjqgtkjjwwcapdps";
 
-
-    public EmailSender() {
+    // Créer une nouvelle instance d'email pour chaque envoi
+    private HtmlEmail createEmail() {
+        HtmlEmail email = new HtmlEmail();
         email.setHostName(host);
         email.setSmtpPort(Integer.parseInt(port));
         email.setAuthentication(username, password);
         email.setSSLOnConnect(true);
+        return email;
     }
-
 
     public void sendInvitationEmail(User sender, User receiver, Event event) throws Exception {
         // Configuration de Velocity
@@ -49,13 +49,13 @@ public class EmailSender {
         context.put("emailExpediteur", sender.getEmail());
         context.put("dateEnvoi", new Date().getDay()+"/" + new Date().getMonth() + "/" + new Date().getYear());
 
-
         // Chargement et rendu du template
         Template template = ve.getTemplate("templates/emailTemplate.vm", "UTF-8");
         StringWriter writer = new StringWriter();
         template.merge(context, writer);
 
-        // Configuration de l'email
+        // Configuration de l'email avec une nouvelle instance
+        HtmlEmail email = createEmail();
         email.setFrom("marchalquentin06@gmail.com");
         email.setSubject("Invitation concernant l'événement : " + event.getName());
         email.setHtmlMsg(writer.toString());
@@ -81,13 +81,13 @@ public class EmailSender {
         context.put("emplacementEvenement", event.getPlace().getAddress());
         context.put("dateNotification", new Date().getDay()+"/" + new Date().getMonth() + "/" + new Date().getYear());
 
-
         // Chargement et rendu du template
         Template template = ve.getTemplate("templates/emailTemplateUpdateEvent.vm", "UTF-8");
         StringWriter writer = new StringWriter();
         template.merge(context, writer);
 
-        // Configuration de l'email
+        // Configuration de l'email avec une nouvelle instance
+        HtmlEmail email = createEmail();
         email.setFrom("marchalquentin06@gmail.com");
         email.setSubject("Mise à jour concernant l'événement : " + event.getName());
         email.setHtmlMsg(writer.toString());
@@ -98,7 +98,6 @@ public class EmailSender {
         // Envoi de l'email
         email.send();
     }
-
 
     public void sendWelcomeEmail(User newAccount) throws Exception {
         // Configuration de Velocity
@@ -116,13 +115,13 @@ public class EmailSender {
         context.put("prenom", newAccount.getFirstName());
         context.put("pseudo", newAccount.getPseudo());
 
-
         // Chargement et rendu du template
         Template template = ve.getTemplate("templates/welcomeMailTemplate.vm", "UTF-8");
         StringWriter writer = new StringWriter();
         template.merge(context, writer);
 
-        // Configuration de l'email
+        // Configuration de l'email avec une nouvelle instance
+        HtmlEmail email = createEmail();
         email.setFrom("marchalquentin06@gmail.com");
         email.setSubject("Création de votre compte sur notre plateforme");
         email.setHtmlMsg(writer.toString());
