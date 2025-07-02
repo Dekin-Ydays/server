@@ -13,5 +13,6 @@ public class OrderRequest {
     private Double totalPrice;
     private Long eventId;
     private Long userId;
+    private int ticketToBeCreated;
     //private List<Long> ticketIds;
 }

@@ -117,8 +117,8 @@ public class SecurityConfiguration {
 
                             .requestMatchers(HttpMethod.GET, "/api/v1/invitations/**").hasAnyRole("Admin", "AuthService", "Organizer", "User")
                             .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").hasAnyRole("Admin", "AuthService")
-                            //.requestMatchers(HttpMethod.GET, "/api/v1/orders").hasAnyRole("Admin", "AuthService")
-                            .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").hasAnyRole("Admin", "AuthService") //tickets mais faut pas récup les tikets d'une autre personne
+                            .requestMatchers(HttpMethod.GET, "/api/v1/me/**").hasAnyRole("Admin", "AuthService", "Organizer", "User")
+                            .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").hasAnyRole("Admin", "AuthService", "Organizer", "User") //tickets mais faut pas récup les tikets d'une autre personne
                             .requestMatchers(HttpMethod.GET, "/api/v1/reports").hasAnyRole("Admin", "AuthService")
                             //.requestMatchers(HttpMethod.GET, "/api/v1/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
                             //.requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyRole("Admin", "AuthService", "User", "Organizer")

@@ -30,6 +30,7 @@ public class EventSummaryResponse {
     private int currentParticipants;
     private String cityName;
     private String placeName;
+    private Boolean isInvitationOnly;
     private List<CategorySummary> categories;
     private OrganizerSummary organizer;
 
@@ -56,6 +57,7 @@ public class EventSummaryResponse {
                 .cityName(cityName)
                 .categories(categories)
                 .organizer(organizer)
+                .isInvitationOnly(event.getIsInvitationOnly())
                 .build();
     }
 }

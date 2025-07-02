@@ -61,15 +61,18 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
-
+        if (event.getParticipants().size()+ request.getTicketToBeCreated() > event.getMaxCustomers()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de participants dépasse la limite autorisée pour cet événement");
+        }
         Order order = new Order();
         order.setUser(user);
         order.setTotalPrice(request.getTotalPrice());
         order.setEvent(event);
+        order.setTicketToBeCreated(request.getTicketToBeCreated());
 
 
         Order savedOrder = orderRepository.save(order);
-        
+
         return EntityModel.of(savedOrder,
                 linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
@@ -131,6 +134,7 @@ public class OrderService {
 
         return EntityModel.of(user,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
+                linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
 
     }

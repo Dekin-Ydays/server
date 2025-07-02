@@ -26,6 +26,8 @@ public class Order {
     @Column(name="total_price")
     private Double totalPrice;
 
+    private int ticketToBeCreated;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "order-tickets")
     private List<Ticket> tickets;
