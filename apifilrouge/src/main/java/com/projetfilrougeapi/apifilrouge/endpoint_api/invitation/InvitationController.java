@@ -3,7 +3,6 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.InvitationRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -29,10 +28,10 @@ public class InvitationController {
      * @param userId The ID of the user.
      * @return The matching invitation.
      */
-    @GetMapping("/invitations/search")
+    @GetMapping("/search")
     public EntityModel<Invitation> findInvitationByEventAndUser(
-            @RequestParam("event_id") Long eventId,
-            @RequestParam("user_id") Long userId
+            @RequestParam(required = true, value = "event_id") Long eventId,
+            @RequestParam(required = true, value = "user_id") Long userId
     ) {
         return invitationService.getInvitationByEventAndUser(eventId, userId);
     }
