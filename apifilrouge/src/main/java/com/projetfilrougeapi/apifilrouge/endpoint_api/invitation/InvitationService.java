@@ -1,12 +1,15 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.invitation;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.InvitationRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -48,6 +51,30 @@ public class InvitationService {
                 linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
     }
 
+    /**
+     * Retrieves a specific invitation by the combination of event and user.
+     * @param eventId The ID of the event.
+     * @param userId The ID of the user.
+     * @return An EntityModel wrapping the Invitation entity.
+     * @throws ResponseStatusException if no invitation is found for the given event and user.
+     */
+    public EntityModel<Invitation> getInvitationByEventAndUser(Long eventId, Long userId) {
+        Invitation invitation = invitationRepository.findByEventIdAndUserId(eventId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No invitation found for this user at this event."));
+
+        return EntityModel.of(invitation,
+                linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getId())).withSelfRel(),
+                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getEventById(eventId)).withRel("event"),
+                linkTo(methodOn(UserController.class).getUserById(userId)).withRel("user"));
+    }
+
+    /**
+     * Retrieves a specific invitation by id.
+     * @param id The ID of the invitation.
+     * @return An EntityModel wrapping the Invitation entity.
+     * @throws ResponseStatusException if no invitation is found for the given event and user.
+     */
     public EntityModel<Invitation> getInvitationById(Long id) {
         Invitation invitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -55,23 +82,64 @@ public class InvitationService {
         return EntityModel.of(invitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(id)).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(InvitationController.class).getEventForInvitation(id)).withRel("event"));
+                linkTo(methodOn(InvitationController.class).getEventForInvitation(id)).withRel("event"),
+                linkTo(methodOn(InvitationController.class).getUserForInvitation(id)).withRel("user"));
     }
 
-
-    public EntityModel<Event> getEventForInvitation(Long id) {
-        Invitation invitation = invitationRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    /**
+     * Retrieves the event associated with a specific invitation.
+     *
+     * @param invitationId the ID of the invitation
+     * @return an EntityModel wrapping the Event entity linked to the invitation
+     * @throws ResponseStatusException if the invitation is not found
+     */
+    public EntityModel<EventResponse> getEventForInvitation(Long invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
 
         Event event = invitation.getEvent();
+        EventResponse eventResponse = EventResponse.fromEntity(event);
 
-        return EntityModel.of(event,
-                linkTo(methodOn(InvitationController.class).getEventForInvitation(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getEventById(event.getId())).withRel("event"),
-                linkTo(methodOn(InvitationController.class).getInvitationById(id)).withRel("invitation"));
+        return EntityModel.of(eventResponse,
+                linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel(),
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
+                linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
+                linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
+                linkTo(methodOn(EventController.class).getOrganizerForEvent(event.getId())).withRel("organizer"),
+                linkTo(methodOn(EventController.class).getCategoriesForEvent(event.getId())).withRel("categories"),
+                linkTo(methodOn(EventController.class).getParticipantsForEvent(event.getId())).withRel("participants"));
     }
+
+    /**
+     * Retrieves the user associated with a specific invitation.
+     *
+     * @param invitationId the ID of the invitation
+     * @return an EntityModel wrapping the User entity linked to the invitation
+     * @throws ResponseStatusException if the invitation is not found
+     */
+    public EntityModel<UserResponse> getUserForInvitation(Long invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
+
+        User user = invitation.getUser();
+        UserResponse userResponse = UserResponse.fromEntity(user);
+
+        return EntityModel.of(userResponse,
+                linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
+                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
+                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
+    }
+
 
     // création d'une invitation
     public EntityModel<Invitation> addInvitation(InvitationRequest invitation) throws Exception {
+        if (invitationRepository.existsByEventIdAndUserId(invitation.getEventId(), invitation.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "An invitation for this user at this event already exists.");
+        }
         Event event = eventRepository.findById(invitation.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
         User user = userRepository.findById(invitation.getUserId())

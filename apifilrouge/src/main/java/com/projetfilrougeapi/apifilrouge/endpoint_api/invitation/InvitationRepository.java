@@ -9,4 +9,23 @@ import java.util.Optional;
 @Repository
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     Optional<Invitation> findById(Long id);
+
+    /**
+     * Finds a specific invitation based on the unique combination
+     * of event and user.
+     * @param eventId The ID of the event.
+     * @param userId The ID of the user.
+     * @return An Optional containing the invitation if it exists.
+     */
+    Optional<Invitation> findByEventIdAndUserId(Long eventId, Long userId);
+
+    /**
+     * Checks if an invitation for a user
+     * to a specific event already exists.
+     * @param eventId The ID of the event.
+     * @param userId The ID of the user.
+     * @return true if the invitation exists, false otherwise.
+     */
+    boolean existsByEventIdAndUserId(Long eventId, Long userId);
+
 }

@@ -14,7 +14,6 @@ public class UserRequest {
     private String pseudo;
 
     private Role role;
-    private Boolean isOrganizer;
     private String phone;
     private String description;
     private String imageUrl;

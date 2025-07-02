@@ -3,6 +3,8 @@ package com.projetfilrougeapi.apifilrouge.auth;
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
 import com.projetfilrougeapi.apifilrouge.email.EmailSender;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -12,6 +14,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Service qui gère les opérations d'authentification des utilisateurs.
  * <p>
@@ -28,6 +34,8 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailSender emailSender;
+    private final CategoryRepository categoryRepository;
+
     /**
      * Enregistre un nouvel utilisateur dans le système.
      *
@@ -36,14 +44,22 @@ public class AuthenticationService {
      */
     public AuthenticationResponse register(UserRequest request) throws Exception {
 
+        List<Category> categories = new ArrayList<>();
+        if (request.getCategoryKeys() != null) {
+            categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
+        }
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
+                .phone(request.getPhone())
+                .description(request.getDescription())
                 .provider(AuthProvider.LOCAL)
                 .pseudo(request.getPseudo())
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)
+                .categories(categories)
                 .build();
 
         emailSender.sendWelcomeEmail(user);
