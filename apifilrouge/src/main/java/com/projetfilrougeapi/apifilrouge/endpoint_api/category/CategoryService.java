@@ -1,6 +1,5 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.category;
 
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import org.springframework.hateoas.CollectionModel;
@@ -13,7 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class CategoryService {
@@ -35,7 +35,7 @@ public class CategoryService {
 
         return CollectionModel.of(categories,
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"));
 
     }
 
