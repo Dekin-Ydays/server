@@ -150,7 +150,7 @@ public class InvitationService {
         Invitation newInvitation = Invitation.builder()
                 .event(event)
                 .user(user)
-                .status(invitation.getStatus())
+                .status(Status.SENT)
                 .description(invitation.getDescription())
                 .build();
 

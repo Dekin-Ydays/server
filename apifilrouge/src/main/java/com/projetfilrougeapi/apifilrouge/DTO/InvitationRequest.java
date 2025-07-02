@@ -21,7 +21,6 @@ public class InvitationRequest {
     @Positive(message = "User ID must be a positive number.")
     private Long userId;
 
-    @NotNull(message = "A status is required for the invitation.")
     private Status status;
 
     @Size(max = 500, message = "Description cannot exceed 500 characters.")
