@@ -49,18 +49,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     /**
-     * This method is triggered automatically by Spring Security
-     * when a user successfully authenticates via OAuth2.
+     * Custom handler for successful OAuth2 authentication.
+     * <p>
+     * On successful Google login, this handler:
+     * <ul>
+     *     <li>Checks or creates the user in the database</li>
+     *     <li>Generates a JWT for the user</li>
+     *     <li>Retrieves the redirect_uri from the OAuth2 request</li>
+     *     <li>Validates that the redirect_uri is authorized</li>
+     *     <li>Redirects the user to their frontend with the token as a query parameter</li>
+     * </ul>
      *
-     * It retrieves the authenticated OAuth2 user, looks up the corresponding
-     * user in the database, generates a JWT for them, and redirects the client
-     * to the front-end with the token as a URL parameter.
-     *
-     * @param request        the incoming HTTP request
-     * @param response       the HTTP response
-     * @param authentication the authentication object containing the authenticated user's details
-     * @throws IOException      if an input or output exception occurs during redirection
-     * @throws ServletException if a servlet-specific error occurs
+     * @param request        The incoming HTTP request.
+     * @param response       The HTTP response.
+     * @param authentication The Spring Authentication object (logged-in user).
+     * @throws IOException      On I/O error during redirection.
+     * @throws ServletException On servlet-related error.
      */
     @Override
     @Transactional
@@ -69,65 +73,74 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String email = oauthUser.getAttribute("email");
 
         log.info("OAuth2 authentication successful for email: {}", email);
-        log.info("OAuth2 user attributes: {}", oauthUser.getAttributes());
 
-        // Vérification utilisateur
+        // Check user or create if not exists
         var userOptional = userRepository.findByEmail(email);
-
-        User user;
-        if (userOptional.isEmpty()) {
-            log.warn("User not found in database for email: {}. Creating user as fallback...", email);
-            user = createUserFromOAuth2(oauthUser);
-        } else {
-            user = userOptional.get();
-            log.info("User found in database: {}", user.getEmail());
-        }
+        User user = userOptional.orElseGet(() -> {
+            log.warn("User not found for email: {}. Creating...", email);
+            return createUserFromOAuth2(oauthUser);
+        });
 
         String jwtToken = jwtService.generateToken(user);
-        log.info("JWT token generated successfully for user: {}", user.getEmail());
+        log.info("JWT token generated for: {}", user.getEmail());
 
-        // Prend la redirection demandée en paramètre "state"
-        String redirectUri = request.getParameter("state");
-//        if (redirectUri == null || redirectUri.isBlank()) {
-//            // fallback: le premier dans la liste blanche (ou une valeur par défaut)
-//            redirectUri = allowedRedirectUris.iterator().next() + "/auth/callback";
-//            log.warn("Aucune URL de redirection reçue, utilisation par défaut : {}", redirectUri);
-//        }
+        // Recover redirect_uri from the OAuth2AuthorizationRequest in session (set in /authorize/google)
+        String redirectUri = (String) request.getSession().getAttribute("oauth2_redirect_uri");
+        if (redirectUri == null || redirectUri.isBlank()) {
+            log.error("No redirect_uri in session! Rejecting for safety.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing or invalid redirect_uri.");
+            return;
+        }
+        log.info("Found redirect_uri from session: {}", redirectUri);
 
-        // Vérifie que l'URL demandée est autorisée
+        // Validate
         boolean allowed = allowedRedirectUris.stream().anyMatch(redirectUri::startsWith);
         if (!allowed) {
-            log.error("Tentative de redirection non autorisée vers : {}", redirectUri);
+            log.error("Redirection not allowed: {}", redirectUri);
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Redirection URL non autorisée !");
             return;
         }
 
-        // Ajoute le token en paramètre d’URL (remplace ou concatène intelligemment)
-        String finalRedirectUri = appendTokenToRedirectUri(redirectUri, jwtToken);
+        // Clear session attribute (for security)
+        request.getSession().removeAttribute("oauth2_redirect_uri");
 
-        log.info("Redirection vers : {}", finalRedirectUri);
+        String finalRedirectUri = appendTokenToRedirectUri(redirectUri, jwtToken);
+        log.info("Redirecting to: {}", finalRedirectUri);
         response.sendRedirect(finalRedirectUri);
     }
 
+    /**
+     * Appends the JWT token to the given redirect URI as a query parameter.
+     * <p>
+     * If the URI already contains query parameters, appends using "&".
+     * Otherwise, starts the query string with "?".
+     * </p>
+     *
+     * @param redirectUri The URI to which the user will be redirected.
+     * @param jwtToken    The JWT token to add as a parameter.
+     * @return The new URI with the token as a query parameter.
+     */
     private String appendTokenToRedirectUri(String redirectUri, String jwtToken) {
-        // add the token in parameters of URL (token=...)
-        if (redirectUri.contains("?")) {
-            return redirectUri + "&token=" + jwtToken;
-        } else {
-            return redirectUri + "?token=" + jwtToken;
-        }
+        return redirectUri.contains("?")
+                ? redirectUri + "&token=" + jwtToken
+                : redirectUri + "?token=" + jwtToken;
     }
 
     /**
-     * Fallback method to create user if CustomOAuth2UserService doesn't work
+     * Creates a new user in the database using information from an OAuth2 authentication.
+     * <p>
+     * This is used as a fallback when a user logs in with Google for the first time.
+     * Generates a random password, sets the provider, and assigns the "User" role.
+     * </p>
+     *
+     * @param oauth2User The OAuth2User containing the user's Google profile information.
+     * @return The newly created and persisted User entity.
      */
     private User createUserFromOAuth2(OAuth2User oauth2User) {
         String email = oauth2User.getAttribute("email");
         String firstName = oauth2User.getAttribute("given_name");
         String lastName = oauth2User.getAttribute("family_name");
         String imageUrl = oauth2User.getAttribute("picture");
-
-        log.info("Creating user from OAuth2 data: email={}, firstName={}, lastName={}", email, firstName, lastName);
 
         User newUser = User.builder()
                 .firstName(firstName != null ? firstName : "Unknown")
@@ -140,8 +153,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .build();
 
-        User savedUser = userRepository.saveAndFlush(newUser);
-        log.info("User created successfully in fallback method: {}", savedUser.getEmail());
-        return savedUser;
+        return userRepository.saveAndFlush(newUser);
     }
 }

@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.config;
 
 import com.projetfilrougeapi.apifilrouge.config.oauth.CustomOAuth2UserService;
 import com.projetfilrougeapi.apifilrouge.config.oauth.OAuth2LoginSuccessHandler;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,6 +24,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+
 /**
  * Configuration de sécurité de l'application.
  * <p>
@@ -52,6 +58,7 @@ public class SecurityConfiguration {
             "/v3/api-docs/**",
             "/swagger-ui/**",
     };
+
     /**
      * Configure la source de configuration CORS.
      * <p>
@@ -74,6 +81,7 @@ public class SecurityConfiguration {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
     /**
      * Configure la chaîne de filtres de sécurité.
      * <p>
@@ -96,10 +104,13 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                    auth
+                            .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                             .requestMatchers("/api/v1/auth/**").permitAll()
                             .requestMatchers("/error").permitAll()
                             .requestMatchers(HttpMethod.GET, WHITE_LIST_URL).permitAll()
+                            // Autorise l'endpoint d'init OAuth2 custom multi-frontend
+                            .requestMatchers("/oauth2/authorize/google").permitAll()
 
                             .requestMatchers(HttpMethod.POST, "/api/v1/places").hasAnyRole("Admin", "Organizer", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/api/v1/cities").hasAnyRole("Admin", "Organizer", "AuthService")
@@ -126,7 +137,6 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/places").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/cities").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/events").hasAnyRole("Admin", "AuthService", "Organizer")
-                            .requestMatchers(HttpMethod.PATCH, "/api/v1/events").hasAnyRole("Admin", "AuthService", "Organizer")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/categories").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/**").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.PATCH, "/api/v1/reports").hasAnyRole("Admin", "AuthService")
@@ -143,15 +153,25 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
                             .anyRequest().authenticated();
                 })
+                // Configure session management: The API is stateless, so Spring Security will not create or use HTTP sessions.
+                // Each request must include authentication (e.g., via JWT token).
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Set the custom authentication provider to handle authentication logic (e.g., loading users from DB).
                 .authenticationProvider(authenticationProvider)
+
+                // Register the JWT authentication filter BEFORE the default Spring Security username/password filter.
+                // This ensures that JWT tokens are validated on every request.
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // Configure OAuth2 login flow
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
+                        // Define the custom user service for mapping OAuth2 user info to your User entity.
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        // Set the success handler to customize post-authentication logic (e.g., generate JWT, redirect).
                         .successHandler(oAuth2LoginSuccessHandler)
                 )
+                // Build the security filter chain
                 .build();
     }
 }
