@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -46,41 +45,43 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      */
     @Override
     @Transactional
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-            throws IOException, ServletException {
-
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = oauthUser.getAttribute("email");
 
         log.info("OAuth2 authentication successful for email: {}", email);
         log.info("OAuth2 user attributes: {}", oauthUser.getAttributes());
 
-        // Vérifie si l'utilisateur existe
+        // Look for the user in the database, or create a new one if not found
         var userOptional = userRepository.findByEmail(email);
-        User user = userOptional.orElseGet(() -> {
-            log.warn("User not found in database. Creating fallback user.");
-            return createUserFromOAuth2(oauthUser);
-        });
+        User user;
+        if (userOptional.isEmpty()) {
+            log.warn("User not found in database. Creating new user from OAuth2 attributes...");
+            user = createUserFromOAuth2(oauthUser);
+        } else {
+            user = userOptional.get();
+            log.info("User found: {}", user.getEmail());
+        }
 
+        // Generate JWT token for the authenticated user
         String jwtToken = jwtService.generateToken(user);
-        log.info("JWT token generated successfully for user: {}", user.getEmail());
+        log.info("JWT token generated for user: {}", user.getEmail());
 
-        // Récupère le paramètre state (redirige vers front)
-        String stateParam = request.getParameter("state");
+        /**
+         * Retrieve the frontend redirect URI that was previously saved in session
+         */
+        String redirectUri = (String) request.getSession().getAttribute("redirect_uri_override");
+        if (redirectUri == null || redirectUri.isBlank()) {
+            // Fallback in case no redirect URI was stored
+            redirectUri = "http://localhost:3000";
+        }
+        // Clear the attribute to avoid session pollution
+        request.getSession().removeAttribute("redirect_uri_override");
 
-        // URLs autorisées (sécurité simple)
-        List<String> allowedRedirects = List.of(
-                "https://veevent.vercel.app",
-                "https://veevent-admin.vercel.app",
-                "http://localhost:3000"
-        );
-
-        String targetUrl = allowedRedirects.contains(stateParam) ? stateParam : "http://localhost:3000";
-
-        String finalRedirectUrl = targetUrl + "/auth/callback?token=" + jwtToken;
-        log.info("Redirecting to: {}", finalRedirectUrl);
-
-        response.sendRedirect(finalRedirectUrl);
+        /**
+         * Redirect the user to the frontend with the JWT token as a query parameter
+         */
+        response.sendRedirect(redirectUri + "/auth/callback?token=" + jwtToken);
     }
 
 
