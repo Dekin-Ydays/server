@@ -87,7 +87,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return oauth2User;
 
         } catch (OAuth2AuthenticationException e) {
-            // If we threw this exception ourselves for security reasons, let it pass through.
             throw e;
         } catch (DataAccessException e) {
             // Catch specific database-related errors

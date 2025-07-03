@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -45,31 +46,43 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      */
     @Override
     @Transactional
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+            throws IOException, ServletException {
+
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = oauthUser.getAttribute("email");
 
         log.info("OAuth2 authentication successful for email: {}", email);
         log.info("OAuth2 user attributes: {}", oauthUser.getAttributes());
 
-        // Verify if te user is in the db
+        // Vérifie si l'utilisateur existe
         var userOptional = userRepository.findByEmail(email);
-
-        User user;
-        if (userOptional.isEmpty()) {
-            log.warn("User not found in database for email: {}. Creating user as fallback...", email);
-            user = createUserFromOAuth2(oauthUser);
-        } else {
-            user = userOptional.get();
-            log.info("User found in database: {}", user.getEmail());
-        }
+        User user = userOptional.orElseGet(() -> {
+            log.warn("User not found in database. Creating fallback user.");
+            return createUserFromOAuth2(oauthUser);
+        });
 
         String jwtToken = jwtService.generateToken(user);
         log.info("JWT token generated successfully for user: {}", user.getEmail());
 
-        // Redirect the user to the front-end with the token
-        response.sendRedirect("http://localhost:3000/auth/callback?token=" + jwtToken);
+        // Récupère le paramètre state (redirige vers front)
+        String stateParam = request.getParameter("state");
+
+        // URLs autorisées (sécurité simple)
+        List<String> allowedRedirects = List.of(
+                "https://veevent.vercel.app",
+                "https://veevent-admin.vercel.app",
+                "http://localhost:3000"
+        );
+
+        String targetUrl = allowedRedirects.contains(stateParam) ? stateParam : "http://localhost:3000";
+
+        String finalRedirectUrl = targetUrl + "/auth/callback?token=" + jwtToken;
+        log.info("Redirecting to: {}", finalRedirectUrl);
+
+        response.sendRedirect(finalRedirectUrl);
     }
+
 
     /**
      * Fallback method to create user if CustomOAuth2UserService doesn't work
