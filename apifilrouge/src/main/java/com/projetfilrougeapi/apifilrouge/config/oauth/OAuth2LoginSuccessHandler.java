@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -18,7 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -28,6 +31,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final Set<String> allowedRedirectUris;
+
+    @Autowired
+    public OAuth2LoginSuccessHandler(
+            UserRepository userRepository,
+            JwtService jwtService,
+            PasswordEncoder passwordEncoder,
+            @Value("${app.oauth2.allowed-redirect-uris}") String allowedUris
+    ) {
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.allowedRedirectUris = Arrays.stream(allowedUris.split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet());
+    }
 
     /**
      * This method is triggered automatically by Spring Security
@@ -52,38 +71,52 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         log.info("OAuth2 authentication successful for email: {}", email);
         log.info("OAuth2 user attributes: {}", oauthUser.getAttributes());
 
-        // Look for the user in the database, or create a new one if not found
+        // Vérification utilisateur
         var userOptional = userRepository.findByEmail(email);
+
         User user;
         if (userOptional.isEmpty()) {
-            log.warn("User not found in database. Creating new user from OAuth2 attributes...");
+            log.warn("User not found in database for email: {}. Creating user as fallback...", email);
             user = createUserFromOAuth2(oauthUser);
         } else {
             user = userOptional.get();
-            log.info("User found: {}", user.getEmail());
+            log.info("User found in database: {}", user.getEmail());
         }
 
-        // Generate JWT token for the authenticated user
         String jwtToken = jwtService.generateToken(user);
-        log.info("JWT token generated for user: {}", user.getEmail());
+        log.info("JWT token generated successfully for user: {}", user.getEmail());
 
-        /**
-         * Retrieve the frontend redirect URI that was previously saved in session
-         */
-        String redirectUri = (String) request.getSession().getAttribute("redirect_uri_override");
-        if (redirectUri == null || redirectUri.isBlank()) {
-            // Fallback in case no redirect URI was stored
-            redirectUri = "http://localhost:3000";
+        // Prend la redirection demandée en paramètre "state"
+        String redirectUri = request.getParameter("state");
+//        if (redirectUri == null || redirectUri.isBlank()) {
+//            // fallback: le premier dans la liste blanche (ou une valeur par défaut)
+//            redirectUri = allowedRedirectUris.iterator().next() + "/auth/callback";
+//            log.warn("Aucune URL de redirection reçue, utilisation par défaut : {}", redirectUri);
+//        }
+
+        // Vérifie que l'URL demandée est autorisée
+        boolean allowed = allowedRedirectUris.stream().anyMatch(redirectUri::startsWith);
+        if (!allowed) {
+            log.error("Tentative de redirection non autorisée vers : {}", redirectUri);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Redirection URL non autorisée !");
+            return;
         }
-        // Clear the attribute to avoid session pollution
-        request.getSession().removeAttribute("redirect_uri_override");
 
-        /**
-         * Redirect the user to the frontend with the JWT token as a query parameter
-         */
-        response.sendRedirect(redirectUri + "/auth/callback?token=" + jwtToken);
+        // Ajoute le token en paramètre d’URL (remplace ou concatène intelligemment)
+        String finalRedirectUri = appendTokenToRedirectUri(redirectUri, jwtToken);
+
+        log.info("Redirection vers : {}", finalRedirectUri);
+        response.sendRedirect(finalRedirectUri);
     }
 
+    private String appendTokenToRedirectUri(String redirectUri, String jwtToken) {
+        // add the token in parameters of URL (token=...)
+        if (redirectUri.contains("?")) {
+            return redirectUri + "&token=" + jwtToken;
+        } else {
+            return redirectUri + "?token=" + jwtToken;
+        }
+    }
 
     /**
      * Fallback method to create user if CustomOAuth2UserService doesn't work
