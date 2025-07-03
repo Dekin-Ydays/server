@@ -98,6 +98,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                             .requestMatchers("/api/v1/auth/**").permitAll()
+                            .requestMatchers("/oauth2/custom-google").permitAll()
                             .requestMatchers("/error").permitAll()
                             .requestMatchers(HttpMethod.GET, WHITE_LIST_URL).permitAll()
 
