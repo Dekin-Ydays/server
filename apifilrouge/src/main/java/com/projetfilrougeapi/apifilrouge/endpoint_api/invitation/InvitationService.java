@@ -8,6 +8,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventService;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
@@ -211,12 +213,17 @@ public class InvitationService {
         
         // Sauvegarde des modifications
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
-        createOrderForInvitationService.createOrderForInvitation(updatedInvitation);
+        Long orderId = createOrderForInvitationService.createOrderForInvitation(updatedInvitation);
+        Long ticketId = createOrderForInvitationService.createTicket(orderId);
+
         // Construction de la réponse
         return EntityModel.of(updatedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getId())).withRel("event"));
+                linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getId())).withRel("event"),
+                linkTo(methodOn(OrderController.class).getOrderById(orderId)).withRel("order-created"),
+                linkTo(methodOn(TicketController.class).getTicketById(ticketId)).withRel("ticket-created")
+        );
     }
 
     // Suppression d'une invitation
