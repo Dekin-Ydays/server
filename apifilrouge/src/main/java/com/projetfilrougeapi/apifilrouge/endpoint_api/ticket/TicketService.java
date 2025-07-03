@@ -1,9 +1,13 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.ticket;
 
+import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
@@ -22,11 +26,12 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final OrderRepository orderRepository;
     private final EventRepository eventRepository;
-
-    public TicketService(TicketRepository ticketRepository, OrderRepository orderRepository, EventRepository eventRepository) {
+    private final UserRepository userRepository;
+    public TicketService(TicketRepository ticketRepository, OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository) {
         this.ticketRepository = ticketRepository;
         this.orderRepository = orderRepository;
         this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
     }
 
     public EntityModel<Ticket> getTicketById(Long id) {
@@ -39,14 +44,27 @@ public class TicketService {
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
 
-    public EntityModel<Ticket> createTicket(Ticket ticket) {
-        Ticket savedTicket = ticketRepository.save(ticket);
+    public EntityModel<Ticket> createTicket(TicketRequest ticket) {
+        Order order = orderRepository.findById(ticket.getOrderId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        orderRepository.findById(ticket.getOrder().getId()).get().getTickets().add(savedTicket);
+        Ticket newTicket = Ticket.builder()
+                .name(ticket.getName())
+                .description(ticket.getDescription())
+                .unitPrice(ticket.getUnitPrice())
+                .order(order)
+                .build();
+        Ticket savedTicket = ticketRepository.save(newTicket);
+        // save the ticket in the order
+        order.getTickets().add(savedTicket);
+        orderRepository.save(order);
 
-        Event event = eventRepository.findById(ticket.getOrder().getEvent().getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));;
-        event.getParticipants().add(ticket.getOrder().getUser());
+        Event event = eventRepository.findById(order.getEvent().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        User user = userRepository.findById(order.getUser().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        event.getParticipants().add(user);
         eventRepository.save(event);
 
         return EntityModel.of(savedTicket,

@@ -167,6 +167,9 @@ public class OrderService {
         order.getTickets().add(savedTicket);
         orderRepository.save(order);
 
+        order.getEvent().getParticipants().add(order.getUser());
+        eventRepository.save(order.getEvent());
+
         return EntityModel.of(savedTicket,
                 linkTo(methodOn(TicketController.class).getTicketById(savedTicket.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"),

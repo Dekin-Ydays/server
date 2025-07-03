@@ -265,7 +265,7 @@ public class EventService {
         }
 
         event.getParticipants().add(userToAdd);
-        System.out.println("participants : " + event.getParticipants().size());
+        //System.out.println("participants : " + event.getParticipants().size());
         Event savedEvent = eventRepository.save(event);
 
         EventSummaryResponse response = EventSummaryResponse.fromEntity(savedEvent);

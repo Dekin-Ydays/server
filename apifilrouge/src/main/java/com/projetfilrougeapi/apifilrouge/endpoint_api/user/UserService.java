@@ -302,13 +302,15 @@ public class UserService {
 
         List<EntityModel<Order>> orders = user.getOrders().stream()
                 .map(order -> EntityModel.of(order,
+                        linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
                         linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user"),
-                        linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel()
-                ))
+                        linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("user")
+                        ))
                 .collect(Collectors.toList());
         return CollectionModel.of(orders,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
-                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
+                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders")
+        );
     }
 
     public CollectionModel<EntityModel<OrganizerResponse>> getAllOrganizers() {

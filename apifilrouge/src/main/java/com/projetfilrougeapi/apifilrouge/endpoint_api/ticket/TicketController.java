@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.ticket;
 
+import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import org.springframework.hateoas.CollectionModel;
@@ -16,7 +17,7 @@ public class TicketController {
     }
 
     @PostMapping
-    public EntityModel<Ticket> createTicket(Ticket ticket) {
+    public EntityModel<Ticket> createTicket(TicketRequest ticket) {
         return ticketService.createTicket(ticket);
     }
 
