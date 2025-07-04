@@ -49,13 +49,14 @@ public class InvitationService {
 
         return CollectionModel.of(invitations,
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null,true,null,null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null, true, null, null, null, null, null, null, null)).withRel("events"));
     }
 
     /**
      * Retrieves a specific invitation by the combination of event and user.
+     *
      * @param eventId The ID of the event.
-     * @param userId The ID of the user.
+     * @param userId  The ID of the user.
      * @return An EntityModel wrapping the Invitation entity.
      * @throws ResponseStatusException if no invitation is found for the given event and user.
      */
@@ -72,6 +73,7 @@ public class InvitationService {
 
     /**
      * Retrieves a specific invitation by id.
+     *
      * @param id The ID of the invitation.
      * @return An EntityModel wrapping the Invitation entity.
      * @throws ResponseStatusException if no invitation is found for the given event and user.
@@ -103,7 +105,7 @@ public class InvitationService {
 
         return EntityModel.of(eventResponse,
                 linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true, null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -159,19 +161,20 @@ public class InvitationService {
         Invitation savedInvitation = invitationRepository.save(newInvitation);
 
         EmailSender emailSender = new EmailSender();
-        emailSender.sendInvitationEmail(user,receiver,event);
+        emailSender.sendInvitationEmail(user, receiver, event);
 
         return EntityModel.of(savedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(savedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
                 linkTo(methodOn(InvitationController.class).getEventForInvitation(savedInvitation.getId())).withRel("event"),
-                linkTo(methodOn(InvitationController.class).getUserForInvitation(savedInvitation.getId())).withRel("user"));    }
+                linkTo(methodOn(InvitationController.class).getUserForInvitation(savedInvitation.getId())).withRel("user"));
+    }
 
     public EntityModel<Invitation> updateInvitation(Long id, InvitationRequest invitation) {
         // Récupération de l'invitation existante
         Invitation existingInvitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation non trouvée"));
-        
+
         // Mise à jour de l'événement si spécifié
         Event event = existingInvitation.getEvent();
         if (invitation.getEventId() != null) {
@@ -184,21 +187,21 @@ public class InvitationService {
         if (invitation.getDescription() != null) {
             existingInvitation.setDescription(invitation.getDescription());
         }
-        
+
         // Mise à jour du statut et gestion de l'ajout du participant
         if (invitation.getStatus() != null) {
             existingInvitation.setStatus(invitation.getStatus());
-            
+
             // Si le statut est "ACCEPTED", on ajoute l'utilisateur comme participant
             if ("ACCEPTED".equals(invitation.getStatus().toString())) {
                 User userToAdd = existingInvitation.getUser();
-                
+
                 // Vérification si l'événement a atteint sa capacité maximale
                 if (event.getMaxCustomers() != null) {
                     long currentParticipantsCount = event.getParticipants().stream()
                             .filter(user -> !user.getId().equals(userToAdd.getId()))
                             .count();
-                    
+
                     if (currentParticipantsCount >= event.getMaxCustomers()) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre maximum de participants atteint");
                     }
@@ -210,21 +213,32 @@ public class InvitationService {
                 //eventService.addParticipantToEvent(event.getId(), userToAdd.getId());
             }
         }
-        
+
         // Sauvegarde des modifications
         Invitation updatedInvitation = invitationRepository.save(existingInvitation);
-        Long orderId = createOrderForInvitationService.createOrderForInvitation(updatedInvitation);
-        Long ticketId = createOrderForInvitationService.createTicket(orderId);
+        if (updatedInvitation.getStatus() == Status.REJECTED) {
+            return EntityModel.of(updatedInvitation,
+                    linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
+                    linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
+                    linkTo(methodOn(InvitationController.class).getEventForInvitation(updatedInvitation.getId())).withRel("event"),
+                    linkTo(methodOn(InvitationController.class).getUserForInvitation(updatedInvitation.getId())).withRel("user")
+            );
+        } else {
+            Long orderId = createOrderForInvitationService.createOrderForInvitation(updatedInvitation);
+            Long ticketId = createOrderForInvitationService.createTicket(orderId);
+            return EntityModel.of(updatedInvitation,
+                    linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
+                    linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
+                    linkTo(methodOn(InvitationController.class).getEventForInvitation(updatedInvitation.getId())).withRel("event"),
+                    linkTo(methodOn(InvitationController.class).getUserForInvitation(updatedInvitation.getId())).withRel("user"),
+                    linkTo(methodOn(OrderController.class).getOrderById(orderId)).withRel("order-created"),
+                    linkTo(methodOn(TicketController.class).getTicketById(ticketId)).withRel("ticket-created")
+            );
+        }
+
 
         // Construction de la réponse
-        return EntityModel.of(updatedInvitation,
-                linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
-                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(InvitationController.class).getEventForInvitation(updatedInvitation.getId())).withRel("event"),
-                linkTo(methodOn(InvitationController.class).getUserForInvitation(updatedInvitation.getId())).withRel("user"),
-                linkTo(methodOn(OrderController.class).getOrderById(orderId)).withRel("order-created"),
-                linkTo(methodOn(TicketController.class).getTicketById(ticketId)).withRel("ticket-created")
-        );
+
     }
 
     // Suppression d'une invitation
