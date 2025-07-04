@@ -41,12 +41,11 @@ public class CreateOrderForInvitationService {
         ticket.setUnitPrice(order.getEvent().getPrice());
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        if (order.getTickets().isEmpty()){
+        if (order.getTickets() == null) {
             order.setTickets(new ArrayList<Ticket>());
-            order.getTickets().add(ticket);
-        }else {
-            order.getTickets().add(ticket);
         }
+        order.getTickets().add(ticket);
+
         return savedTicket.getId();
     }
 
