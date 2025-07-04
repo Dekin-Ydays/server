@@ -12,6 +12,7 @@ public class UserSummary {
     private Long id;
     private String pseudo;
     private String imageUrl;
+    private String slug;
 
     public static UserSummary fromEntity(User user) {
         if (user == null) {
@@ -20,7 +21,8 @@ public class UserSummary {
         return new UserSummary(
                 user.getId(),
                 user.getPseudo(),
-                user.getImageUrl()
+                user.getImageUrl(),
+                user.getSlug()
         );
     }
 }

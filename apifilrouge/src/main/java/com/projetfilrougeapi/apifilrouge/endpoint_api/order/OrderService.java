@@ -1,9 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
-import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
-import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
-import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
+import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
@@ -44,21 +41,23 @@ public class OrderService {
         this.ticketRepository = ticketRepository;
     }
 
-    public EntityModel<Order> getOrderById(Long id) {
+    public EntityModel<OrderResponse> getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        return EntityModel.of(order,
+        OrderResponse orderResponse = OrderResponse.fromEntity(order);
+
+        return EntityModel.of(orderResponse,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
-                linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
+                linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"), // Le lien vers la liste de tickets
                 linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
                 linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
         );
     }
 
     @Transactional
-    public EntityModel<Order> createOrder(OrderRequest request) {
+    public EntityModel<OrderResponse> createOrder(OrderRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
         Event event = eventRepository.findById(request.getEventId())
@@ -75,7 +74,9 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        return EntityModel.of(savedOrder,
+        OrderResponse orderResponse = OrderResponse.fromEntity(savedOrder);
+
+        return EntityModel.of(orderResponse,
                 linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
                 linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
@@ -85,14 +86,17 @@ public class OrderService {
 
     }
 
-    public EntityModel<Order> updateOrder(Long id, Order order) {
+    public EntityModel<OrderResponse> updateOrder(Long id, Order order) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         existingOrder.setTotalPrice(order.getTotalPrice());
+
         Order updatedOrder = orderRepository.save(existingOrder);
 
-        return EntityModel.of(updatedOrder,
+        OrderResponse orderResponse = OrderResponse.fromEntity(updatedOrder);
+
+        return EntityModel.of(orderResponse,
                 linkTo(methodOn(OrderController.class).getOrderById(updatedOrder.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
                 linkTo(methodOn(OrderController.class).getTicketsByOrderId(updatedOrder.getId())).withRel("tickets"),
@@ -100,18 +104,24 @@ public class OrderService {
                 linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
         );
     }
-
-    public CollectionModel<EntityModel<Order>> getAllOrders() {
-        List<EntityModel<Order>> orders = orderRepository.findAll().stream()
-                .map(order -> EntityModel.of(order,
-                        linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel()))
+    public CollectionModel<EntityModel<OrderResponse>> getAllOrders() {
+        List<EntityModel<OrderResponse>> orders = orderRepository.findAll().stream()
+                .map(order -> {
+                    OrderResponse orderResponse = OrderResponse.fromEntity(order);
+                    return EntityModel.of(orderResponse,
+                            linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
+                            linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
+                            linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
+                            linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
+                    );
+                })
                 .collect(Collectors.toList());
 
         return CollectionModel.of(orders,
                 linkTo(methodOn(OrderController.class).getAllOrders()).withSelfRel(),
-                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(EventController.class).getAllEvents(null,true,null,null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(UserController.class).getAllOrganizers(null)).withRel("organizers"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true, null, null, null, null, null, null, null)).withRel("events")
+        );
     }
 
     public EntityModel<Order> deleteOrder(Long id) {

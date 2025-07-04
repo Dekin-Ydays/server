@@ -26,6 +26,7 @@ public class UserResponse {
     private String lastName;
     private String firstName;
     private String pseudo;
+    private String slug;
     private String email;
     private String phone;
     private long eventPastCount;
@@ -51,6 +52,7 @@ public class UserResponse {
                 .lastName(user.getLastName())
                 .firstName(user.getFirstName())
                 .pseudo(user.getPseudo())
+                .slug(user.getSlug())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .eventPastCount(pastEvents)

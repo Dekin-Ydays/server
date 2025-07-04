@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.config.oauth;
 
+import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
@@ -32,6 +33,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final Set<String> allowedRedirectUris;
+    private final Slugify slugify = Slugify.builder().build();
 
     @Autowired
     public OAuth2LoginSuccessHandler(
@@ -142,11 +144,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String lastName = oauth2User.getAttribute("family_name");
         String imageUrl = oauth2User.getAttribute("picture");
 
+        String pseudo = (firstName + " " + lastName).trim();
+        if (pseudo.isBlank()) pseudo = email;
+        String generatedSlug = slugify.slugify(pseudo);
         User newUser = User.builder()
                 .firstName(firstName != null ? firstName : "Unknown")
                 .lastName(lastName != null ? lastName : "User")
                 .email(email)
-                .pseudo(email)
+                .pseudo(pseudo)
+                .slug(generatedSlug)
                 .imageUrl(imageUrl)
                 .role(Role.User)
                 .provider(AuthProvider.GOOGLE)

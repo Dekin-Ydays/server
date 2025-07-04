@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
+import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.assembler.OrganizerResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
@@ -9,7 +10,6 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
@@ -41,6 +41,7 @@ public class UserService {
     private final InvitationRepository invitationRepository;
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final OrganizerResponseAssembler organizerResponseAssembler;
+    private final Slugify slugify = Slugify.builder().build();
 
     public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler) {
         this.userRepository = userRepository;
@@ -77,6 +78,21 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
     }
+    public EntityModel<UserResponse> findUserBySlug(String slug) {
+        User user = userRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found with the slug: " + slug));
+
+        UserResponse response = UserResponse.fromEntity(user);
+
+        return EntityModel.of(response,
+                linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
+                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
+                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
+    }
+
 
     /**
      * Updates the profile of the currently authenticated user with the provided data.
@@ -148,6 +164,7 @@ public class UserService {
 
     }
 
+
     public CollectionModel<EntityModel<UserResponse>> getAllUsers() {
 
         List<EntityModel<UserResponse>> users = userRepository.findAll().stream()
@@ -218,8 +235,11 @@ public class UserService {
 
         if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
         if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
-        if (request.getPseudo() != null) existingUser.setPseudo(request.getPseudo());
-        if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
+        if (request.getPseudo() != null) {
+            existingUser.setPseudo(request.getPseudo());
+            String newSlug = slugify.slugify(request.getPseudo());
+            existingUser.setSlug(newSlug);
+        }        if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
 
         if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
@@ -306,22 +326,28 @@ public class UserService {
         }
     }
 
-    public CollectionModel<EntityModel<Order>> getOrderByUser(Long id) {
+    public CollectionModel<EntityModel<OrderResponse>> getOrderByUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        List<EntityModel<Order>> orders = user.getOrders().stream()
-                .map(order -> EntityModel.of(order,
-                        linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user"),
-                        linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("user")
-                ))
+        List<EntityModel<OrderResponse>> orders = user.getOrders().stream()
+                .map(order -> {
+                    OrderResponse orderResponse = OrderResponse.fromEntity(order);
+                    return EntityModel.of(orderResponse,
+                            linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
+                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user"),
+                            linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events"),
+                            linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets")
+                    );
+                })
                 .collect(Collectors.toList());
+
         return CollectionModel.of(orders,
-                linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
+                linkTo(methodOn(UserController.class).getOrderByUser(id)).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders")
         );
     }
+
 
     /**
      * Retrieves a paginated list of all organizers.
@@ -357,6 +383,29 @@ public class UserService {
         return CollectionModel.of(invitationsResponse,
                 linkTo(methodOn(UserController.class).getReceivedInvitations()).withSelfRel());
     }
+
+    public CollectionModel<EntityModel<OrderResponse>> getOrdersForCurrentUser() {
+        String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        List<EntityModel<OrderResponse>> orders = user.getOrders().stream()
+                .map(order -> {
+                    OrderResponse orderResponse = OrderResponse.fromEntity(order);
+                    return EntityModel.of(orderResponse,
+                            linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
+                            linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
+                            linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
+                            linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(orders,
+                linkTo(methodOn(UserController.class).getMyOrders()).withSelfRel()
+        );
+    }
+
 
     public Role getCurrentUserRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.config.oauth;
 
+import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -24,6 +25,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Slugify slugify = Slugify.builder().build();
 
     /**
      * Loads the user from the OAuth2 provider, then processes them in our local database.
@@ -47,7 +49,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             String firstName = oauth2User.getAttribute("given_name");
             String lastName = oauth2User.getAttribute("family_name");
             String imageUrl = oauth2User.getAttribute("picture");
-
+            String pseudo = (firstName + " " + lastName).trim();
+            if (pseudo.isBlank()) pseudo = email;
+            String generatedSlug = slugify.slugify(pseudo);
             // Check if a user with this email already exists in our database
             Optional<User> userOptional = userRepository.findByEmail(email);
 
@@ -73,7 +77,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         .firstName(firstName)
                         .lastName(lastName)
                         .email(email)
-                        .pseudo(email)
+                        .pseudo(pseudo)
+                        .slug(generatedSlug)
                         .imageUrl(imageUrl)
                         .role(Role.User)
                         .provider(AuthProvider.GOOGLE)

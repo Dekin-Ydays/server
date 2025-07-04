@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
+import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "users", path = "users",exported = false)
+@RepositoryRestResource(collectionResourceRel = "users", path = "users", exported = false)
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     //User findByUsername(String username);
     Optional<User> findByEmail(String email);
@@ -38,6 +39,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query("SELECT DISTINCT e.organizer FROM Event e WHERE e.place.id = :placeId")
     List<User> findOrganizersByPlace(@Param("placeId") Long placeId);
+
+    /**
+     * Get the user by the slug based on the filed pseudo, optional because the city could not exist
+     *
+     * @param slug
+     * @return
+     */
+    Optional<User> findBySlug(String slug);
 
     /**
      * Retrieves a list of users by their role.

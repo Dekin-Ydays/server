@@ -52,6 +52,11 @@ public class UserController {
     public EntityModel<UserResponse> getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id);
     }
+    
+    @GetMapping("/slug/{slug}")
+    public EntityModel<UserResponse> findUserBySlug(@PathVariable("slug") String slug) {
+        return userService.findUserBySlug(slug);
+    }
 
     @GetMapping("/{id}/events")
     public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(@PathVariable("id") Long id) {
@@ -89,8 +94,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/orders")
-    public CollectionModel<EntityModel<Order>> getOrderByUser(@PathVariable("id") Long id) {
+    public CollectionModel<EntityModel<OrderResponse>> getOrderByUser(@PathVariable("id") Long id) {
         return userService.getOrderByUser(id);
     }
+
+    @GetMapping("/me/orders")
+    public CollectionModel<EntityModel<OrderResponse>> getMyOrders() {
+        return userService.getOrdersForCurrentUser();
+    }
+
 
 }

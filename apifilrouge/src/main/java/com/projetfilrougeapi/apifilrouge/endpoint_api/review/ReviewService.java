@@ -76,7 +76,7 @@ public class ReviewService {
                 .orElseThrow(() -> new RuntimeException("Review not found with id: " + id));
 
         User senderUser = review.getSenderReviewUser();
-        UserSummary userSummary = new UserSummary(senderUser.getId(), senderUser.getUsername(), senderUser.getEmail());
+        UserSummary userSummary = new UserSummary(senderUser.getId(), senderUser.getUsername(), senderUser.getEmail(), senderUser.getSlug());
 
         return EntityModel.of(userSummary,
                 linkTo(methodOn(ReviewController.class).getSenderUserByReviewId(review.getReview_id())).withSelfRel(),
@@ -88,7 +88,7 @@ public class ReviewService {
                 .orElseThrow(() -> new RuntimeException("Review not found with id: " + id));
 
         User reviewedUser = review.getReviewedUser();
-        UserSummary userSummary = new UserSummary(reviewedUser.getId(), reviewedUser.getUsername(), reviewedUser.getEmail());
+        UserSummary userSummary = new UserSummary(reviewedUser.getId(), reviewedUser.getUsername(), reviewedUser.getEmail(), reviewedUser.getSlug());
 
         return EntityModel.of(userSummary,
                 linkTo(methodOn(ReviewController.class).getReviewedUserByReviewId(review.getReview_id())).withSelfRel(),

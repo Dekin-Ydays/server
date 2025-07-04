@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.auth;
 
+import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
 import com.projetfilrougeapi.apifilrouge.email.EmailSender;
@@ -35,6 +36,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmailSender emailSender;
     private final CategoryRepository categoryRepository;
+    private final Slugify slugify = Slugify.builder().build();
 
     /**
      * Enregistre un nouvel utilisateur dans le système.
@@ -48,6 +50,7 @@ public class AuthenticationService {
         if (request.getCategoryKeys() != null) {
             categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
         }
+        String generatedSlug = slugify.slugify(request.getPseudo());
 
         User user = User.builder()
                 .firstName(request.getFirstName())
@@ -57,6 +60,7 @@ public class AuthenticationService {
                 .description(request.getDescription())
                 .provider(AuthProvider.LOCAL)
                 .pseudo(request.getPseudo())
+                .slug(generatedSlug)
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)
                 .categories(categories)

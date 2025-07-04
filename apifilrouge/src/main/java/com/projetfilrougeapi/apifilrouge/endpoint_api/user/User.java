@@ -40,6 +40,9 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String pseudo;
 
+    @Column(unique = true)
+    private String slug;
+
     private String phone;
 
     @Column(name = "image_url")
