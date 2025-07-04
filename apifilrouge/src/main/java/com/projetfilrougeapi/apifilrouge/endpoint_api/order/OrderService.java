@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
@@ -124,7 +125,7 @@ public class OrderService {
     }
 
 
-    public EntityModel<User> getUserByOrderId(Long id) {
+    public EntityModel<UserResponse> getUserByOrderId(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
@@ -132,8 +133,9 @@ public class OrderService {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found for this order");
         }
+        UserResponse userResponse = new UserResponse().fromEntity(user);
 
-        return EntityModel.of(user,
+        return EntityModel.of(userResponse,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));

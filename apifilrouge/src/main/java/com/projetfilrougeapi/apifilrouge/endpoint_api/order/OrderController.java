@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
+import com.projetfilrougeapi.apifilrouge.DTO.UserResponse;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -49,7 +50,7 @@ public class OrderController {
     }
 
     @GetMapping("{id}/user")
-    public EntityModel<User> getUserByOrderId(@PathVariable Long id) {
+    public EntityModel<UserResponse> getUserByOrderId(@PathVariable Long id) {
         return orderService.getUserByOrderId(id);
     }
 
