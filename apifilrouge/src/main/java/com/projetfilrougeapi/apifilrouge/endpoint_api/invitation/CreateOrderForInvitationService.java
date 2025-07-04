@@ -6,6 +6,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 @Service
 public class CreateOrderForInvitationService {
     private final OrderRepository orderRepository;
@@ -38,7 +40,13 @@ public class CreateOrderForInvitationService {
         ticket.setDescription(order.getEvent().getDescription());
         ticket.setUnitPrice(order.getEvent().getPrice());
         Ticket savedTicket = ticketRepository.save(ticket);
-        order.getTickets().add(ticket);
+
+        if (order.getTickets().isEmpty()){
+            order.setTickets(new ArrayList<Ticket>());
+            order.getTickets().add(ticket);
+        }else {
+            order.getTickets().add(ticket);
+        }
         return savedTicket.getId();
     }
 
