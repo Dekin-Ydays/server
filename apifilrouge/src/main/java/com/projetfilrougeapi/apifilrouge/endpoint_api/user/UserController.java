@@ -5,9 +5,11 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -41,8 +43,9 @@ public class UserController {
     }
 
     @GetMapping("/organizers")
-    public CollectionModel<EntityModel<OrganizerResponse>> getAllOrganizers() {
-        return userService.getAllOrganizers();
+    public PagedModel<EntityModel<OrganizerResponse>> getAllOrganizers(
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        return userService.getAllOrganizers(pageable);
     }
 
     @GetMapping("/{id}")

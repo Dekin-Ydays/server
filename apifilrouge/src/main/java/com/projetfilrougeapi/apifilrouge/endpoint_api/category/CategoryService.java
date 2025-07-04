@@ -35,7 +35,7 @@ public class CategoryService {
 
         return CollectionModel.of(categories,
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null,true, null, null, null, null, null, null, null)).withRel("events"));
 
     }
 

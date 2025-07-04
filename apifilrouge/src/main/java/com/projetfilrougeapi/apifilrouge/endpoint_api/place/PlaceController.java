@@ -67,9 +67,11 @@ public class PlaceController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String[] categories
+            @RequestParam(required = false) String[] categories,
+            @RequestParam(defaultValue = "true") boolean onlyAvailable
+
     ) {
-        return placeService.getEventsForPlace(id, pageable, minPrice, maxPrice, startDate, endDate, categories);
+        return placeService.getEventsForPlace(id, pageable, minPrice, maxPrice, startDate, endDate, categories, onlyAvailable);
     }
 
     @GetMapping("/{id}/city")

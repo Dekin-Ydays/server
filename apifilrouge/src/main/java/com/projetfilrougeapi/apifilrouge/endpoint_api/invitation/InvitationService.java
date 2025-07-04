@@ -49,7 +49,7 @@ public class InvitationService {
 
         return CollectionModel.of(invitations,
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null,null,null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(EventController.class).getAllEvents(null,true,null,null, null, null, null, null, null)).withRel("events"));
     }
 
     /**
@@ -66,8 +66,8 @@ public class InvitationService {
         return EntityModel.of(invitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getEventById(eventId)).withRel("event"),
-                linkTo(methodOn(UserController.class).getUserById(userId)).withRel("user"));
+                linkTo(methodOn(InvitationController.class).getEventForInvitation(invitation.getId())).withRel("event"),
+                linkTo(methodOn(InvitationController.class).getUserForInvitation(invitation.getId())).withRel("user"));
     }
 
     /**
@@ -103,7 +103,7 @@ public class InvitationService {
 
         return EntityModel.of(eventResponse,
                 linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -164,8 +164,8 @@ public class InvitationService {
         return EntityModel.of(savedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(savedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getEventById(savedInvitation.getEvent().getId())).withRel("event"));
-    }
+                linkTo(methodOn(InvitationController.class).getEventForInvitation(savedInvitation.getId())).withRel("event"),
+                linkTo(methodOn(InvitationController.class).getUserForInvitation(savedInvitation.getId())).withRel("user"));    }
 
     public EntityModel<Invitation> updateInvitation(Long id, InvitationRequest invitation) {
         // Récupération de l'invitation existante
@@ -220,7 +220,8 @@ public class InvitationService {
         return EntityModel.of(updatedInvitation,
                 linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
-                linkTo(methodOn(EventController.class).getEventById(updatedInvitation.getEvent().getId())).withRel("event"),
+                linkTo(methodOn(InvitationController.class).getEventForInvitation(updatedInvitation.getId())).withRel("event"),
+                linkTo(methodOn(InvitationController.class).getUserForInvitation(updatedInvitation.getId())).withRel("user"),
                 linkTo(methodOn(OrderController.class).getOrderById(orderId)).withRel("order-created"),
                 linkTo(methodOn(TicketController.class).getTicketById(ticketId)).withRel("ticket-created")
         );

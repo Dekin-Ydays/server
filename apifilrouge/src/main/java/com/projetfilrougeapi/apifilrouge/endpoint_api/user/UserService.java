@@ -1,6 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
 import com.projetfilrougeapi.apifilrouge.DTO.*;
+import com.projetfilrougeapi.apifilrouge.assembler.OrganizerResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
@@ -12,9 +13,14 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,11 +39,16 @@ public class UserService {
     private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final InvitationRepository invitationRepository;
-    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository) {
+    private final PagedResourcesAssembler pagedResourcesAssembler;
+    private final OrganizerResponseAssembler organizerResponseAssembler;
+
+    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
         this.invitationRepository = invitationRepository;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.organizerResponseAssembler = organizerResponseAssembler;
     }
 
     /**
@@ -122,7 +133,6 @@ public class UserService {
 //    public void disableCurrentUser() {
 //
 //    }
-
     public EntityModel<UserResponse> getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -150,7 +160,7 @@ public class UserService {
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
-                linkTo(methodOn(EventController.class).getAllEvents(null,null,null,null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
@@ -218,7 +228,7 @@ public class UserService {
         if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
         if (request.getNote() != null) existingUser.setNote(request.getNote());
         if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
-        if (request.getRole() != null || existingUser.getRole()!=Role.Admin) existingUser.setRole(request.getRole());
+        if (request.getRole() != null || existingUser.getRole() != Role.Admin) existingUser.setRole(request.getRole());
 
         if (request.getCategoryKeys() != null) {
             List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
@@ -305,7 +315,7 @@ public class UserService {
                         linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
                         linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user"),
                         linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("user")
-                        ))
+                ))
                 .collect(Collectors.toList());
         return CollectionModel.of(orders,
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withSelfRel(),
@@ -313,19 +323,21 @@ public class UserService {
         );
     }
 
-    public CollectionModel<EntityModel<OrganizerResponse>> getAllOrganizers() {
+    /**
+     * Retrieves a paginated list of all organizers.
+     * <p>
+     * Uses Pageable for pagination and returns a PagedModel
+     * with HATEOAS links for navigation and related resources.
+     * </p>
+     *
+     * @param pageable Pageable parameter for pagination (page, size, sort).
+     * @return Paginated HATEOAS model of OrganizerResponse.
+     */
+    public PagedModel<EntityModel<OrganizerResponse>> getAllOrganizers(Pageable pageable) {
+        Page<User> organizersPage = userRepository.findByRole(Role.Organizer, pageable);
+        Page<OrganizerResponse> organizerResponses = organizersPage.map(OrganizerResponse::fromEntity);
 
-        List<EntityModel<OrganizerResponse>> organizers = userRepository.findByRole(Role.Organizer).stream()
-                .map(user -> {
-                    OrganizerResponse response = OrganizerResponse.fromEntity(user);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
-                            linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"));
-                })
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(organizers,
-                linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel());
+        return pagedResourcesAssembler.toModel(organizerResponses, organizerResponseAssembler);
     }
 
     public CollectionModel<EntityModel<Invitation>> getReceivedInvitations() {
@@ -344,5 +356,14 @@ public class UserService {
 
         return CollectionModel.of(invitationsResponse,
                 linkTo(methodOn(UserController.class).getReceivedInvitations()).withSelfRel());
+    }
+
+    public Role getCurrentUserRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof User)) {
+            return null;
+        }
+        User user = (User) auth.getPrincipal();
+        return user.getRole();
     }
 }

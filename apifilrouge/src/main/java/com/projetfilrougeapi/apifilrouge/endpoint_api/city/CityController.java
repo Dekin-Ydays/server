@@ -97,9 +97,11 @@ public class CityController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) String[] categories
+            @RequestParam(required = false) String[] categories,
+            @RequestParam(defaultValue = "true") boolean onlyAvailable
+
     ) {
-        return cityService.getEventsForCity(id, pageable, minPrice, maxPrice, startDate, endDate, categories);
+        return cityService.getEventsForCity(id, pageable, minPrice, maxPrice, startDate, endDate, categories,onlyAvailable);
     }
 
     /**

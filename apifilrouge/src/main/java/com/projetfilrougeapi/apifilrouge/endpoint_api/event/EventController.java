@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,9 @@ public class EventController {
 
     // Retourne une liste d'évènements avec des filtres optionnels. Si aucun paramètre n'est fourni, renvoie tous les événements sans filtre.
     @GetMapping
-    public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(
+    public PagedModel<EntityModel<EventSummaryResponse>> getAllEvents(
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable,
+            @RequestParam(defaultValue = "true") boolean onlyAvailable,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -41,7 +43,7 @@ public class EventController {
 
 
     ) {
-        return eventService.getAllEvents(pageable, minPrice, maxPrice, startDate, endDate, categories, cities, places);
+        return eventService.getAllEvents(pageable, minPrice, maxPrice, startDate, endDate, categories, cities, places, onlyAvailable);
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -93,12 +95,32 @@ public class EventController {
      */
     @GetMapping("/first-editions")
     public CollectionModel<EntityModel<EventSummaryResponse>> getFirstEditionEvents(
+            @RequestParam(defaultValue = "true") boolean onlyAvailable,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String place,
             @RequestParam(defaultValue = "10") int limit
     ) {
-        return eventService.getFirstEditionEvents(city,place, limit);
+        return eventService.getFirstEditionEvents(city,place, limit, onlyAvailable);
     }
+
+    /**
+     * GET endpoint to retrieve a limited list of trending events.
+     * <p>
+     * Accepts a 'limit' query parameter to specify the maximum number of events to return.
+     * Returns a collection of event summary DTOs with HATEOAS navigation links.
+     * </p>
+     *
+     * @param limit The maximum number of trending events to return (default: 5).
+     * @return A CollectionModel containing EntityModels of EventSummaryResponse.
+     */
+    @GetMapping("/trending")
+    public CollectionModel<EntityModel<EventSummaryResponse>> getTrendingEvents(
+            @RequestParam(defaultValue = "5") int limit,
+            @RequestParam(defaultValue = "true") boolean onlyAvailable
+    ) {
+        return eventService.getTrendingEvents(limit, onlyAvailable);
+    }
+
 
     @PatchMapping("/{id}")
     public EntityModel<EventResponse> patchEvent(@PathVariable("id") Long id, @Valid @RequestBody EventRequest request) {

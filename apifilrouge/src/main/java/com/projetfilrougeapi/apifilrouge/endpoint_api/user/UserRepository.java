@@ -1,5 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -43,5 +45,5 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * @param role The role to filter users by.
      * @return A list of users with the specified role.
      */
-    List<User> findByRole(Role role);
+    Page<User> findByRole(Role role, Pageable pageable);
 }

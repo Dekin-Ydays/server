@@ -13,9 +13,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationContr
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.*;
 import com.projetfilrougeapi.apifilrouge.validator.DateValidator;
 import com.projetfilrougeapi.apifilrouge.validator.NameValidator;
 import org.springframework.data.domain.Page;
@@ -24,6 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -53,9 +52,10 @@ public class EventService {
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
     private final EventEmailUpdateManager eventEmailUpdateManager;
+    private final UserService userService;
 
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, EventEmailUpdateManager eventEmailUpdateManager) {
+    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, EventEmailUpdateManager eventEmailUpdateManager, UserService userService) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -64,12 +64,16 @@ public class EventService {
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
         this.eventEmailUpdateManager = eventEmailUpdateManager;
+        this.userService = userService;
     }
 
-    public CollectionModel<EntityModel<EventSummaryResponse>> getAllEvents(Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories, String[] cities, String[] places) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public PagedModel<EntityModel<EventSummaryResponse>> getAllEvents(Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories, String[] cities, String[] places, boolean onlyAvailable) {
 
         Specification<Event> spec = Specification.where(null);
+
+        if (onlyAvailable) {
+            spec = spec.and(EventSpecification.isAvailable());
+        }
 
         if (minPrice != null && maxPrice != null) {
             spec = spec.and(EventSpecification.hasPriceBetween(minPrice, maxPrice));
@@ -113,6 +117,8 @@ public class EventService {
         User organizer = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
+        Role currentUserRole = userService.getCurrentUserRole();
+
         Event event = new Event();
         event.setOrganizer(organizer);
         event.setDate(request.getDate());
@@ -120,7 +126,12 @@ public class EventService {
         event.setName(request.getName());
         event.setAddress(request.getAddress());
         event.setMaxCustomers(request.getMaxCustomers());
-        event.setIsTrending(request.getIsTrending());
+        if ((currentUserRole == Role.Admin || currentUserRole == Role.AuthService)
+                && request.getIsTrending() != null) {
+            event.setIsTrending(request.getIsTrending());
+        } else {
+            event.setIsTrending(false);
+        }
         event.setStatus(request.getStatus());
         event.setPrice(request.getPrice());
         event.setContentHtml(request.getContentHtml());
@@ -165,7 +176,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(savedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(savedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(savedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(savedEvent.getId())).withRel("invitations"),
@@ -183,8 +194,12 @@ public class EventService {
      * @param limit The maximum number of events to return.
      * @return A CollectionModel of EventSummaryResponse DTOs.
      */
-    public CollectionModel<EntityModel<EventSummaryResponse>> getFirstEditionEvents(String city, String place, int limit) {
+    public CollectionModel<EntityModel<EventSummaryResponse>> getFirstEditionEvents(String city, String place, int limit, boolean onlyAvailable) {
         Specification<Event> spec = EventSpecification.isFirstEdition();
+
+        if (onlyAvailable) {
+            spec = spec.and(EventSpecification.isAvailable());
+        }
 
         if (city != null && !city.isEmpty()) {
             spec = spec.and(EventSpecification.hasCityNames(new String[]{city}));
@@ -207,8 +222,38 @@ public class EventService {
                 .collect(Collectors.toList());
 
         return CollectionModel.of(eventModels,
-                linkTo(methodOn(EventController.class).getFirstEditionEvents(city, place, limit)).withSelfRel());
+                linkTo(methodOn(EventController.class).getFirstEditionEvents(onlyAvailable,city, place, limit)).withSelfRel());
     }
+
+    /**
+     * Retrieves a limited list of trending events, with an option to include only available events.
+     *
+     * @param limit         The maximum number of trending events to return.
+     * @param onlyAvailable If true, only events that are available (not full, not started, and in the future) will be included;
+     *                      if false, all trending events are considered regardless of availability.
+     * @return A CollectionModel of EntityModels wrapping EventSummaryResponse, with HATEOAS links.
+     */
+
+    public CollectionModel<EntityModel<EventSummaryResponse>> getTrendingEvents(int limit, boolean onlyAvailable) {
+        Specification<Event> spec = EventSpecification.isTrending();
+
+        if (onlyAvailable) {
+            spec = spec.and(EventSpecification.isAvailable());
+        }
+
+        List<Event> allMatchingEvents = eventRepository.findAll(spec);
+
+        Collections.shuffle(allMatchingEvents);
+        List<EntityModel<EventSummaryResponse>> eventModels = allMatchingEvents.stream()
+                .limit(limit)
+                .map(EventSummaryResponse::fromEntity)
+                .map(eventSummaryResponseAssembler::toModel)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(eventModels,
+                linkTo(methodOn(EventController.class).getTrendingEvents(limit, onlyAvailable)).withSelfRel());
+    }
+
 
     /**
      * Adds multiple participants to a given event.
@@ -245,7 +290,7 @@ public class EventService {
     }
 
     /**
-     * Adds one participant to a given event.
+     * Add one participant to a given event.
      *
      * @param eventId The ID of the event to which participants will be added.
      * @param userIds A user ID to be added as participant.
@@ -303,7 +348,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(id)).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(event.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(event.getId())).withRel("invitations"),
                 linkTo(methodOn(EventController.class).getCityForEvent(event.getId())).withRel("city"),
@@ -417,12 +462,18 @@ public class EventService {
 
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Role currentUserRole = userService.getCurrentUserRole();
 
         if (request.getName() != null) event.setName(request.getName());
         if (request.getDescription() != null) event.setDescription(request.getDescription());
         if (request.getAddress() != null) event.setAddress(request.getAddress());
         if (request.getMaxCustomers() != null) event.setMaxCustomers(request.getMaxCustomers());
-        if (request.getIsTrending() != null) event.setIsTrending(request.getIsTrending());
+
+        if ((currentUserRole == Role.Admin || currentUserRole == Role.AuthService)
+                && request.getIsTrending() != null) {
+            event.setIsTrending(request.getIsTrending());
+        }
+
         if (request.getStatus() != null) event.setStatus(request.getStatus());
         if (request.getContentHtml() != null) event.setContentHtml(request.getContentHtml());
         if (request.getImageUrl() != null) event.setImageUrl(request.getImageUrl());
@@ -481,7 +532,7 @@ public class EventService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(EventController.class).getEventById(updatedEvent.getId())).withSelfRel(),
-                linkTo(methodOn(EventController.class).getAllEvents(null, null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(EventController.class).getPlaceForEvent(updatedEvent.getId())).withRel("places"),
                 linkTo(methodOn(EventController.class).getCityForEvent(updatedEvent.getId())).withRel("city"),
                 linkTo(methodOn(EventController.class).getInvitationsForEvent(updatedEvent.getId())).withRel("invitations"),
@@ -496,15 +547,11 @@ public class EventService {
      *
      * @param id The ID of the event to cancel.
      * @return An EntityModel wrapping the updated EventResponse.
-     *
+     * <p>
      * Allowed if the current user is:
-     *   - The organizer of the event, or
-     *   - An admin (has the role ROLE_Admin).
-     *
-     * - 404 NOT_FOUND: If no event is found with the given ID.
-     * - 500 INTERNAL_SERVER_ERROR:
-     *   - If the authenticated user cannot be found.
-     *   - If an unexpected error occurs during processing.
+     * - The organizer of the event, or
+     * - An admin (has the role ROLE_Admin).
+     * <p>
      */
     @Transactional
     public EntityModel<EventResponse> cancelEvent(Long id) {

@@ -73,7 +73,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(city.getId(),10)).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null,true)).withRel("events"));
     }
 
     /**
@@ -118,7 +118,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getCityById(city.getId())).withSelfRel(),
                 linkTo(methodOn(CityController.class).getPlacesForCity(city.getId(),10)).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(city.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(city.getId(), null, null, null, null, null, null, true)).withRel("events"));
     }
 
     @Transactional
@@ -159,7 +159,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(response.getId(),10)).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null,true)).withRel("events"));
     }
 
     @Transactional
@@ -204,7 +204,7 @@ public class CityService {
                 linkTo(methodOn(CityController.class).getAllCities(null, null)).withRel("cities"),
                 linkTo(methodOn(CityController.class).getPlacesForCity(response.getId(),10)).withRel("places"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(CityController.class).getEventsForCity(response.getId(), null, null, null, null, null, null,true)).withRel("events"));
     }
 
     /**
@@ -263,12 +263,16 @@ public class CityService {
     }
 
 
-    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForCity(Long cityId, Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForCity(Long cityId, Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories, boolean onlyAvailable) {
         if (!cityRepository.existsById(cityId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found");
         }
 
         Specification<Event> spec = Specification.where(EventSpecification.hasCity(cityId));
+
+        if (onlyAvailable) {
+            spec = spec.and(EventSpecification.isAvailable());
+        }
 
         if (minPrice != null || maxPrice != null) {
             spec = spec.and(EventSpecification.hasPriceBetween(minPrice, maxPrice));

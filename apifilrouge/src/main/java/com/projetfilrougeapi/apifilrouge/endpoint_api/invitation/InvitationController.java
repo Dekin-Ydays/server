@@ -30,8 +30,8 @@ public class InvitationController {
      */
     @GetMapping("/search")
     public EntityModel<Invitation> findInvitationByEventAndUser(
-            @RequestParam(required = true, value = "event_id") Long eventId,
-            @RequestParam(required = true, value = "user_id") Long userId
+            @RequestParam(required = true, value = "eventId") Long eventId,
+            @RequestParam(required = true, value = "userId") Long userId
     ) {
         return invitationService.getInvitationByEventAndUser(eventId, userId);
     }

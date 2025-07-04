@@ -101,7 +101,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getCityForPlace(place.getId())).withRel("city"),
                 linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getOrganizersForPlace(place.getId())).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getId(), null, null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(place.getId(), null, null, null, null, null, null,true)).withRel("events"));
     }
 
     public EntityModel<PlaceResponse> getPlaceById(Long id) {
@@ -115,23 +115,29 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null,true)).withRel("events"));
     }
 
 
-    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForPlace(Long id, Pageable pageable,  Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories) {
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForPlace(Long id, Pageable pageable,  Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories,boolean onlyAvailable) {
         if (!placeRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lieu non trouvé");
         }
 
         Specification<Event> spec = Specification.where(EventSpecification.hasPlace(id));
 
+        if (onlyAvailable) {
+            spec = spec.and(EventSpecification.isAvailable());
+        }
+
         if (minPrice != null || maxPrice != null) {
             spec = spec.and(EventSpecification.hasPriceBetween(minPrice, maxPrice));
         }
+
         if (startDate != null || endDate != null) {
             spec = spec.and(EventSpecification.hasDateBetween(startDate, endDate));
         }
+
         if (categories != null && categories.length > 0) {
             spec = spec.and(EventSpecification.hasCategories(categories));
         }
@@ -184,7 +190,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null,true)).withRel("events"));
     }
 
     public EntityModel<PlaceResponse> updatePlace(Long id, PlaceRequest request) {
@@ -231,7 +237,7 @@ public class PlaceService {
                 linkTo(methodOn(PlaceController.class).getAllPlaces(null,null,null)).withRel("places"),
                 linkTo(methodOn(PlaceController.class).getCityForPlace(response.getId())).withRel("city"),
                 linkTo(methodOn(CityController.class).getOrganizersForCity(response.getId(),10)).withRel("organizers"),
-                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null)).withRel("events"));
+                linkTo(methodOn(PlaceController.class).getEventsForPlace(response.getId(), null,null, null, null, null, null,true)).withRel("events"));
     }
 
     public void deletePlace(Long id) {

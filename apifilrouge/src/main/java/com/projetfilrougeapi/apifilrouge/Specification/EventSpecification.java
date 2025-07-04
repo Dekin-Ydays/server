@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.Specification;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventStatus;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,6 +14,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class EventSpecification {
+
+    /**
+     * Returns a specification for events that are available :
+     * - status is NOT_STARTED
+     * - date is after now
+     * - number of participants is less than maxCustomers
+     */
+    public static Specification<Event> isAvailable() {
+        return (root, query, builder) -> builder.and(
+                builder.equal(root.get("status"), EventStatus.NOT_STARTED),
+                builder.greaterThan(root.get("date"), java.time.LocalDateTime.now()),
+                builder.lt(builder.size(root.get("participants")), root.get("maxCustomers"))
+        );
+    }
+
+    /**
+     * Creates a specification to filter events that are marked as trending.
+     * @return A JPA Specification for isTrending = true.
+     */
+    public static Specification<Event> isTrending() {
+        return (root, query, builder) -> builder.isTrue(root.get("isTrending"));
+    }
 
     /**
      * Creates a specification to filter events that occur between a start and end date.
