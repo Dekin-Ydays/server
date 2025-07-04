@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -63,7 +64,7 @@ public class OrderController {
     }
 
     @GetMapping("{id}/events")
-    public CollectionModel<EntityModel<Event>> getEventsByOrderId(@PathVariable Long id) {
+    public CollectionModel<EntityModel<EventResponse>> getEventsByOrderId(@PathVariable Long id) {
         return orderService.getEventsByOrderId(id);
     }
 

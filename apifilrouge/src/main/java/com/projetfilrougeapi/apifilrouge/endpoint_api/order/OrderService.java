@@ -1,5 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.order;
 
+import com.projetfilrougeapi.apifilrouge.DTO.EventResponse;
 import com.projetfilrougeapi.apifilrouge.DTO.OrderRequest;
 import com.projetfilrougeapi.apifilrouge.DTO.TicketRequest;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
@@ -179,7 +180,7 @@ public class OrderService {
         );
     }
 
- public CollectionModel<EntityModel<Event>> getEventsByOrderId(Long id) {
+ public CollectionModel<EntityModel<EventResponse>> getEventsByOrderId(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
@@ -187,9 +188,11 @@ public class OrderService {
         if (event == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found for this order");
         }
+     EventResponse eventResponse = new EventResponse().fromEntity(event);
 
+        ;
         return CollectionModel.of(
-                List.of(EntityModel.of(event,
+                List.of(EntityModel.of(eventResponse,
                         linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel())),
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
     }
