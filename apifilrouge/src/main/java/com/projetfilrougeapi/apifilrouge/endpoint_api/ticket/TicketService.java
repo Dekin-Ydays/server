@@ -72,13 +72,22 @@ public class TicketService {
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
-    public EntityModel<Ticket> updateTicket(Long id, Ticket ticket) {
+    public EntityModel<Ticket> updateTicket(Long id, TicketRequest ticket) {
         Ticket existingTicket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        existingTicket.setName(ticket.getName());
-        existingTicket.setDescription(ticket.getDescription());
-        existingTicket.setOrder(ticket.getOrder());
+        if (ticket.getName().isEmpty()) {
+            existingTicket.setName(ticket.getName());
+        }
+        if (ticket.getLastName().isEmpty()) {
+            existingTicket.setLastName(ticket.getLastName());
+        }
+        if (ticket.getUnitPrice() == null) {
+            existingTicket.setUnitPrice(ticket.getUnitPrice());
+        }
+        if (ticket.getDescription().isEmpty()) {
+            existingTicket.setDescription(ticket.getDescription());
+        }
 
         Ticket updatedTicket = ticketRepository.save(existingTicket);
 

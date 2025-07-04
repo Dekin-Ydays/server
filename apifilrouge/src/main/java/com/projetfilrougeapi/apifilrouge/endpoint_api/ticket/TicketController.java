@@ -35,8 +35,8 @@ public class TicketController {
         return ticketService.getOrdersForTicket(id);
     }*/
 
-    @PatchMapping
-    public EntityModel<Ticket> updateTicket(@PathVariable("id") Long id, Ticket ticket) {
+    @PatchMapping("/{id}")
+    public EntityModel<Ticket> updateTicket(@PathVariable("id") Long id, TicketRequest ticket) {
         return ticketService.updateTicket(id, ticket);
     }
     @DeleteMapping("/{id}")
