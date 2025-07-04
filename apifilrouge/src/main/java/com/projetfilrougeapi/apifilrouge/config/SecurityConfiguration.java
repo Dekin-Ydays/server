@@ -119,9 +119,9 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.POST, "/api/v1/events/*/participants").hasAnyRole("Admin", "Organizer", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/api/v1/invitations").hasAnyRole("Admin", "Organizer", "AuthService", "User")
                             .requestMatchers(HttpMethod.POST, "/api/v1/categories").hasAnyRole("Admin", "AuthService")
-                            .requestMatchers(HttpMethod.POST, "/api/v1/orders/**").hasAnyRole("Admin", "AuthService", "User") //Tickets
-                            .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasAnyRole("Admin", "AuthService", "User")
-                            .requestMatchers(HttpMethod.POST, "/api/v1/reports").hasAnyRole("Admin", "AuthService", "User")
+                            .requestMatchers(HttpMethod.POST, "/api/v1/orders/**").hasAnyRole("Admin", "AuthService", "User", "Organizer") //Tickets
+                            .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasAnyRole("Admin", "AuthService", "User", "Organizer")
+                            .requestMatchers(HttpMethod.POST, "/api/v1/reports").hasAnyRole("Admin", "AuthService", "User","Organizer")
                             .requestMatchers(HttpMethod.POST, "/api/v1/users").hasAnyRole("Admin", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/api/v1/reviews").hasAnyRole("Admin", "AuthService", "User", "Organizer")
 
