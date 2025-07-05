@@ -14,6 +14,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.place.Place;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.place.PlaceRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.*;
+import com.projetfilrougeapi.apifilrouge.helper.SecurityHelper;
 import com.projetfilrougeapi.apifilrouge.validator.DateValidator;
 import com.projetfilrougeapi.apifilrouge.validator.NameValidator;
 import org.springframework.data.domain.Page;
@@ -52,10 +53,9 @@ public class EventService {
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
     private final EventEmailUpdateManager eventEmailUpdateManager;
-    private final UserService userService;
 
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, EventEmailUpdateManager eventEmailUpdateManager, UserService userService) {
+    public EventService(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository, PlaceRepository placeRepository, CityRepository cityRepository, PagedResourcesAssembler pagedResourcesAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, EventEmailUpdateManager eventEmailUpdateManager) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -64,7 +64,6 @@ public class EventService {
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
         this.eventEmailUpdateManager = eventEmailUpdateManager;
-        this.userService = userService;
     }
 
     public PagedModel<EntityModel<EventSummaryResponse>> getAllEvents(Pageable pageable, Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, String[] categories, String[] cities, String[] places, boolean onlyAvailable) {
@@ -117,7 +116,7 @@ public class EventService {
         User organizer = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
-        Role currentUserRole = userService.getCurrentUserRole();
+        Role currentUserRole = SecurityHelper.getCurrentUserRole();
 
         Event event = new Event();
         event.setOrganizer(organizer);
@@ -462,7 +461,7 @@ public class EventService {
 
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        Role currentUserRole = userService.getCurrentUserRole();
+        Role currentUserRole = SecurityHelper.getCurrentUserRole();
 
         if (request.getName() != null) event.setName(request.getName());
         if (request.getDescription() != null) event.setDescription(request.getDescription());

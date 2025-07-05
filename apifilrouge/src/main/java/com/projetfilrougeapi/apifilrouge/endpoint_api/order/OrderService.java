@@ -7,9 +7,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.user.*;
 import jakarta.transaction.Transactional;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -31,14 +29,16 @@ public class OrderService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
+    private final UserService userService;
 
     OrderRepository orderRepository;
 
-    OrderService(OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository, TicketRepository ticketRepository) {
+    OrderService(OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository, TicketRepository ticketRepository, UserService userService) {
         this.orderRepository = orderRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
+        this.userService = userService;
     }
 
     public EntityModel<OrderResponse> getOrderById(Long id) {
@@ -62,7 +62,7 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
-        if (event.getParticipants().size()+ request.getTicketToBeCreated() > event.getMaxCustomers()) {
+        if (event.getParticipants().size() + request.getTicketToBeCreated() > event.getMaxCustomers()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de participants dépasse la limite autorisée pour cet événement");
         }
         Order order = new Order();
@@ -86,11 +86,20 @@ public class OrderService {
 
     }
 
-    public EntityModel<OrderResponse> updateOrder(Long id, Order order) {
+    public EntityModel<OrderResponse> updateOrder(Long id, OrderRequest orderRequest) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        existingOrder.setTotalPrice(order.getTotalPrice());
+        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Role currentRole = userService.getCurrentUserRole();
+
+        if (currentRole != Role.Admin && currentRole != Role.AuthService && !existingOrder.getUser().getEmail().equals(connectedEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to update this order.");
+        }
+
+        if (orderRequest.getTotalPrice() != null) {
+            existingOrder.setTotalPrice(orderRequest.getTotalPrice());
+        }
 
         Order updatedOrder = orderRepository.save(existingOrder);
 
@@ -101,9 +110,11 @@ public class OrderService {
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"),
                 linkTo(methodOn(OrderController.class).getTicketsByOrderId(updatedOrder.getId())).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getUserByOrderId(updatedOrder.getId())).withRel("users"),
-                linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
+                linkTo(methodOn(OrderController.class).getEventsByOrderId(updatedOrder.getId())).withRel("events")
         );
     }
+
+
     public CollectionModel<EntityModel<OrderResponse>> getAllOrders() {
         List<EntityModel<OrderResponse>> orders = orderRepository.findAll().stream()
                 .map(order -> {
@@ -128,12 +139,18 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Role currentRole = userService.getCurrentUserRole();
+
+        if (currentRole != Role.Admin && currentRole != Role.AuthService && !order.getUser().getEmail().equals(connectedEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this order.");
+        }
+
         orderRepository.delete(order);
 
         return EntityModel.of(order,
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
-
 
     public EntityModel<UserResponse> getUserByOrderId(Long id) {
         Order order = orderRepository.findById(id)
@@ -156,6 +173,13 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
+        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Role currentRole = userService.getCurrentUserRole();
+
+        if (currentRole != Role.Admin && currentRole != Role.AuthService && !order.getUser().getEmail().equals(connectedEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to access tickets for this order.");
+        }
+
         List<EntityModel<Ticket>> tickets = order.getTickets().stream()
                 .map(ticket -> EntityModel.of(ticket,
                         linkTo(methodOn(TicketController.class).getTicketById(ticket.getId())).withSelfRel()))
@@ -165,9 +189,17 @@ public class OrderService {
                 linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
     }
 
+
     public EntityModel<Ticket> addTicketToOrder(Long id, TicketRequest ticket) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Role currentRole = userService.getCurrentUserRole();
+
+        if (currentRole != Role.Admin && currentRole != Role.AuthService && !order.getUser().getEmail().equals(connectedEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to add tickets for this order.");
+        }
 
         Ticket newTicket = new Ticket();
         newTicket.setName(ticket.getName());
@@ -192,20 +224,28 @@ public class OrderService {
         );
     }
 
- public CollectionModel<EntityModel<EventResponse>> getEventsByOrderId(Long id) {
+
+    public CollectionModel<EntityModel<EventResponse>> getEventsByOrderId(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Role currentRole = userService.getCurrentUserRole();
+
+        if (currentRole != Role.Admin && currentRole != Role.AuthService && !order.getUser().getEmail().equals(connectedEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to access the event for this order.");
+        }
 
         Event event = order.getEvent();
         if (event == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found for this order");
         }
-     EventResponse eventResponse = new EventResponse().fromEntity(event);
+        EventResponse eventResponse = new EventResponse().fromEntity(event);
 
-        ;
         return CollectionModel.of(
                 List.of(EntityModel.of(eventResponse,
                         linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel())),
-                linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order"));
+                linkTo(methodOn(OrderController.class).getOrderById(id)).withRel("order")
+        );
     }
 }

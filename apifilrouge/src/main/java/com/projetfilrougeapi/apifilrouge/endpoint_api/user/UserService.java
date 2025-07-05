@@ -7,9 +7,7 @@ import com.projetfilrougeapi.apifilrouge.assembler.OrganizerResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepository;
@@ -338,6 +336,13 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Role currentRole = this.getCurrentUserRole();
+
+        if (currentRole != Role.Admin && currentRole != Role.AuthService && !user.getEmail().equals(connectedEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to access these orders.");
+        }
+
         List<EntityModel<OrderResponse>> orders = user.getOrders().stream()
                 .map(order -> {
                     OrderResponse orderResponse = OrderResponse.fromEntity(order);
@@ -355,7 +360,6 @@ public class UserService {
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders")
         );
     }
-
 
     /**
      * Retrieves a paginated list of all organizers.
@@ -414,16 +418,6 @@ public class UserService {
         );
     }
 
-
-    public Role getCurrentUserRole() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof User)) {
-            return null;
-        }
-        User user = (User) auth.getPrincipal();
-        return user.getRole();
-    }
-
     public CollectionModel<EntityModel<Review>> getReviewByUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -437,5 +431,14 @@ public class UserService {
 
         return CollectionModel.of(reviews,
                 linkTo(methodOn(UserController.class).getReviewByUser(id)).withSelfRel());
+    }
+
+    public Role getCurrentUserRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof User)) {
+            return null;
+        }
+        User user = (User) auth.getPrincipal();
+        return user.getRole();
     }
 }

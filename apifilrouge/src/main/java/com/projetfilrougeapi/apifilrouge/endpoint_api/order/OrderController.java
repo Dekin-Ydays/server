@@ -37,8 +37,8 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}")
-    public EntityModel<OrderResponse> updateOrder(@PathVariable Long id, Order order) {
-        return orderService.updateOrder(id, order);
+    public EntityModel<OrderResponse> updateOrder(@PathVariable Long id, OrderRequest request) {
+        return orderService.updateOrder(id, request);
     }
 
     @DeleteMapping("/{id}")

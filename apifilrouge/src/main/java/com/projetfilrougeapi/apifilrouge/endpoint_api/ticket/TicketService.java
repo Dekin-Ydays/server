@@ -27,6 +27,7 @@ public class TicketService {
     private final OrderRepository orderRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+
     public TicketService(TicketRepository ticketRepository, OrderRepository orderRepository, EventRepository eventRepository, UserRepository userRepository) {
         this.ticketRepository = ticketRepository;
         this.orderRepository = orderRepository;
@@ -72,6 +73,7 @@ public class TicketService {
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
+
     public EntityModel<Ticket> updateTicket(Long id, TicketRequest ticket) {
         Ticket existingTicket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -96,6 +98,7 @@ public class TicketService {
                 linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"),
                 linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders"));
     }
+
     public void deleteTicket(Long id) {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
