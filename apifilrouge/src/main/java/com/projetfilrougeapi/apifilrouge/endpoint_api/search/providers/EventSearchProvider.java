@@ -33,7 +33,7 @@ public class EventSearchProvider implements SearchProvider {
      * Implements the limited search.
      */
     @Override
-    public List<SearchResultResponse> search(String query, int limit, Role... roles) {
+    public List<SearchResultResponse> search(String query, int limit) {
         // Create a Pageable to request only the first 'limit' results.
         Pageable pageRequest = PageRequest.of(0, limit);
         // Call the paginated repository method and return only the content.
@@ -49,7 +49,7 @@ public class EventSearchProvider implements SearchProvider {
      * Performs a paginated search for events based on the query.
      */
     @Override
-    public Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles) {
+    public Page<SearchResultResponse> search(String query, Pageable pageable) {
         Page<Event> eventPage = eventRepository.findByNameContainingIgnoreCase(query, pageable);
 
         return eventPage.map(event -> SearchResultResponse.builder()

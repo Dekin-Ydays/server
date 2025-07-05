@@ -34,7 +34,7 @@ public class PlaceSearchProvider implements SearchProvider {
      * This is used for the global search feature.
      */
     @Override
-    public List<SearchResultResponse> search(String query, int limit, Role... roles) {
+    public List<SearchResultResponse> search(String query, int limit) {
         Pageable pageRequest = PageRequest.of(0, limit);
         return placeRepository.findByNameContainingIgnoreCase(query, pageRequest)
                 .map(place -> SearchResultResponse.builder()
@@ -49,7 +49,7 @@ public class PlaceSearchProvider implements SearchProvider {
      * This is used for typed searches (e.g., ?types=place).
      */
     @Override
-    public Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles) {
+    public Page<SearchResultResponse> search(String query, Pageable pageable) {
         // We call the paginated search method on the repository.
         Page<Place> placePage = placeRepository.findByNameContainingIgnoreCase(query, pageable);
 

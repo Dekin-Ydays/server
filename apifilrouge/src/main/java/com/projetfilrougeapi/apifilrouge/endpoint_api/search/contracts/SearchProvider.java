@@ -27,7 +27,7 @@ public interface SearchProvider {
      * @param limit the limitation of results by type.
      * @return A list of all matching search results.
      */
-    List<SearchResultResponse> search(String query, int limit,  Role... roles);
+    List<SearchResultResponse> search(String query, int limit);
 
     /**
      * Performs a paginated search.
@@ -37,5 +37,5 @@ public interface SearchProvider {
      * @param pageable The pagination information (page, size, sort).
      * @return A Page of search results.
      */
-    Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles);
+    Page<SearchResultResponse> search(String query, Pageable pageable);
 }

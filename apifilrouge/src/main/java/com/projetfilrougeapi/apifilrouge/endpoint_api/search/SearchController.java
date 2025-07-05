@@ -20,12 +20,12 @@ public class SearchController {
      * - If a single 'type' is specified, it performs a paginated search for that type.
      * - Otherwise, it performs a non-paginated global search with a limit per type.
      *
-     * @param query The user's search term (required).
-     * @param types An optional array of types to search for (e.g., "event", "city"). If not provided, searches all types.
+     * @param query        The user's search term (required).
+     * @param types        An optional array of types to search for (e.g., "event", "city"). If not provided, searches all types.
      * @param limitPerType The maximum number of results to return per type for a global search (default: 3).
-     * @param cities An optional array of city names to filter events.
-     * @param places An optional array of place names to filter events.
-     * @param pageable The pagination object (page, size, sort) for typed searches.
+     * @param cities       An optional array of city names to filter events.
+     * @param places       An optional array of place names to filter events.
+     * @param pageable     The pagination object (page, size, sort) for typed searches.
      * @return A response containing either a limited list (global search) or a paginated model (typed search).
      */
     @GetMapping

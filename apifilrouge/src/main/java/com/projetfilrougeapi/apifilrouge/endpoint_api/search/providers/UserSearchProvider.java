@@ -31,36 +31,25 @@ public class UserSearchProvider implements SearchProvider {
      */
     @Override
     public boolean supports(String type) {
-        return "user".equalsIgnoreCase(type) || "organizer".equalsIgnoreCase(type);
+        return "organizer".equalsIgnoreCase(type);
     }
 
     /**
      * Performs a limited search for the global search feature.
-     * It uses the UserSpecification and a PageRequest to fetch only the top 'limit' results.
+     * It uses PageRequest to fetch only the top 'limit' results.
      *
      * @param query The search term.
      * @param limit The max number of results to return per type.
      * @return A list of all matching search results.
      */
     @Override
-    public List<SearchResultResponse> search(String query, int limit, Role... roles) {
+    public List<SearchResultResponse> search(String query, int limit) {
         Pageable pageRequest = PageRequest.of(0, limit);
-        Specification<User> spec = UserSpecification.hasTextInNameOrPseudo(query);
-
-        if (roles != null && roles.length > 0) {
-            spec = spec.and(UserSpecification.hasRole(roles));
-        }
-
-        return userRepository.findAll(spec, pageRequest)
-                .map(user -> SearchResultResponse.builder()
-                        .type("user")
-                        .user(UserResponse.fromEntity(user))
-                        .build())
-                .getContent();
+        return this.search(query, pageRequest).getContent();
     }
 
     /**
-     * Performs a paginated search for users based on the query.
+     * Performs a paginated search for organizers based on the query.
      * This is used for typed searches.
      *
      * @param query    The search term.
@@ -68,17 +57,16 @@ public class UserSearchProvider implements SearchProvider {
      * @return A Page of search results.
      */
     @Override
-    public Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles) {
-        Specification<User> spec = UserSpecification.hasTextInNameOrPseudo(query);
-
-        if (roles != null && roles.length > 0) {
-            spec = spec.and(UserSpecification.hasRole(roles));
-        }
+    public Page<SearchResultResponse> search(String query, Pageable pageable) {
+        // The specification ALWAYS includes the role filter.
+        Specification<User> spec = Specification
+                .where(UserSpecification.hasTextInNameOrPseudo(query))
+                .and(UserSpecification.hasRole(Role.Organizer));
 
         Page<User> userPage = userRepository.findAll(spec, pageable);
 
         return userPage.map(user -> SearchResultResponse.builder()
-                .type("user")
+                .type("organizer")
                 .user(UserResponse.fromEntity(user))
                 .build());
     }

@@ -36,7 +36,7 @@ public class CitySearchProvider implements SearchProvider {
      * It creates a PageRequest to fetch only the top 'limit' results.
      */
     @Override
-    public List<SearchResultResponse> search(String query, int limit, Role... roles) {
+    public List<SearchResultResponse> search(String query, int limit) {
         Pageable pageRequest = PageRequest.of(0, limit);
 
         return cityRepository.findByNameContainingIgnoreCase(query, pageRequest)
@@ -51,7 +51,7 @@ public class CitySearchProvider implements SearchProvider {
      * Performs a paginated search for cities based on the query.
      */
     @Override
-    public Page<SearchResultResponse> search(String query, Pageable pageable, Role... roles) {
+    public Page<SearchResultResponse> search(String query, Pageable pageable) {
         Page<City> cityPage = cityRepository.findByNameContainingIgnoreCase(query, pageable);
 
         return cityPage.map(city -> SearchResultResponse.builder()
