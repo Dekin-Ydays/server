@@ -5,6 +5,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.CollectionModel;
@@ -105,5 +106,8 @@ public class UserController {
         return userService.getOrdersForCurrentUser();
     }
 
-
+    @GetMapping("/{id}/received-reviews")
+    public CollectionModel<EntityModel<Review>> getReviewByUser(@PathVariable("id") Long id) {
+        return userService.getReviewByUser(id);
+    }
 }

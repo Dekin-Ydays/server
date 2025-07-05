@@ -6,6 +6,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -101,6 +102,16 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL)
     @JsonManagedReference(value = "user-reports-received")
     private List<Report> reportsReceived;
+
+    @OneToMany(mappedBy = "senderReviewUser", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reviews-sent")
+    @JsonIgnore
+    private List<Review> reviewsSent;
+
+    @OneToMany(mappedBy = "reviewedUser", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "user-reviews-received")
+    @JsonIgnore
+    private List<Review> reviewsReceived;
 
     @ManyToMany
     @JoinTable(

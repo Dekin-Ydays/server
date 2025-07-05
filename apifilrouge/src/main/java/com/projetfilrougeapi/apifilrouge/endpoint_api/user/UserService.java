@@ -16,6 +16,8 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepos
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.review.ReviewController;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -82,6 +84,7 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
+                linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
     }
     public EntityModel<UserResponse> findUserBySlug(String slug) {
@@ -96,7 +99,9 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
-                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
+                linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
+                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations")
+        );
     }
 
 
@@ -166,6 +171,7 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
+                linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
 
     }
@@ -416,5 +422,20 @@ public class UserService {
         }
         User user = (User) auth.getPrincipal();
         return user.getRole();
+    }
+
+    public CollectionModel<EntityModel<Review>> getReviewByUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        List<EntityModel<Review>> reviews = user.getReviewsReceived().stream()
+                .map(review -> EntityModel.of(review,
+                        linkTo(methodOn(ReviewController.class).getReviewById(review.getReview_id())).withSelfRel(),
+                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
+                ))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(reviews,
+                linkTo(methodOn(UserController.class).getReviewByUser(id)).withSelfRel());
     }
 }
