@@ -16,7 +16,7 @@ public class OrganizerResponseAssembler implements RepresentationModelAssembler<
         return EntityModel.of(
                 organizer,
                 linkTo(methodOn(UserController.class).getUserById(organizer.getId())).withSelfRel(),
-                linkTo(methodOn(UserController.class).getEventsForUser(organizer.getId())).withRel("events")
+                linkTo(methodOn(UserController.class).getEventsForUser(organizer.getId(),null)).withRel("events")
         );
     }
 }

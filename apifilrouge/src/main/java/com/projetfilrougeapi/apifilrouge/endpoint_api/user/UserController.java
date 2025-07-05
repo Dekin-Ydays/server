@@ -52,15 +52,17 @@ public class UserController {
     public EntityModel<UserResponse> getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id);
     }
-    
+
     @GetMapping("/slug/{slug}")
     public EntityModel<UserResponse> findUserBySlug(@PathVariable("slug") String slug) {
         return userService.findUserBySlug(slug);
     }
 
     @GetMapping("/{id}/events")
-    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(@PathVariable("id") Long id) {
-        return userService.getEventsForUser(id);
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForUser(@PathVariable("id") Long id,
+                                                                               @PageableDefault(size = 10, sort = "id") Pageable pageable)
+    {
+        return userService.getEventsForUser(id , pageable);
     }
 
     @GetMapping("/{id}/invitations")

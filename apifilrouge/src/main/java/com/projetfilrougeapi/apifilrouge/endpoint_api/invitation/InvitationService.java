@@ -131,7 +131,7 @@ public class InvitationService {
         return EntityModel.of(userResponse,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));

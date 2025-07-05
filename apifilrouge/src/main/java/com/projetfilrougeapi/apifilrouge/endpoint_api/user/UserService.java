@@ -2,11 +2,14 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
+import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.assembler.OrganizerResponseAssembler;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepository;
@@ -14,6 +17,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -42,14 +46,16 @@ public class UserService {
     private final PagedResourcesAssembler pagedResourcesAssembler;
     private final OrganizerResponseAssembler organizerResponseAssembler;
     private final Slugify slugify = Slugify.builder().build();
+    private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
 
-    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler) {
+    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
         this.invitationRepository = invitationRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.organizerResponseAssembler = organizerResponseAssembler;
+        this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
     }
 
     /**
@@ -73,7 +79,7 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
@@ -87,7 +93,7 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
@@ -157,7 +163,7 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId())).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
@@ -182,22 +188,18 @@ public class UserService {
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
 
-    public CollectionModel<EntityModel<EventSummaryResponse>> getEventsForUser(Long id) {
+    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForUser(Long id, Pageable pageable) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
+        Page<EventSummaryResponse> eventsDto = new PageImpl<>(
+                user.getEvents().stream()
+                        .map(EventSummaryResponse::fromEntity)
+                        .collect(Collectors.toList()),
+                pageable,
+                user.getEvents().size()
+        );
 
-        List<EntityModel<EventSummaryResponse>> events = user.getEvents().stream()
-                .map(event -> {
-                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel(),
-                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(events,
-                linkTo(methodOn(UserController.class).getEventsForUser(id)).withSelfRel());
+        return pagedResourcesAssembler.toModel(eventsDto, eventSummaryResponseAssembler);
     }
 
     public CollectionModel<EntityModel<Invitation>> getInvitationsForUser(Long id) {
