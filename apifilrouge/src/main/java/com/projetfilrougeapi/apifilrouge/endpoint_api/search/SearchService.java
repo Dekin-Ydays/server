@@ -23,9 +23,11 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,19 +60,13 @@ public class SearchService {
             }
         }
 
-        // Specific logic for user/organizer search
+        // --- Specific logic for user/organizer search with permission checks ---
         if (searchTypes.contains("user") || searchTypes.contains("organizer")) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = getAuthenticatedUser(); // Use the safe helper method
             Specification<User> userSpec = UserSpecification.hasTextInNameOrPseudo(query);
 
-            // If the user is NOT authenticated OR is not an Admin/AuthService, they can only see Organizers.
-            if (!(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated()) {
-                User currentUser = (User) authentication.getPrincipal();
-                if (currentUser.getRole() != Role.Admin && currentUser.getRole() != Role.AuthService) {
-                    userSpec = userSpec.and(UserSpecification.hasRole(Role.Organizer));
-                }
-            } else {
-                // Anonymous user can only search for organizers
+            // If the user is anonymous OR is not an Admin/AuthService, they can only see Organizers.
+            if (currentUser == null || (currentUser.getRole() != Role.Admin && currentUser.getRole() != Role.AuthService)) {
                 userSpec = userSpec.and(UserSpecification.hasRole(Role.Organizer));
             }
 
@@ -101,57 +97,70 @@ public class SearchService {
      */
     public PagedModel<EntityModel<SearchResultResponse>> typedSearch(String query, String type, Pageable pageable, String[] cities, String[] places) {
 
-        // Search of events
         if ("event".equalsIgnoreCase(type)) {
             Specification<Event> spec = EventSpecification.hasTextInName(query);
-
             if (cities != null && cities.length > 0) {
                 spec = spec.and(EventSpecification.hasCityNames(cities));
             }
             if (places != null && places.length > 0) {
                 spec = spec.and(EventSpecification.hasPlaceNames(places));
             }
-
             Page<Event> eventPage = eventRepository.findAll(spec, pageable);
             Page<SearchResultResponse> resultPage = eventPage.map(event -> SearchResultResponse.builder()
-                    .type("event")
-                    .event(EventSummaryResponse.fromEntity(event))
-                    .build());
-
+                    .type("event").event(EventSummaryResponse.fromEntity(event)).build());
             return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
         }
 
-        // Search of users / Organizers
         else if ("user".equalsIgnoreCase(type) || "organizer".equalsIgnoreCase(type)) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User currentUser = (User) authentication.getPrincipal();
-
+            User currentUser = getAuthenticatedUser(); // Use the safe helper method
             Specification<User> spec = UserSpecification.hasTextInNameOrPseudo(query);
 
-            if (currentUser.getRole() != Role.Admin && currentUser.getRole() != Role.AuthService) {
+            if (currentUser == null || (currentUser.getRole() != Role.Admin && currentUser.getRole() != Role.AuthService)) {
                 spec = spec.and(UserSpecification.hasRole(Role.Organizer));
-            } else if ("organizer".equalsIgnoreCase(type)) {
+            }
+            else if ("organizer".equalsIgnoreCase(type)) {
                 spec = spec.and(UserSpecification.hasRole(Role.Organizer));
             }
 
             Page<User> userPage = userRepository.findAll(spec, pageable);
             Page<SearchResultResponse> resultPage = userPage.map(user -> SearchResultResponse.builder()
-                    .type("user")
-                    .user(UserResponse.fromEntity(user))
-                    .build());
-
+                    .type("user").user(UserResponse.fromEntity(user)).build());
             return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
         }
 
-        // Standard for other types (city, place)
+        // Standard logic for other types (city, place).
         else {
             SearchProvider provider = searchProviders.stream()
                     .filter(p -> p.supports(type))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Unknown or unsupported search type: " + type));
-
             Page<SearchResultResponse> resultPage = provider.search(query, pageable);
             return pagedResourcesAssembler.toModel(resultPage, searchResultAssembler);
         }
+    }
+
+    /**
+     * Safely retrieves the currently authenticated user from the security context.
+     * Returns null if the user is anonymous.
+     * @return The authenticated User entity, or null.
+     */
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+        String userEmail;
+
+        if (principal instanceof UserDetails) {
+            userEmail = ((UserDetails) principal).getUsername();
+        } else {
+            // This case should ideally not happen with JWT, but it's a safe fallback.
+            userEmail = principal.toString();
+        }
+
+        // We return null if the user from the token is not found in the DB, to handle deleted users.
+        return userRepository.findByEmail(userEmail).orElse(null);
     }
 }
