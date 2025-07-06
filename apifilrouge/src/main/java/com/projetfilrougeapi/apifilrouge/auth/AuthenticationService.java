@@ -89,15 +89,27 @@ public class AuthenticationService {
      * @throws org.springframework.security.core.AuthenticationException Si l'authentification échoue
      */
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // Retrieve the user by email
+        var user = repository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // If the user's role is Banned, block the authentication
+        if (user.getRole() == Role.Banned) {
+            throw new RuntimeException("Your account has been banned. Please contact the administrator.");
+        }
+
+        // Authenticate user's credentials (email and password)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword())
         );
-        var user = repository.findByEmail(request.getEmail()).orElseThrow();
+
+        // Generate the JWT token for the authenticated user
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
     }
+
 }
