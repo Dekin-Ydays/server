@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,18 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Handles successful OAuth2 authentication by managing user provisioning and JWT generation.
+ * <p>
+ * This class is responsible for:
+ * <ul>
+ *   <li>Validating or creating user records after OAuth2 login</li>
+ *   <li>Generating a JWT for authenticated users</li>
+ *   <li>Validating redirect URIs for security</li>
+ *   <li>Redirecting users to frontend applications with their JWT token</li>
+ *   <li>Refusing login for banned or unauthorized users</li>
+ * </ul>
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -35,6 +49,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final Set<String> allowedRedirectUris;
     private final Slugify slugify = Slugify.builder().build();
 
+    /**
+     * Creates an instance with injected dependencies.
+     *
+     * @param userRepository  The user repository for database access.
+     * @param jwtService      The JWT service for token generation.
+     * @param passwordEncoder The password encoder for generating secure passwords.
+     * @param allowedUris     Comma-separated list of allowed frontend redirect URIs.
+     */
     @Autowired
     public OAuth2LoginSuccessHandler(
             UserRepository userRepository,
@@ -51,42 +73,76 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     /**
-     * Custom handler for successful OAuth2 authentication.
+     * Called by Spring Security after successful OAuth2 authentication.
      * <p>
-     * On successful Google login, this handler:
-     * <ul>
-     *     <li>Checks or creates the user in the database</li>
-     *     <li>Generates a JWT for the user</li>
-     *     <li>Retrieves the redirect_uri from the OAuth2 request</li>
-     *     <li>Validates that the redirect_uri is authorized</li>
-     *     <li>Redirects the user to their frontend with the token as a query parameter</li>
-     * </ul>
+     * Validates the authenticated user's existence or creates a new account,
+     * ensures the account is not banned, generates a JWT token, and redirects
+     * the user to an authorized frontend URI with their token.
      *
-     * @param request        The incoming HTTP request.
+     * @param request        The current HTTP request.
      * @param response       The HTTP response.
-     * @param authentication The Spring Authentication object (logged-in user).
-     * @throws IOException      On I/O error during redirection.
-     * @throws ServletException On servlet-related error.
+     * @param authentication The authenticated principal.
+     * @throws IOException      If an I/O error occurs during redirection.
+     * @throws ServletException On servlet errors.
      */
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = oauthUser.getAttribute("email");
-
         log.info("OAuth2 authentication successful for email: {}", email);
 
-        // Check user or create if not exists
-        var userOptional = userRepository.findByEmail(email);
-        User user = userOptional.orElseGet(() -> {
-            log.warn("User not found for email: {}. Creating...", email);
-            return createUserFromOAuth2(oauthUser);
-        });
+        // Verify if the user already exist
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        User user;
+
+        if (userOptional.isPresent()) {
+            user = userOptional.get();
+
+            // 2. Refuse if it is not an account of Google
+            if (user.getProvider() != AuthProvider.GOOGLE) {
+                log.error("Tentative de login Google sur un compte local: {}", email);
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Un compte avec cet email existe déjà. Merci de vous connecter avec votre mot de passe.");
+                return;
+            }
+
+            // 3. Refuse if the user is banned
+            if (user.getRole() == Role.Banned) {
+                log.warn("Login refusé (banni) pour: {}", email);
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Your account has been banned.");
+                return;
+            }
+
+            // Update information
+            String firstName = oauthUser.getAttribute("given_name");
+            String lastName = oauthUser.getAttribute("family_name");
+            String imageUrl = oauthUser.getAttribute("picture");
+            boolean needUpdate = false;
+
+            if (firstName != null && !firstName.equals(user.getFirstName())) {
+                user.setFirstName(firstName);
+                needUpdate = true;
+            }
+            if (lastName != null && !lastName.equals(user.getLastName())) {
+                user.setLastName(lastName);
+                needUpdate = true;
+            }
+            if (imageUrl != null && !imageUrl.equals(user.getImageUrl())) {
+                user.setImageUrl(imageUrl);
+                needUpdate = true;
+            }
+            if (needUpdate) {
+                userRepository.saveAndFlush(user);
+            }
+        } else {
+            // 5. Create a new Google user
+            user = createUserFromOAuth2(oauthUser);
+            log.info("New user created via Google: {}", user.getEmail());
+        }
 
         String jwtToken = jwtService.generateToken(user);
         log.info("JWT token generated for: {}", user.getEmail());
 
-        // Recover redirect_uri from the OAuth2AuthorizationRequest in session (set in /authorize/google)
         String redirectUri = (String) request.getSession().getAttribute("oauth2_redirect_uri");
         if (redirectUri == null || redirectUri.isBlank()) {
             log.error("No redirect_uri in session! Rejecting for safety.");
@@ -95,7 +151,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
         log.info("Found redirect_uri from session: {}", redirectUri);
 
-        // Validate
         boolean allowed = allowedRedirectUris.stream().anyMatch(redirectUri::startsWith);
         if (!allowed) {
             log.error("Redirection not allowed: {}", redirectUri);
@@ -103,24 +158,21 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        // Clear session attribute (for security)
         request.getSession().removeAttribute("oauth2_redirect_uri");
-
         String finalRedirectUri = appendTokenToRedirectUri(redirectUri, jwtToken);
         log.info("Redirecting to: {}", finalRedirectUri);
         response.sendRedirect(finalRedirectUri);
     }
 
     /**
-     * Appends the JWT token to the given redirect URI as a query parameter.
+     * Adds the JWT token as a query parameter to the redirect URI.
      * <p>
-     * If the URI already contains query parameters, appends using "&".
-     * Otherwise, starts the query string with "?".
-     * </p>
+     * If the URI already contains query parameters, the token is appended using '&'.
+     * Otherwise, it starts the query string with '?'.
      *
-     * @param redirectUri The URI to which the user will be redirected.
-     * @param jwtToken    The JWT token to add as a parameter.
-     * @return The new URI with the token as a query parameter.
+     * @param redirectUri The destination URI.
+     * @param jwtToken    The JWT token to append.
+     * @return The URI with the JWT token as a query parameter.
      */
     private String appendTokenToRedirectUri(String redirectUri, String jwtToken) {
         return redirectUri.contains("?")
@@ -129,24 +181,23 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     /**
-     * Creates a new user in the database using information from an OAuth2 authentication.
+     * Creates and persists a new user account using information from the OAuth2 provider.
      * <p>
-     * This is used as a fallback when a user logs in with Google for the first time.
-     * Generates a random password, sets the provider, and assigns the "User" role.
-     * </p>
+     * Sets the user's email, name, slug, role, provider, and a randomly generated password.
      *
-     * @param oauth2User The OAuth2User containing the user's Google profile information.
-     * @return The newly created and persisted User entity.
+     * @param oauth2User The OAuth2 user information.
+     * @return The newly created User entity.
+     * @throws OAuth2AuthenticationException If the account cannot be created.
      */
     private User createUserFromOAuth2(OAuth2User oauth2User) {
         String email = oauth2User.getAttribute("email");
         String firstName = oauth2User.getAttribute("given_name");
         String lastName = oauth2User.getAttribute("family_name");
         String imageUrl = oauth2User.getAttribute("picture");
-
         String pseudo = (firstName + " " + lastName).trim();
         if (pseudo.isBlank()) pseudo = email;
         String generatedSlug = slugify.slugify(pseudo);
+
         User newUser = User.builder()
                 .firstName(firstName != null ? firstName : "Unknown")
                 .lastName(lastName != null ? lastName : "User")

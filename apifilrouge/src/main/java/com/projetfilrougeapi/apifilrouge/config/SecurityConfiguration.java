@@ -1,6 +1,5 @@
 package com.projetfilrougeapi.apifilrouge.config;
 
-import com.projetfilrougeapi.apifilrouge.config.oauth.CustomOAuth2UserService;
 import com.projetfilrougeapi.apifilrouge.config.oauth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +35,6 @@ public class SecurityConfiguration {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     /**
      * Liste des URL accessibles sans authentification.
@@ -161,12 +159,10 @@ public class SecurityConfiguration {
 
                 // Configure OAuth2 login flow
                 .oauth2Login(oauth2 -> oauth2
-                        // Define the custom user service for mapping OAuth2 user info to your User entity.
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         // Set the success handler to customize post-authentication logic (e.g., generate JWT, redirect).
                         .successHandler(oAuth2LoginSuccessHandler)
                 )
-                // Build the security filter chain
+        // Build the security filter chain
                 .build();
     }
 }
