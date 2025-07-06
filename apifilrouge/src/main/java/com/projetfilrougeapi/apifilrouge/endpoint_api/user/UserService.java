@@ -138,6 +138,9 @@ public class UserService {
                 existingUser.setCategories(categories);
             }
 
+            if (request.getRole() != null && existingUser.getRole() == Role.User && request.getRole() == Role.Organizer) {
+                existingUser.setRole(request.getRole());
+            }
             User updatedUser = userRepository.save(existingUser);
             UserResponse response = UserResponse.fromEntity(updatedUser);
 
