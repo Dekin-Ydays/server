@@ -60,7 +60,7 @@ public class InitDB {
                                 .email("user@example.com")
                                 .pseudo("user")
                                 .provider(AuthProvider.LOCAL)
-                                .password(passwordEncoder.encode("password"))
+                                .password(passwordEncoder.encode("Password@123"))
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.User)
                                 .build(),
                         com.projetfilrougeapi.apifilrouge.endpoint_api.user.User.builder()
@@ -69,7 +69,7 @@ public class InitDB {
                                 .email("admin@example.com")
                                 .pseudo("admin")
                                 .provider(AuthProvider.LOCAL)
-                                .password(passwordEncoder.encode("password"))
+                                .password(passwordEncoder.encode("Password@123"))
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.Admin)
                                 .build(),
                         com.projetfilrougeapi.apifilrouge.endpoint_api.user.User.builder()
@@ -78,7 +78,7 @@ public class InitDB {
                                 .email("auth@example.com")
                                 .pseudo("auth")
                                 .provider(AuthProvider.LOCAL)
-                                .password(passwordEncoder.encode("password"))
+                                .password(passwordEncoder.encode("Password@123"))
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.AuthService)
                                 .build(),
                         com.projetfilrougeapi.apifilrouge.endpoint_api.user.User.builder()
@@ -87,7 +87,7 @@ public class InitDB {
                                 .email("organizer@example.com")
                                 .pseudo("organizer")
                                 .provider(AuthProvider.LOCAL)
-                                .password(passwordEncoder.encode("password"))
+                                .password(passwordEncoder.encode("Password@123"))
                                 .role(com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role.Organizer)
                                 .build()
                 );
