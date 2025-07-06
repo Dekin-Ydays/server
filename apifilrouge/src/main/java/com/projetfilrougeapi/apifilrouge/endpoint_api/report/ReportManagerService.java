@@ -40,4 +40,22 @@ public class ReportManagerService {
             return false;
         }
     }
+
+    public Boolean hasBeenBanned(User user) {
+        if (user.getRole()==Role.Banned) {
+            user.setBanned(true);
+            userRepository.save(user);
+            List<Event> eventList = eventRepository.findByOrganizerId(user.getId())
+                    .orElseThrow();
+
+            if (!eventList.isEmpty()) {
+                EventStatus eventStatus = EventStatus.BLOCKED;
+                eventList.forEach(event -> event.setStatus(eventStatus));
+            }
+
+            return true;
+        }else {
+            return false;
+        }
+    }
 }

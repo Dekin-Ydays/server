@@ -14,6 +14,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepos
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportManagerService;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.review.ReviewController;
 import org.springframework.data.domain.Page;
@@ -47,8 +48,8 @@ public class UserService {
     private final OrganizerResponseAssembler organizerResponseAssembler;
     private final Slugify slugify = Slugify.builder().build();
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
-
-    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler) {
+    private final ReportManagerService reportManagerService;
+    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, ReportManagerService reportManagerService) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
@@ -56,6 +57,7 @@ public class UserService {
         this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.organizerResponseAssembler = organizerResponseAssembler;
         this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
+        this.reportManagerService = reportManagerService;
     }
 
     /**
@@ -140,6 +142,9 @@ public class UserService {
 
             if (request.getRole() != null && existingUser.getRole() == Role.User && request.getRole() == Role.Organizer) {
                 existingUser.setRole(request.getRole());
+            } else if (request.getRole() != null && existingUser.getRole() == Role.User && request.getRole() == Role.Banned) {
+                existingUser.setRole(request.getRole());
+                reportManagerService.hasBeenBanned(existingUser);
             }
             User updatedUser = userRepository.save(existingUser);
             UserResponse response = UserResponse.fromEntity(updatedUser);
