@@ -37,6 +37,7 @@ public class AuthenticationService {
     private final EmailSender emailSender;
     private final CategoryRepository categoryRepository;
     private final Slugify slugify = Slugify.builder().build();
+    private final UserRepository userRepository;
 
     /**
      * Enregistre un nouvel utilisateur dans le système.
@@ -45,7 +46,11 @@ public class AuthenticationService {
      * @return Une réponse contenant le token JWT généré pour l'utilisateur enregistré
      */
     public AuthenticationResponse register(UserRequest request) throws Exception {
-
+        userRepository.findByEmail(request.getEmail()).ifPresent(
+                user -> {
+                    throw new RuntimeException("Email already exists");
+                }
+        );
         List<Category> categories = new ArrayList<>();
         if (request.getCategoryKeys() != null) {
             categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
@@ -64,6 +69,9 @@ public class AuthenticationService {
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)
                 .categories(categories)
+                .totalReviews(0)
+                .countReportsReceived(0)
+                .isBanned(false)
                 .build();
 
         emailSender.sendWelcomeEmail(user);
