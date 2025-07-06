@@ -8,6 +8,9 @@ server:
     protocol-header-https-value: https
     port-header: X-Forwarded-Port
     port-header-https-value: 443
+  ssl:
+    enabled: false # Désactivé car ngrok gère SSL
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/jwt_security
@@ -16,11 +19,11 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create
-    show-sql: true
+      ddl-auto: validate # En production, on valide seulement
+    show-sql: false # Désactivé en production
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   security:
@@ -30,3 +33,8 @@ spring:
           github:
             client-id: Ov23lic6yRkPpP5wURtt
             client-secret: 9714ad8b5d697f118b7ca4b32745ecaf926239bd
+
+# Configuration spécifique pour forcer HTTPS
+app:
+  force-https: true
+  base-url: https://dominant-skylark-civil.ngrok-free.app # Remplacez par votre URL ngrok
