@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Filtre qui force l'utilisation de HTTPS en ajoutant les en-têtes appropriés
- * pour les reverse proxies comme ngrok. Ce filtre s'assure que les liens HATEOAS
- * sont générés avec le bon protocole (HTTPS).
+ * Filter that forces HTTPS usage by adding appropriate headers
+ * for reverse proxies. This filter ensures that HATEOAS links
+ * are generated with the correct protocol (HTTPS).
  */
 @Component
 @Order(1)
@@ -23,13 +23,13 @@ public class HttpsForwardingFilter implements Filter {
         
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         
-        // Vérifie si la requête vient d'un reverse proxy avec HTTPS
+        // Check if the request comes from a reverse proxy with HTTPS
         String forwardedProto = httpRequest.getHeader("X-Forwarded-Proto");
         String forwardedHost = httpRequest.getHeader("X-Forwarded-Host");
         String forwardedPort = httpRequest.getHeader("X-Forwarded-Port");
         
         if ("https".equals(forwardedProto)) {
-            // Crée une wrapper de requête qui force HTTPS
+            // Create a request wrapper that forces HTTPS
             HttpServletRequestWrapper httpsRequest = new HttpServletRequestWrapper(httpRequest) {
                 @Override
                 public String getScheme() {
@@ -47,10 +47,10 @@ public class HttpsForwardingFilter implements Filter {
                         try {
                             return Integer.parseInt(forwardedPort);
                         } catch (NumberFormatException e) {
-                            return 443; // Port HTTPS par défaut
+                            return 443; // Default HTTPS port
                         }
                     }
-                    return 443; // Port HTTPS par défaut
+                    return 443; // Default HTTPS port
                 }
                 
                 @Override

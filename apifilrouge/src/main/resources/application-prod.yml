@@ -9,7 +9,7 @@ server:
     port-header: X-Forwarded-Port
     port-header-https-value: 443
   ssl:
-    enabled: false # Désactivé car ngrok gère SSL
+    enabled: false
 
 spring:
   datasource:
@@ -37,4 +37,4 @@ spring:
 # Configuration spécifique pour forcer HTTPS
 app:
   force-https: true
-  base-url: https://dominant-skylark-civil.ngrok-free.app # Remplacez par votre URL ngrok
+  base-url: https://dominant-skylark-civil.ngrok-free.app

@@ -8,8 +8,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Service qui gère la génération des URLs HATEOAS avec le bon protocole.
- * Ce service s'assure que les liens sont générés en HTTPS quand nécessaire.
+ * Service that manages HATEOAS URL generation with the correct protocol.
+ * This service ensures that links are generated using HTTPS when needed.
  */
 @Service
 public class HateoasUrlService {
@@ -21,9 +21,9 @@ public class HateoasUrlService {
     private String baseUrl;
 
     /**
-     * Détermine si la requête actuelle doit utiliser HTTPS.
+     * Determines if the current request should use HTTPS.
      *
-     * @return true si HTTPS doit être utilisé, false sinon
+     * @return true if HTTPS should be used, false otherwise
      */
     public boolean shouldUseHttps() {
         if (forceHttps) {
@@ -34,13 +34,13 @@ public class HateoasUrlService {
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
             
-            // Vérifie les en-têtes de forwarding
+            // Check forwarding headers
             String forwardedProto = request.getHeader("X-Forwarded-Proto");
             if ("https".equals(forwardedProto)) {
                 return true;
             }
             
-            // Vérifie si la requête est sécurisée
+            // Check if the request is secure
             return request.isSecure();
         }
         
@@ -48,9 +48,9 @@ public class HateoasUrlService {
     }
 
     /**
-     * Obtient l'URL de base pour la génération des liens HATEOAS.
+     * Gets the base URL for HATEOAS link generation.
      *
-     * @return L'URL de base
+     * @return The base URL
      */
     public String getBaseUrl() {
         if (baseUrl != null && !baseUrl.isEmpty()) {
@@ -65,11 +65,11 @@ public class HateoasUrlService {
             String serverName = request.getServerName();
             int serverPort = request.getServerPort();
             
-            // Construit l'URL de base
+            // Build the base URL
             StringBuilder baseUrlBuilder = new StringBuilder();
             baseUrlBuilder.append(scheme).append("://").append(serverName);
             
-            // Ajoute le port seulement si ce n'est pas le port standard
+            // Add the port only if it's not the standard port
             if ((scheme.equals("http") && serverPort != 80) || 
                 (scheme.equals("https") && serverPort != 443)) {
                 baseUrlBuilder.append(":").append(serverPort);
@@ -78,6 +78,6 @@ public class HateoasUrlService {
             return baseUrlBuilder.toString();
         }
         
-        return "http://localhost:8090"; // Fallback par défaut
+        return "http://localhost:8090"; // Default fallback
     }
 } 

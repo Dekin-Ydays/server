@@ -7,18 +7,18 @@ import org.springframework.hateoas.server.core.EvoInflectorLinkRelationProvider;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Configuration pour HATEOAS qui force l'utilisation de HTTPS dans les liens générés.
- * Cette configuration est particulièrement utile lors de l'hébergement avec ngrok
- * ou d'autres reverse proxies qui utilisent HTTPS.
+ * Configuration for HATEOAS that forces HTTPS in generated links.
+ * This configuration is particularly useful when hosting with ngrok
+ * or other reverse proxies that use HTTPS.
  */
 @Configuration
 public class HateoasConfig implements WebMvcConfigurer {
 
     /**
-     * Configure le fournisseur de relations de liens pour HATEOAS.
-     * Utilise EvoInflector pour une meilleure génération des noms de relations.
+     * Configure the link relation provider for HATEOAS.
+     * Uses EvoInflector for better relation name generation.
      *
-     * @return Le fournisseur de relations de liens configuré
+     * @return The configured link relation provider
      */
     @Bean
     public LinkRelationProvider linkRelationProvider() {
