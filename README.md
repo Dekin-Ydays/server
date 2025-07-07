@@ -532,18 +532,6 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 - [ ] Documentation mise à jour
 - [ ] Code review effectuée
 
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
-## 📞 Support
-
-### Contact
-
-- **Email** : support@apifilrouge.com
-- **Issues** : [GitHub Issues](https://github.com/your-repo/issues)
-- **Documentation** : [Wiki du projet](https://github.com/your-repo/wiki)
-
 ### Ressources utiles
 
 - [Documentation Spring Boot](https://spring.io/projects/spring-boot)
