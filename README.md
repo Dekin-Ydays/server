@@ -20,7 +20,6 @@
 - [Tests](#-tests)
 - [Déploiement](#-déploiement)
 - [Contribution](#-contribution)
-- [Licence](#-licence)
 
 ## 🎯 Description du projet
 
