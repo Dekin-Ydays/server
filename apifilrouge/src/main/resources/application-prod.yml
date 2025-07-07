@@ -37,4 +37,4 @@ spring:
 # Configuration spécifique pour forcer HTTPS
 app:
   force-https: true
-  base-url: https://dominant-skylark-civil.ngrok-free.app
+  #base-url: https://dominant-skylark-civil.ngrok-free.app
