@@ -50,6 +50,7 @@ public class SecurityConfiguration {
             "/reviews/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
+            "/actuator/health"
     };
 
     /**
