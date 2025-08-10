@@ -1,5 +1,9 @@
 package com.projetfilrougeapi.apifilrouge.config;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
+
 import java.io.IOException;
 
 import jakarta.servlet.FilterChain;
@@ -12,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -56,28 +59,47 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader("Authorization");
         final String jwt;
         final String Usermail;
+        
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
+        
         jwt = authorizationHeader.substring(7);
-        Usermail = jwtService.extractUsername(jwt);
-        if (Usermail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(Usermail);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                System.out.println("Autorités de l'utilisateur : " + userDetails.getAuthorities());
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-
+        
+        try {
+            Usermail = jwtService.extractUsername(jwt);
+            
+            if (Usermail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(Usermail);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+            filterChain.doFilter(request, response);
+        } catch (ExpiredJwtException e) {
+            // Gestion spécifique pour les jetons expirés
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Code 401
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"JWT expiré\",\"message\":\"" + e.getMessage() + "\"}");
+        } catch (MalformedJwtException | SignatureException e) {
+            // Gestion pour les jetons malformés ou avec une signature invalide
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Code 401
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"JWT invalide\",\"message\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            // Gestion des autres exceptions
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Erreur d'authentification\",\"message\":\"" + e.getMessage() + "\"}");
         }
-        filterChain.doFilter(request, response);
     }
 }

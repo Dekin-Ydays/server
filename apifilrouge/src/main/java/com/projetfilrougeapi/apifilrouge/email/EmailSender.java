@@ -19,8 +19,8 @@ public class EmailSender {
     // Configuration des paramètres SMTP
     private String host = "smtp.gmail.com";
     private String port = "587";
-    private String username = "marchalquentin06@gmail.com";
-    private String password = "mjqgtkjjwwcapdps";
+    private String username = "te92665@gmail.com";
+    private String password = "hgtdqamngzwdftnw";
 
     // Créer une nouvelle instance d'email pour chaque envoi
     private HtmlEmail createEmail() {
