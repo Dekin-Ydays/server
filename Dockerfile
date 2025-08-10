@@ -1,15 +1,15 @@
-# Build stage avec JDK 21 (LTS et compatible)
-FROM maven:3.9-openjdk-21-slim AS build
+# Build stage avec Maven et OpenJDK 21
+FROM maven:3.9.4-eclipse-temurin-21 AS build
 COPY apifilrouge/ /app/
 WORKDIR /app
 RUN mvn clean package -DskipTests
 
-# Runtime stage avec JDK 21
-FROM openjdk:21-jdk-slim
+# Runtime stage avec OpenJDK 21
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Installer curl pour health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Installer curl pour health checks (Alpine utilise apk)
+RUN apk add --no-cache curl
 
 # Copier le JAR
 COPY --from=build /app/target/apifilrouge-*.jar app.jar
