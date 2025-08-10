@@ -30,7 +30,8 @@ import java.util.Set;
                 @NamedAttributeNode("organizer"),
                 @NamedAttributeNode("place"),
                 @NamedAttributeNode("categories"),
-                @NamedAttributeNode("participants")
+                @NamedAttributeNode("participants"),
+                @NamedAttributeNode("city")
         }
 )
 public class Event {
@@ -62,13 +63,13 @@ public class Event {
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id")
+    @JoinColumn(name = "place_id",nullable = false)
     @JsonBackReference(value = "place-events")
     @JsonIgnore
     private Place place;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id")
+    @JoinColumn(name = "city_id",nullable=false)
     @JsonBackReference(value = "city-events")
     @JsonIgnore
     private City city;

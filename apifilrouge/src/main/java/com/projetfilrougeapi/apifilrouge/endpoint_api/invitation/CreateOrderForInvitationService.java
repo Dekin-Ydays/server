@@ -24,7 +24,6 @@ public class CreateOrderForInvitationService {
         order.setEvent(invitation.getEvent());
         order.setUser(invitation.getUser());
         order.setTotalPrice(invitation.getEvent().getPrice());
-        // Set other necessary fields for the order
 
         // Save the order to the repository
         Order savedOrder = orderRepository.save(order);

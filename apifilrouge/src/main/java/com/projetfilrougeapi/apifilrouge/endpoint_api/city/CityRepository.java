@@ -36,5 +36,4 @@ public interface CityRepository extends JpaRepository<City, Long> {
      * @return A list of matching cities.
      */
     Page<City> findByNameContainingIgnoreCase(String query, Pageable pageable);
-
 }

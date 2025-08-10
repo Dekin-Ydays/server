@@ -21,7 +21,7 @@ public class SearchController {
      * - Otherwise, it performs a non-paginated global search with a limit per type.
      *
      * @param query        The user's search term (required).
-     * @param types        An optional array of types to search for (e.g., "event", "city"). If not provided, searches all types.
+     * @param types        An optional array of types to search for (e.g., "event", "city", "place","organizer"). If not provided, searches all types.
      * @param limitPerType The maximum number of results to return per type for a global search (default: 3).
      * @param cities       An optional array of city names to filter events.
      * @param places       An optional array of place names to filter events.

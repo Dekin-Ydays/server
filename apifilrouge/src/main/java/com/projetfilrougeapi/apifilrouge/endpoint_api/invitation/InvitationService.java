@@ -131,7 +131,7 @@ public class InvitationService {
         return EntityModel.of(userResponse,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
@@ -206,11 +206,8 @@ public class InvitationService {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre maximum de participants atteint");
                     }
                 }
-
-                // Utilisation du service event pour ajouter le participant
                 event.getParticipants().add(userToAdd);
                 eventRepository.save(event);
-                //eventService.addParticipantToEvent(event.getId(), userToAdd.getId());
             }
         }
 
@@ -223,7 +220,7 @@ public class InvitationService {
                     linkTo(methodOn(InvitationController.class).getEventForInvitation(updatedInvitation.getId())).withRel("event"),
                     linkTo(methodOn(InvitationController.class).getUserForInvitation(updatedInvitation.getId())).withRel("user")
             );
-        } else {
+        } else if (updatedInvitation.getStatus() == Status.ACCEPTED) {
             Long orderId = createOrderForInvitationService.createOrderForInvitation(updatedInvitation);
             Long ticketId = createOrderForInvitationService.createTicket(orderId);
             return EntityModel.of(updatedInvitation,
@@ -234,11 +231,15 @@ public class InvitationService {
                     linkTo(methodOn(OrderController.class).getOrderById(orderId)).withRel("order-created"),
                     linkTo(methodOn(TicketController.class).getTicketById(ticketId)).withRel("ticket-created")
             );
+        } else {
+            // Cas par défaut (PENDING)
+            return EntityModel.of(updatedInvitation,
+                    linkTo(methodOn(InvitationController.class).getInvitationById(updatedInvitation.getId())).withSelfRel(),
+                    linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("invitations"),
+                    linkTo(methodOn(InvitationController.class).getEventForInvitation(updatedInvitation.getId())).withRel("event"),
+                    linkTo(methodOn(InvitationController.class).getUserForInvitation(updatedInvitation.getId())).withRel("user")
+            );
         }
-
-
-        // Construction de la réponse
-
     }
 
     // Suppression d'une invitation

@@ -162,7 +162,7 @@ public class SecurityConfiguration {
                         // Set the success handler to customize post-authentication logic (e.g., generate JWT, redirect).
                         .successHandler(oAuth2LoginSuccessHandler)
                 )
-        // Build the security filter chain
+                // Build the security filter chain
                 .build();
     }
 }

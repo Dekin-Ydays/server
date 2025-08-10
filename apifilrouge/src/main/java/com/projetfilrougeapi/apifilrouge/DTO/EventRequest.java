@@ -23,8 +23,6 @@ public class EventRequest {
 
     private String address;
 
-    @NotNull(message = "Maximum number of customers is required.")
-    @Positive(message = "Maximum customers must be a positive number.")
     private Integer maxCustomers;
 
     private Boolean isTrending;

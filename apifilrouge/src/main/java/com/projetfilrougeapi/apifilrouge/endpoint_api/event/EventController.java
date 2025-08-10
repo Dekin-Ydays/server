@@ -90,6 +90,7 @@ public class EventController {
     /**
      * It accepts a 'limit' parameter to define the number of results.
      * @param city The name of the city to filter the results.
+     * @param place the name of the place to filter the results.
      * @param limit The number of events to display (default is 10).
      * @return A collection of events.
      */
@@ -138,7 +139,7 @@ public class EventController {
     }
 
     // add 1 participant to an event.
-     @PostMapping("/{id}/participant")
+    @PostMapping("/{id}/participant")
     public EntityModel<EventSummaryResponse> addParticipant(@PathVariable("id") Long eventId, @Valid @RequestBody ParticipantRequest request) {
         return eventService.addParticipantToEvent(eventId, request.getUserId());
     }
