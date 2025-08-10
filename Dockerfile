@@ -1,11 +1,11 @@
-# Build stage avec JDK 23
-FROM maven:3.9-openjdk-23-slim AS build
+# Build stage avec JDK 21 (LTS et compatible)
+FROM maven:3.9-openjdk-21-slim AS build
 COPY apifilrouge/ /app/
 WORKDIR /app
 RUN mvn clean package -DskipTests
 
-# Runtime stage avec JDK 23
-FROM openjdk:23-jdk-slim
+# Runtime stage avec JDK 21
+FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # Installer curl pour health checks
