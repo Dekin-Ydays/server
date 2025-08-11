@@ -49,6 +49,7 @@ public class UserService {
     private final Slugify slugify = Slugify.builder().build();
     private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
     private final ReportManagerService reportManagerService;
+
     public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, ReportManagerService reportManagerService) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -81,12 +82,13 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
                 linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
     }
+
     public EntityModel<UserResponse> findUserBySlug(String slug) {
         User user = userRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found with the slug: " + slug));
@@ -96,7 +98,7 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
@@ -140,11 +142,11 @@ public class UserService {
                 existingUser.setCategories(categories);
             }
 
-            if (request.getRole() != null && existingUser.getRole() == Role.User && request.getRole() == Role.Organizer) {
+            if (request.getRole() != null) {
+                if (existingUser.getRole() != Role.Admin) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only administrators can modify their role or change role via this endpoint.");
+                }
                 existingUser.setRole(request.getRole());
-            } else if (request.getRole() != null && existingUser.getRole() == Role.User && request.getRole() == Role.Banned) {
-                existingUser.setRole(request.getRole());
-                reportManagerService.hasBeenBanned(existingUser);
             }
             User updatedUser = userRepository.save(existingUser);
             UserResponse response = UserResponse.fromEntity(updatedUser);
@@ -174,7 +176,7 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(),null)).withRel("events"),
+                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
                 linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
                 linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
@@ -195,7 +197,7 @@ public class UserService {
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, true,null, null, null, null, null, null, null)).withRel("events"),
+                linkTo(methodOn(EventController.class).getAllEvents(null, true, null, null, null, null, null, null, null)).withRel("events"),
                 linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
                 linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
     }
@@ -253,7 +255,8 @@ public class UserService {
             existingUser.setPseudo(request.getPseudo());
             String newSlug = slugify.slugify(request.getPseudo());
             existingUser.setSlug(newSlug);
-        }        if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
+        }
+        if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
 
         if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
         if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
@@ -262,7 +265,17 @@ public class UserService {
         if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
         if (request.getNote() != null) existingUser.setNote(request.getNote());
         if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
-        if (request.getRole() != null || existingUser.getRole() != Role.Admin) existingUser.setRole(request.getRole());
+
+        if (request.getRole() != null) {
+            String currentEmail = getCurrentUserEmail();
+            User currentUser = userRepository.findByEmail(currentEmail)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user not found"));
+
+            if (currentUser.getRole() != Role.Admin) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the administrators can changes their roles.");
+            }
+            existingUser.setRole(request.getRole());
+        }
 
         if (request.getCategoryKeys() != null) {
             List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
