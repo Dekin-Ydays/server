@@ -143,10 +143,18 @@ public class UserService {
             }
 
             if (request.getRole() != null) {
-                if (existingUser.getRole() != Role.Admin) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only administrators can modify their role or change role via this endpoint.");
+                Role currentRole = existingUser.getRole();
+                Role newRole = request.getRole();
+
+                boolean isAdmin = currentRole == Role.Admin;
+                if (currentRole == Role.User && newRole == Role.Organizer) {
+                    existingUser.setRole(newRole);
+                } else if (isAdmin) {
+                    existingUser.setRole(newRole);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                            "You are not allowed to change your role to " + newRole);
                 }
-                existingUser.setRole(request.getRole());
             }
             User updatedUser = userRepository.save(existingUser);
             UserResponse response = UserResponse.fromEntity(updatedUser);
