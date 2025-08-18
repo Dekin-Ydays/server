@@ -65,7 +65,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3100", "https://veevent-admin.vercel.app", "https://veevent.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3100", "https://veevent-admin.vercel.app", "https://veevent.vercel.app", "https://event-website-veevent.vercel.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE", "OPTIONS","HEAD"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
