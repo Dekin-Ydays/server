@@ -33,7 +33,11 @@ spring:
           github:
             client-id: Ov23lic6yRkPpP5wURtt
             client-secret: 9714ad8b5d697f118b7ca4b32745ecaf926239bd
-
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 # Configuration spécifique pour forcer HTTPS
 app:
   force-https: true
