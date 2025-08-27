@@ -120,9 +120,13 @@ public class UserService {
             User existingUser = userRepository.findByEmail(email)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + email));
 
+            if (request.getPseudo() != null) {
+                existingUser.setPseudo(request.getPseudo());
+                String newSlug = slugify.slugify(request.getPseudo());
+                existingUser.setSlug(newSlug);
+            }
             if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
             if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
-            if (request.getPseudo() != null) existingUser.setPseudo(request.getPseudo());
             if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
             if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
             if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
