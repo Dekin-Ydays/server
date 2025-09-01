@@ -23,6 +23,7 @@ public class OrganizerResponse {
     private String lastName;
     private String firstName;
     private String pseudo;
+    private String slug;
     private long eventPastCount;
     private int eventsCount;
     private Role role;
@@ -46,6 +47,7 @@ public class OrganizerResponse {
                 .lastName(user.getLastName())
                 .firstName(user.getFirstName())
                 .pseudo(user.getPseudo())
+                .slug(user.getSlug())
                 .eventPastCount(pastEvents)
                 .eventsCount(user.getEvents() != null ? user.getEvents().size() : 0)
                 .role(user.getRole())

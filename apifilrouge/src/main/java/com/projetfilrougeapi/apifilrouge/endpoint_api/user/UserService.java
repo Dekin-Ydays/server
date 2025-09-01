@@ -259,6 +259,13 @@ public class UserService {
 
     public EntityModel<UserResponse> updateUser(Long id, UserRequest request) {
 
+        String currentEmail = getCurrentUserEmail();
+        User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user not found"));
+
+        if (currentUser.getRole() != Role.Admin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only administrators can update users.");
+        }
         User existingUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
         if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
@@ -279,13 +286,6 @@ public class UserService {
         if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
 
         if (request.getRole() != null) {
-            String currentEmail = getCurrentUserEmail();
-            User currentUser = userRepository.findByEmail(currentEmail)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user not found"));
-
-            if (currentUser.getRole() != Role.Admin) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the administrators can changes their roles.");
-            }
             existingUser.setRole(request.getRole());
         }
 

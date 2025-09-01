@@ -23,13 +23,6 @@ spring:
         format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-  security:
-    oauth2:
-      client:
-        registration:
-          github:
-            client-id: Ov23lic6yRkPpP5wURtt
-            client-secret: 9714ad8b5d697f118b7ca4b32745ecaf926239bd
 springdoc:
   api-docs:
     enabled: true
