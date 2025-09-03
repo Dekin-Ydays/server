@@ -4,6 +4,7 @@ package com.projetfilrougeapi.apifilrouge.auth;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;*/
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class AuthenticationController {
      */
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody UserRequest request) throws Exception {
+    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody UserRequest request) throws Exception {
         return ResponseEntity.ok(service.register(request));
     }
 

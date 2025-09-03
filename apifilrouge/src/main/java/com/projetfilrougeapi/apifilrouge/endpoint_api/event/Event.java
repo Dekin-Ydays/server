@@ -23,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-// optimisation of the queries, it's like tell go take these while you fetch the events
+// optimisation of the queries, it's like tell "go take these while you fetch the events"
 @NamedEntityGraph(
         name = "Event.withDetails",
         attributeNodes = {
