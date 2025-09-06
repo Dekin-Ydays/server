@@ -4,6 +4,7 @@ import com.projetfilrougeapi.apifilrouge.DTO.*;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventStatus;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.Ticket;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketController;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.ticket.TicketRepository;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,6 +64,16 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event non trouvé"));
+        // Vérification de la date
+        if (event.getDate().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de commander : l'événement est déjà passé");
+        }
+
+        // Vérification du statut
+        if (event.getStatus() == EventStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de commander : l'événement a été annulé");
+        }
+        // Vérification de la capacité maximale
         if (event.getParticipants().size() + request.getTicketToBeCreated() > event.getMaxCustomers()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de participants dépasse la limite autorisée pour cet événement");
         }
@@ -200,6 +212,20 @@ public class OrderService {
         if (currentRole != Role.Admin && currentRole != Role.AuthService && !order.getUser().getEmail().equals(connectedEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to add tickets for this order.");
         }
+        Event event = order.getEvent();
+
+        if (event.getDate().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d'ajouter un ticket : l'événement est déjà passé");
+        }
+
+        if (event.getStatus() == EventStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d'ajouter un ticket : l'événement a été annulé");
+        }
+
+        if (event.getParticipants().size() + 1 > event.getMaxCustomers()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d'ajouter un ticket : la capacité maximale est atteinte");
+        }
+
 
         Ticket newTicket = new Ticket();
         newTicket.setName(ticket.getName());

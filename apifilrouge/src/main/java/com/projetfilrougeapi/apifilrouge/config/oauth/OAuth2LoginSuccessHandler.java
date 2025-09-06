@@ -2,6 +2,7 @@ package com.projetfilrougeapi.apifilrouge.config.oauth;
 
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
+import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -46,6 +47,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailSender emailSender;
     private final Set<String> allowedRedirectUris;
     private final Slugify slugify = Slugify.builder().build();
 
@@ -62,11 +64,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             UserRepository userRepository,
             JwtService jwtService,
             PasswordEncoder passwordEncoder,
+            EmailSender emailSender,
             @Value("${app.oauth2.allowed-redirect-uris}") String allowedUris
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.emailSender = emailSender;
         this.allowedRedirectUris = Arrays.stream(allowedUris.split(","))
                 .map(String::trim)
                 .collect(Collectors.toSet());
@@ -209,6 +213,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .provider(AuthProvider.GOOGLE)
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .build();
+
+        // On essaie d'envoyer l'email de bienvenue
+        try {
+            emailSender.sendWelcomeEmail(newUser);
+            log.info("Welcome email sent to {}", newUser.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send welcome email to {}", newUser.getEmail(), e);
+        }
 
         return userRepository.saveAndFlush(newUser);
     }

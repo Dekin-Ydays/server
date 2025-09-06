@@ -7,6 +7,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.StringWriter;
@@ -17,10 +18,20 @@ import java.util.Properties;
 @Service
 public class EmailSender {
     // Configuration des paramètres SMTP
-    private String host = "smtp.gmail.com";
-    private String port = "587";
-    private String username = "te92665@gmail.com";
-    private String password = "hgtdqamngzwdftnw";
+    @Value("${email.smtp.host:smtp.gmail.com}")
+    private String host;
+
+    @Value("${email.smtp.port:587}")
+    private String port;
+
+    @Value("${email.smtp.username}")
+    private String username;
+
+    @Value("${email.smtp.password}")
+    private String password;
+
+    @Value("${email.from.address}")
+    private String fromAddress;
 
     // Créer une nouvelle instance d'email pour chaque envoi
     private HtmlEmail createEmail() {
@@ -56,7 +67,7 @@ public class EmailSender {
 
         // Configuration de l'email avec une nouvelle instance
         HtmlEmail email = createEmail();
-        email.setFrom("marchalquentin06@gmail.com");
+        email.setFrom(fromAddress);
         email.setSubject("Invitation concernant l'événement : " + event.getName());
         email.setHtmlMsg(writer.toString());
 
@@ -88,7 +99,7 @@ public class EmailSender {
 
         // Configuration de l'email avec une nouvelle instance
         HtmlEmail email = createEmail();
-        email.setFrom("marchalquentin06@gmail.com");
+        email.setFrom(fromAddress);
         email.setSubject("Mise à jour concernant l'événement : " + event.getName());
         email.setHtmlMsg(writer.toString());
 
@@ -122,7 +133,7 @@ public class EmailSender {
 
         // Configuration de l'email avec une nouvelle instance
         HtmlEmail email = createEmail();
-        email.setFrom("marchalquentin06@gmail.com");
+        email.setFrom(fromAddress);
         email.setSubject("Création de votre compte sur notre plateforme");
         email.setHtmlMsg(writer.toString());
 

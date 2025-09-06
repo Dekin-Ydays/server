@@ -6,6 +6,7 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.CollectionModel;
@@ -39,7 +40,7 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public EntityModel<UserResponse> updateCurrentUser(@RequestBody UserRequest request) {
+    public EntityModel<UserResponse> updateCurrentUser(@Valid @RequestBody UserRequest request) {
         return userService.updateCurrentUserProfile(request);
     }
 
@@ -82,7 +83,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public EntityModel<UserResponse> patchUser(@PathVariable("id") Long id, @RequestBody UserRequest request) {
+    public EntityModel<UserResponse> patchUser(@Valid @PathVariable("id") Long id, @RequestBody UserRequest request) {
         return userService.updateUser(id, request);
     }
 

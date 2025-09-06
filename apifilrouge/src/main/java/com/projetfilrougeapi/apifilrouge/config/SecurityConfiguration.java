@@ -2,10 +2,12 @@ package com.projetfilrougeapi.apifilrouge.config;
 
 import com.projetfilrougeapi.apifilrouge.config.oauth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -36,6 +38,9 @@ public class SecurityConfiguration {
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    @Value("${springdoc.swagger-ui.enabled:false}")
+    private boolean swaggerEnabled;
     /**
      * Liste des URL accessibles sans authentification.
      */
@@ -48,8 +53,7 @@ public class SecurityConfiguration {
             "/api/v1/reviews/**",
             "/api/v1/search/**",
             "/reviews/**",
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
+            "/actuator/health"
     };
 
     /**
@@ -64,7 +68,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3100", "https://veevent-admin.vercel.app", "https://veevent.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3100", "https://veevent-admin.vercel.app", "https://veevent.vercel.app", "https://event-website-veevent.vercel.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE", "OPTIONS","HEAD"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -104,6 +108,10 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.GET, WHITE_LIST_URL).permitAll()
                             // Autorise l'endpoint d'init OAuth2 custom multi-frontend
                             .requestMatchers("/oauth2/authorize/google").permitAll()
+
+                            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                            .access((authentication, context) ->
+                                    new AuthorizationDecision(swaggerEnabled))
 
                             .requestMatchers(HttpMethod.POST, "/api/v1/places").hasAnyRole("Admin", "Organizer", "AuthService")
                             .requestMatchers(HttpMethod.POST, "/api/v1/cities").hasAnyRole("Admin", "Organizer", "AuthService")
