@@ -32,7 +32,7 @@ public class ReviewService {
         User reportedUser = userRepository.findById(requestReview.getReviewedUserId())
                 .orElseThrow(() -> new RuntimeException("Reported user not found with id: " + requestReview.getReviewedUserId()));
 
-     //   Review review = New Review()
+        //   Review review = New Review()
         Review review = new Review(requestReview.getContent(), requestReview.getRating(), sender, reportedUser);
 
 
@@ -60,8 +60,7 @@ public class ReviewService {
                 linkTo(methodOn(ReviewController.class).getAllReview()).withRel("reviews"));
     }
 
-    public EntityModel<Review> getReviewById(Long id)
-{
+    public EntityModel<Review> getReviewById(Long id) {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found with id: " + id));
 
