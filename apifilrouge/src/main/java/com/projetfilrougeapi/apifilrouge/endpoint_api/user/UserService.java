@@ -2,21 +2,6 @@ package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.*;
-import com.projetfilrougeapi.apifilrouge.assembler.EventSummaryResponseAssembler;
-import com.projetfilrougeapi.apifilrouge.assembler.OrganizerResponseAssembler;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.EventController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.InvitationRepository;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.order.OrderController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportController;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.report.ReportManagerService;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.review.ReviewController;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -41,24 +26,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final CategoryRepository categoryRepository;
     private final PasswordEncoder passwordEncoder;
-    private final InvitationRepository invitationRepository;
     private final PagedResourcesAssembler pagedResourcesAssembler;
-    private final OrganizerResponseAssembler organizerResponseAssembler;
     private final Slugify slugify = Slugify.builder().build();
-    private final EventSummaryResponseAssembler eventSummaryResponseAssembler;
-    private final ReportManagerService reportManagerService;
 
-    public UserService(UserRepository userRepository, CategoryRepository categoryRepository, PasswordEncoder passwordEncoder, InvitationRepository invitationRepository, PagedResourcesAssembler pagedResourcesAssembler, OrganizerResponseAssembler organizerResponseAssembler, EventSummaryResponseAssembler eventSummaryResponseAssembler, ReportManagerService reportManagerService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PagedResourcesAssembler pagedResourcesAssembler) {
         this.userRepository = userRepository;
-        this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
-        this.invitationRepository = invitationRepository;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.organizerResponseAssembler = organizerResponseAssembler;
-        this.eventSummaryResponseAssembler = eventSummaryResponseAssembler;
-        this.reportManagerService = reportManagerService;
     }
 
     /**
@@ -81,12 +56,8 @@ public class UserService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
-                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
-                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
-                linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
-                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations"));
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"));
+//                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"));
     }
 
     public EntityModel<UserResponse> findUserBySlug(String slug) {
@@ -97,13 +68,9 @@ public class UserService {
 
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
-                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"),
-                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
-                linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
-                linkTo(methodOn(UserController.class).getInvitationsForUser(user.getId())).withRel("invitations")
-        );
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"));
+//                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories")
+
     }
 
 
@@ -136,7 +103,7 @@ public class UserService {
             if (request.getNote() != null) existingUser.setNote(request.getNote());
             if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
 
-            if (request.getCategoryKeys() != null) {
+     /*       if (request.getCategoryKeys() != null) {
                 List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
 
                 if (categories.size() != request.getCategoryKeys().size()) {
@@ -144,7 +111,7 @@ public class UserService {
                 }
 
                 existingUser.setCategories(categories);
-            }
+            }*/
 
             if (request.getRole() != null) {
                 Role currentRole = existingUser.getRole();
@@ -187,12 +154,8 @@ public class UserService {
         UserResponse response = UserResponse.fromEntity(user);
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"),
-                linkTo(methodOn(UserController.class).getEventsForUser(user.getId(), null)).withRel("events"),
-                linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"),
-                linkTo(methodOn(UserController.class).getOrderByUser(user.getId())).withRel("orders"),
-                linkTo(methodOn(UserController.class).getReviewByUser(user.getId())).withRel("received-reviews"),
-                linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withRel("invitations"));
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"));
+//                linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"));
 
     }
 
@@ -208,42 +171,12 @@ public class UserService {
                 .collect(Collectors.toList());
         return CollectionModel.of(users,
                 linkTo(methodOn(UserController.class).getAllUsers()).withSelfRel(),
-                linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"),
-                linkTo(methodOn(EventController.class).getAllEvents(null, true, null, null, null, null, null, null, null)).withRel("events"),
-                linkTo(methodOn(InvitationController.class).getAllInvitations()).withRel("Invitations"),
-                linkTo(methodOn(CategoryController.class).getAllCategories()).withRel("Categories"));
+                linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"));
     }
 
-    public PagedModel<EntityModel<EventSummaryResponse>> getEventsForUser(Long id, Pageable pageable) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
-        Page<EventSummaryResponse> eventsDto = new PageImpl<>(
-                user.getEvents().stream()
-                        .map(EventSummaryResponse::fromEntity)
-                        .collect(Collectors.toList()),
-                pageable,
-                user.getEvents().size()
-        );
 
-        return pagedResourcesAssembler.toModel(eventsDto, eventSummaryResponseAssembler);
-    }
 
-    public CollectionModel<EntityModel<Invitation>> getInvitationsForUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<EntityModel<Invitation>> invitations = user.getInvitations().stream()
-                .map(inv -> EntityModel.of(inv,
-                        linkTo(methodOn(InvitationController.class).getInvitationById(inv.getId())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(id)).withRel("user")
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(invitations,
-                linkTo(methodOn(UserController.class).getInvitationsForUser(id)).withSelfRel());
-    }
-
-    public CollectionModel<EntityModel<Category>> getCategoriesForUser(Long id) {
+    /*public CollectionModel<EntityModel<Category>> getCategoriesForUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -255,7 +188,7 @@ public class UserService {
 
         return CollectionModel.of(categories,
                 linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withSelfRel());
-    }
+    }*/
 
     public EntityModel<UserResponse> updateUser(Long id, UserRequest request) {
 
@@ -289,66 +222,20 @@ public class UserService {
             existingUser.setRole(request.getRole());
         }
 
-        if (request.getCategoryKeys() != null) {
+        /*if (request.getCategoryKeys() != null) {
             List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
 
             if (categories.size() != request.getCategoryKeys().size()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiples keys are invalides.");
             }
             existingUser.setCategories(categories);
-        }
+        }*/
 
         User updatedUser = userRepository.save(existingUser);
         UserResponse response = UserResponse.fromEntity(updatedUser);
 
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel());
-    }
-
-    public CollectionModel<EntityModel<EventSummaryResponse>> getParticipatingEvents(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        List<EntityModel<EventSummaryResponse>> events = user.getParticipatedEvents().stream()
-                .map(event -> {
-                    EventSummaryResponse response = EventSummaryResponse.fromEntity(event);
-                    return EntityModel.of(response,
-                            linkTo(methodOn(EventController.class).getEventById(event.getId())).withSelfRel());
-                })
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(events,
-                linkTo(methodOn(UserController.class).getParticipatingEvents(id)).withSelfRel());
-    }
-
-    public CollectionModel<EntityModel<Report>> getReportsSentByUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<EntityModel<Report>> reports = user.getReportsSent().stream()
-                .map(report -> EntityModel.of(report,
-                        linkTo(methodOn(ReportController.class).getReportById(report.getId())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(reports,
-                linkTo(methodOn(ReportController.class).getAllReports()).withRel("reports"));
-    }
-
-    public CollectionModel<EntityModel<Report>> getReportsReceivedByUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<EntityModel<Report>> reports = user.getReportsReceived().stream()
-                .map(report -> EntityModel.of(report,
-                        linkTo(methodOn(ReportController.class).getReportById(report.getId())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(reports,
-                linkTo(methodOn(ReportController.class).getAllReports()).withRel("reports"));
     }
 
     /**
@@ -363,107 +250,6 @@ public class UserService {
         } else {
             return principal.toString();
         }
-    }
-
-    public CollectionModel<EntityModel<OrderResponse>> getOrderByUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        String connectedEmail = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        Role currentRole = this.getCurrentUserRole();
-
-        if (currentRole != Role.Admin && currentRole != Role.AuthService && !user.getEmail().equals(connectedEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to access these orders.");
-        }
-
-        List<EntityModel<OrderResponse>> orders = user.getOrders().stream()
-                .map(order -> {
-                    OrderResponse orderResponse = OrderResponse.fromEntity(order);
-                    return EntityModel.of(orderResponse,
-                            linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
-                            linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user"),
-                            linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events"),
-                            linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets")
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(orders,
-                linkTo(methodOn(UserController.class).getOrderByUser(id)).withSelfRel(),
-                linkTo(methodOn(OrderController.class).getAllOrders()).withRel("orders")
-        );
-    }
-
-    /**
-     * Retrieves a paginated list of all organizers.
-     * <p>
-     * Uses Pageable for pagination and returns a PagedModel
-     * with HATEOAS links for navigation and related resources.
-     * </p>
-     *
-     * @param pageable Pageable parameter for pagination (page, size, sort).
-     * @return Paginated HATEOAS model of OrganizerResponse.
-     */
-    public PagedModel<EntityModel<OrganizerResponse>> getAllOrganizers(Pageable pageable) {
-        Page<User> organizersPage = userRepository.findByRole(Role.Organizer, pageable);
-        Page<OrganizerResponse> organizerResponses = organizersPage.map(OrganizerResponse::fromEntity);
-
-        return pagedResourcesAssembler.toModel(organizerResponses, organizerResponseAssembler);
-    }
-
-    public CollectionModel<EntityModel<Invitation>> getReceivedInvitations() {
-        String userEmail = getCurrentUserEmail();
-
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userEmail));
-        List<Invitation> invitations = invitationRepository.findAllByOrganizerId(user.getId());
-
-        List<EntityModel<Invitation>> invitationsResponse = invitations.stream()
-                .map(invitation -> EntityModel.of(invitation,
-                        linkTo(methodOn(InvitationController.class).getInvitationById(invitation.getId())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(invitationsResponse,
-                linkTo(methodOn(UserController.class).getReceivedInvitations()).withSelfRel());
-    }
-
-    public CollectionModel<EntityModel<OrderResponse>> getOrdersForCurrentUser() {
-        String email = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        List<EntityModel<OrderResponse>> orders = user.getOrders().stream()
-                .map(order -> {
-                    OrderResponse orderResponse = OrderResponse.fromEntity(order);
-                    return EntityModel.of(orderResponse,
-                            linkTo(methodOn(OrderController.class).getOrderById(order.getId())).withSelfRel(),
-                            linkTo(methodOn(OrderController.class).getTicketsByOrderId(order.getId())).withRel("tickets"),
-                            linkTo(methodOn(OrderController.class).getUserByOrderId(order.getId())).withRel("users"),
-                            linkTo(methodOn(OrderController.class).getEventsByOrderId(order.getId())).withRel("events")
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(orders,
-                linkTo(methodOn(UserController.class).getMyOrders()).withSelfRel()
-        );
-    }
-
-    public CollectionModel<EntityModel<Review>> getReviewByUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        List<EntityModel<Review>> reviews = user.getReviewsReceived().stream()
-                .map(review -> EntityModel.of(review,
-                        linkTo(methodOn(ReviewController.class).getReviewById(review.getReview_id())).withSelfRel(),
-                        linkTo(methodOn(UserController.class).getUserById(user.getId())).withRel("user")
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(reviews,
-                linkTo(methodOn(UserController.class).getReviewByUser(id)).withSelfRel());
     }
 
     public Role getCurrentUserRole() {

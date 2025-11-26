@@ -3,9 +3,8 @@ package com.projetfilrougeapi.apifilrouge.auth;
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.DTO.UserRequest;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
-import com.projetfilrougeapi.apifilrouge.email.EmailSender;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
+//import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
+//import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -34,8 +33,7 @@ public class AuthenticationService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final EmailSender emailSender;
-    private final CategoryRepository categoryRepository;
+    //private final CategoryRepository categoryRepository;
     private final Slugify slugify = Slugify.builder().build();
     private final UserRepository userRepository;
 
@@ -51,10 +49,10 @@ public class AuthenticationService {
                     throw new RuntimeException("Email already exists");
                 }
         );
-        List<Category> categories = new ArrayList<>();
+        /*List<Category> categories = new ArrayList<>();
         if (request.getCategoryKeys() != null) {
             categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
-        }
+        }*/
         String generatedSlug = slugify.slugify(request.getPseudo());
 
         User user = User.builder()
@@ -68,13 +66,12 @@ public class AuthenticationService {
                 .slug(generatedSlug)
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.User)
-                .categories(categories)
+//                .categories(categories)
                 .totalReviews(0)
                 .countReportsReceived(0)
                 .isBanned(false)
                 .build();
 
-        emailSender.sendWelcomeEmail(user);
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()

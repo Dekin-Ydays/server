@@ -1,6 +1,5 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
-import com.projetfilrougeapi.apifilrouge.endpoint_api.city.City;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,26 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByEmail(String email);
 
     Optional<User> findById(Long id);
-
-    /**
-     * Retrieves a list of all unique organizers who have at least
-     * one event in the specified city.
-     *
-     * @param cityId The ID of the city.
-     * @return A list of unique User entities.
-     */
-    @Query("SELECT DISTINCT e.organizer FROM Event e WHERE e.city.id = :cityId")
-    List<User> findOrganizersByCity(@Param("cityId") Long cityId);
-
-    /**
-     * Retrieves a list of all unique organizers who have at least
-     * one event in the specified place.
-     *
-     * @param placeId The ID of the place.
-     * @return A list of unique User entities.
-     */
-    @Query("SELECT DISTINCT e.organizer FROM Event e WHERE e.place.id = :placeId")
-    List<User> findOrganizersByPlace(@Param("placeId") Long placeId);
 
     /**
      * Get the user by the slug based on the filed pseudo, optional because the city could not exist

@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@RestController
+/*@RestController
 @RequestMapping("/oauth2")
 public class OAuth2RedirectController {
 
@@ -35,6 +35,7 @@ public class OAuth2RedirectController {
      * @param response    The HTTP servlet response.
      * @throws IOException If sending the redirect fails.
      */
+/*
     @GetMapping("/authorize/google")
     public void redirectToGoogle(
             @RequestParam("redirect_uri") String redirectUri,
@@ -49,4 +50,4 @@ public class OAuth2RedirectController {
         request.getSession().setAttribute("oauth2_redirect_uri", redirectUri);
         response.sendRedirect("/oauth2/authorization/google");
     }
-}
+}*/

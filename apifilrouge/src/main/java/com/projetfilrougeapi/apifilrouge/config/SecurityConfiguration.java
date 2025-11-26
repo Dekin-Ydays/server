@@ -1,10 +1,11 @@
 package com.projetfilrougeapi.apifilrouge.config;
 
-import com.projetfilrougeapi.apifilrouge.config.oauth.OAuth2LoginSuccessHandler;
+//import com.projetfilrougeapi.apifilrouge.config.oauth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -37,7 +38,8 @@ public class SecurityConfiguration {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    //@Lazy
+    //private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Value("${springdoc.swagger-ui.enabled:false}")
     private boolean swaggerEnabled;
@@ -166,11 +168,10 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // Configure OAuth2 login flow
-                .oauth2Login(oauth2 -> oauth2
+                /*.oauth2Login(oauth2 -> oauth2
                         // Set the success handler to customize post-authentication logic (e.g., generate JWT, redirect).
                         .successHandler(oAuth2LoginSuccessHandler)
-                )
-                // Build the security filter chain
+                )*/
                 .build();
     }
 }

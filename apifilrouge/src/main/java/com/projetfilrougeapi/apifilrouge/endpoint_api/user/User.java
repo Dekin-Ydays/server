@@ -1,12 +1,6 @@
 package com.projetfilrougeapi.apifilrouge.endpoint_api.user;
 
 import com.fasterxml.jackson.annotation.*;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.category.Category;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.event.Event;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.invitation.Invitation;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.order.Order;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.report.Report;
-import com.projetfilrougeapi.apifilrouge.endpoint_api.review.Review;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -79,54 +73,6 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider provider;
-
-    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-events")
-    @JsonIgnore
-    private List<Event> events;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-invitations")
-    @JsonIgnore
-    private List<Invitation> invitations;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-orders")
-    @JsonIgnore
-    private List<Order> orders;
-
-    @OneToMany(mappedBy = "senderUser", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-reports-sent")
-    private List<Report> reportsSent;
-
-    @OneToMany(mappedBy = "reportedUser", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-reports-received")
-    private List<Report> reportsReceived;
-
-    @OneToMany(mappedBy = "senderReviewUser", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-reviews-sent")
-    @JsonIgnore
-    private List<Review> reviewsSent;
-
-    @OneToMany(mappedBy = "reviewedUser", cascade = CascadeType.ALL)
-    @JsonManagedReference(value = "user-reviews-received")
-    @JsonIgnore
-    private List<Review> reviewsReceived;
-
-    @ManyToMany
-    @JoinTable(
-            name = "user_category",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    @JsonIgnoreProperties("users")
-    @JsonIgnore
-    private List<Category> categories = new ArrayList<>();
-
-    @ManyToMany(mappedBy = "participants")
-    @JsonIgnoreProperties("participants")
-    @JsonIgnore
-    private List<Event> participatedEvents = new ArrayList<>();
 
     // === Spring Security methods ===
 

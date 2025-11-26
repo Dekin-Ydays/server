@@ -1,8 +1,7 @@
 package com.projetfilrougeapi.apifilrouge.config.oauth;
-
+/*
 import com.github.slugify.Slugify;
 import com.projetfilrougeapi.apifilrouge.config.JwtService;
-import com.projetfilrougeapi.apifilrouge.email.EmailSender;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.Role;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.User;
@@ -10,7 +9,6 @@ import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,15 +37,14 @@ import java.util.stream.Collectors;
  *   <li>Refusing login for banned or unauthorized users</li>
  * </ul>
  */
+/*
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final EmailSender emailSender;
     private final Set<String> allowedRedirectUris;
     private final Slugify slugify = Slugify.builder().build();
 
@@ -59,18 +56,16 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      * @param passwordEncoder The password encoder for generating secure passwords.
      * @param allowedUris     Comma-separated list of allowed frontend redirect URIs.
      */
-    @Autowired
+/*
     public OAuth2LoginSuccessHandler(
             UserRepository userRepository,
             JwtService jwtService,
             PasswordEncoder passwordEncoder,
-            EmailSender emailSender,
             @Value("${app.oauth2.allowed-redirect-uris}") String allowedUris
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
-        this.emailSender = emailSender;
         this.allowedRedirectUris = Arrays.stream(allowedUris.split(","))
                 .map(String::trim)
                 .collect(Collectors.toSet());
@@ -89,6 +84,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      * @throws IOException      If an I/O error occurs during redirection.
      * @throws ServletException On servlet errors.
      */
+/*
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -178,6 +174,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      * @param jwtToken    The JWT token to append.
      * @return The URI with the JWT token as a query parameter.
      */
+/*
     private String appendTokenToRedirectUri(String redirectUri, String jwtToken) {
         return redirectUri.contains("?")
                 ? redirectUri + "&token=" + jwtToken
@@ -193,6 +190,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      * @return The newly created User entity.
      * @throws OAuth2AuthenticationException If the account cannot be created.
      */
+/*
     private User createUserFromOAuth2(OAuth2User oauth2User) {
         String email = oauth2User.getAttribute("email");
         String firstName = oauth2User.getAttribute("given_name");
@@ -212,16 +210,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .role(Role.User)
                 .provider(AuthProvider.GOOGLE)
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .build();
-
-        // On essaie d'envoyer l'email de bienvenue
-        try {
-            emailSender.sendWelcomeEmail(newUser);
-            log.info("Welcome email sent to {}", newUser.getEmail());
-        } catch (Exception e) {
-            log.error("Failed to send welcome email to {}", newUser.getEmail(), e);
-        }
+                .totalReviews(0)
+                .countReportsReceived(0).isBanned(false).build();
 
         return userRepository.saveAndFlush(newUser);
     }
-}
+}*/
