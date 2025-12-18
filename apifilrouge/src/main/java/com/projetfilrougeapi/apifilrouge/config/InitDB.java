@@ -3,6 +3,7 @@ package com.projetfilrougeapi.apifilrouge.config;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.category.CategoryRepository;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.AuthProvider;
 import com.projetfilrougeapi.apifilrouge.endpoint_api.user.UserRepository;
+import com.projetfilrougeapi.apifilrouge.endpoint_api.video.VideoRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -107,6 +108,27 @@ public class InitDB {
                                   .build()
                );
                categoryRepository.saveAll(categories);
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner initVideos(VideoRepository videoRepository) {
+        return args -> {
+            if (videoRepository.count() == 0) {
+                List<com.projetfilrougeapi.apifilrouge.endpoint_api.video.Video> videos = List.of(
+                          com.projetfilrougeapi.apifilrouge.endpoint_api.video.Video.builder()
+                                  .videoDescription("This is a sample video description.")
+                                  .url("http://example.com/video1")
+                                  .videoScore(10)
+                                  .build(),
+                          com.projetfilrougeapi.apifilrouge.endpoint_api.video.Video.builder()
+                                  .videoDescription("This is another sample video description.")
+                                  .url("http://example.com/video2")
+                                  .videoScore(19)
+                                  .build()
+                );
+                videoRepository.saveAll(videos);
             }
         };
     }
