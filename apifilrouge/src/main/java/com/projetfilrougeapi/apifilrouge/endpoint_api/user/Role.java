@@ -35,14 +35,6 @@ public enum Role {
 
             )
     ),
-    Organizer(
-            Set.of(
-                    ORGANIZER_CREATE,
-                    ORGANIZER_READ,
-                    ORGANIZER_UPDATE,
-                    ORGANIZER_DELETE
-            )
-    ),
     Banned(
             Collections.emptySet()
     );

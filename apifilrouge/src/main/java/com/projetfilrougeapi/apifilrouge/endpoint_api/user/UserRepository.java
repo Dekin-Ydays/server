@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(collectionResourceRel = "users", path = "users", exported = false)
+@RepositoryRestResource(collectionResourceRel = "users", path = "users")
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     //User findByUsername(String username);
     Optional<User> findByEmail(String email);

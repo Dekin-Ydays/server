@@ -56,7 +56,6 @@ public class UserResponse {
                 .description(user.getDescription())
                 .imageUrl(user.getImageUrl())
                 .bannerUrl(user.getBannerUrl())
-//              .categories(categories)
                 .note(user.getNote())
                 .build();
     }

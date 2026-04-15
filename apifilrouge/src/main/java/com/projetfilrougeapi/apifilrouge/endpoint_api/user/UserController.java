@@ -29,12 +29,10 @@ public class UserController {
         return userService.getCurrentUserProfile();
     }
 
-
     @PatchMapping("/me")
     public EntityModel<UserResponse> updateCurrentUser(@Valid @RequestBody UserRequest request) {
         return userService.updateCurrentUserProfile(request);
     }
-
 
     @GetMapping("/{id}")
     public EntityModel<UserResponse> getUserById(@PathVariable("id") Long id) {
@@ -45,13 +43,6 @@ public class UserController {
     public EntityModel<UserResponse> findUserBySlug(@PathVariable("slug") String slug) {
         return userService.findUserBySlug(slug);
     }
-
-
-   /* @GetMapping("/{id}/categories")
-    public CollectionModel<EntityModel<Category>> getCategoriesForUser(@PathVariable("id") Long id) {
-        return userService.getCategoriesForUser(id);
-    }*/
-
 
     @PatchMapping("/{id}")
     public EntityModel<UserResponse> patchUser(@Valid @PathVariable("id") Long id, @RequestBody UserRequest request) {

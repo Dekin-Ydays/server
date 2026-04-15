@@ -16,11 +16,6 @@ public enum Permission {
     USER_CREATE("user:create"),
     USER_DELETE("user:delete"),
 
-    ORGANIZER_READ("organizer:read"),
-    ORGANIZER_UPDATE("organizer:update"),
-    ORGANIZER_CREATE("organizer:create"),
-    ORGANIZER_DELETE("organizer:delete"),
-
     AUTH_SERVICE_READ("auth:read"),
     AUTH_SERVICE_UPDATE("auth:update"),
     AUTH_SERVICE_CREATE("auth:create"),

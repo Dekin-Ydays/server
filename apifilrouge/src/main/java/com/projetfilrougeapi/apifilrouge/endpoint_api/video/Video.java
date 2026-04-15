@@ -17,9 +17,6 @@ public class Video {
     @Column(name="video_id", nullable = false, updatable = false, unique = true)
     private Long id;
 
-    @Column(name="video_description", columnDefinition = "TEXT", nullable = false)
-    private String videoDescription;
-
     @Column(name="video_url", columnDefinition = "TEXT", nullable = false)
     private String url;
 

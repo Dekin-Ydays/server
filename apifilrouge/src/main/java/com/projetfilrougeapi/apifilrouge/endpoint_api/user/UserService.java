@@ -57,7 +57,6 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"));
-//                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories"));
     }
 
     public EntityModel<UserResponse> findUserBySlug(String slug) {
@@ -69,8 +68,6 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(user.getId())).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"));
-//                linkTo(methodOn(UserController.class).getCategoriesForUser(user.getId())).withRel("categories")
-
     }
 
 
@@ -80,65 +77,6 @@ public class UserService {
      * @param request the fields to update (only non-null fields will be modified)
      * @return an {@link EntityModel} containing the updated user profile
      */
-    public EntityModel<UserResponse> updateCurrentUserProfile(UserRequest request) {
-        try {
-            String email = getCurrentUserEmail();
-
-            User existingUser = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + email));
-
-            if (request.getPseudo() != null) {
-                existingUser.setPseudo(request.getPseudo());
-                String newSlug = slugify.slugify(request.getPseudo());
-                existingUser.setSlug(newSlug);
-            }
-            if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
-            if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
-            if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
-            if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
-            if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
-            if (request.getDescription() != null) existingUser.setDescription(request.getDescription());
-            if (request.getImageUrl() != null) existingUser.setImageUrl(request.getImageUrl());
-            if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
-            if (request.getNote() != null) existingUser.setNote(request.getNote());
-            if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
-
-     /*       if (request.getCategoryKeys() != null) {
-                List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
-
-                if (categories.size() != request.getCategoryKeys().size()) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more category keys are invalid.");
-                }
-
-                existingUser.setCategories(categories);
-            }*/
-
-            if (request.getRole() != null) {
-                Role currentRole = existingUser.getRole();
-                Role newRole = request.getRole();
-
-                boolean isAdmin = currentRole == Role.Admin;
-                if (currentRole == Role.User && newRole == Role.Organizer) {
-                    existingUser.setRole(newRole);
-                } else if (isAdmin) {
-                    existingUser.setRole(newRole);
-                } else {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                            "You are not allowed to change your role to " + newRole);
-                }
-            }
-            User updatedUser = userRepository.save(existingUser);
-            UserResponse response = UserResponse.fromEntity(updatedUser);
-
-            return EntityModel.of(response,
-                    linkTo(methodOn(UserController.class).getCurrentUserProfile()).withSelfRel());
-
-        } catch (ResponseStatusException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error while updating profile", e);
-        }
-    }
 
     /**
      * Set the current authenticated user to dosabled.
@@ -155,7 +93,6 @@ public class UserService {
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel(),
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("users"));
-//                linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withRel("categories"));
 
     }
 
@@ -174,21 +111,6 @@ public class UserService {
                 linkTo(methodOn(UserController.class).getAllUsers()).withRel("places"));
     }
 
-
-
-    /*public CollectionModel<EntityModel<Category>> getCategoriesForUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<EntityModel<Category>> categories = user.getCategories().stream()
-                .map(cat -> EntityModel.of(cat,
-                        linkTo(methodOn(CategoryController.class).getCategoryById(cat.getId())).withSelfRel()
-                ))
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(categories,
-                linkTo(methodOn(UserController.class).getCategoriesForUser(id)).withSelfRel());
-    }*/
 
     public EntityModel<UserResponse> updateUser(Long id, UserRequest request) {
 
@@ -222,20 +144,61 @@ public class UserService {
             existingUser.setRole(request.getRole());
         }
 
-        /*if (request.getCategoryKeys() != null) {
-            List<Category> categories = categoryRepository.findByKeyIn(request.getCategoryKeys());
-
-            if (categories.size() != request.getCategoryKeys().size()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or multiples keys are invalides.");
-            }
-            existingUser.setCategories(categories);
-        }*/
-
         User updatedUser = userRepository.save(existingUser);
         UserResponse response = UserResponse.fromEntity(updatedUser);
 
         return EntityModel.of(response,
                 linkTo(methodOn(UserController.class).getUserById(id)).withSelfRel());
+    }
+
+    public EntityModel<UserResponse> updateCurrentUserProfile(UserRequest request) {
+        try {
+            String email = getCurrentUserEmail();
+            User existingUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + email));
+
+            if (request.getPseudo() != null) {
+                existingUser.setPseudo(request.getPseudo());
+                String newSlug = slugify.slugify(request.getPseudo());
+                existingUser.setSlug(newSlug);
+            }
+
+            if (request.getFirstName() != null) existingUser.setFirstName(request.getFirstName());
+            if (request.getLastName() != null) existingUser.setLastName(request.getLastName());
+            if (request.getEmail() != null) existingUser.setEmail(request.getEmail());
+            if (request.getPassword() != null) existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            if (request.getPhone() != null) existingUser.setPhone(request.getPhone());
+            if (request.getDescription() != null) existingUser.setDescription(request.getDescription());
+            if (request.getImageUrl() != null) existingUser.setImageUrl(request.getImageUrl());
+            if (request.getBannerUrl() != null) existingUser.setBannerUrl(request.getBannerUrl());
+            if (request.getNote() != null) existingUser.setNote(request.getNote());
+            if (request.getSocials() != null) existingUser.setSocials(request.getSocials());
+
+            if (request.getRole() != null) {
+                Role currentRole = existingUser.getRole();
+                Role newRole = request.getRole();
+
+                boolean isAdmin = currentRole == Role.Admin;
+
+                if (isAdmin) {
+                    existingUser.setRole(newRole);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                            "You are not allowed to change your role to " + newRole);
+                }
+            }
+
+            User updatedUser = userRepository.save(existingUser);
+            UserResponse response = UserResponse.fromEntity(updatedUser);
+
+            return EntityModel.of(response,
+                    linkTo(methodOn(UserController.class).getCurrentUserProfile()).withSelfRel());
+
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error while updating profile", e);
+        }
     }
 
     /**
