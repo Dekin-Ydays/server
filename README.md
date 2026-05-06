@@ -10,6 +10,7 @@
 - [Description du projet](#-description-du-projet)
 - [Fonctionnalités principales](#-fonctionnalités-principales)
 - [Architecture technique](#-architecture-technique)
+- [Choix techniques & architecture de l'API](#-choix-techniques--architecture-de-lapi)
 - [Prérequis](#-prérequis)
 - [Installation et configuration](#-installation-et-configuration)
 - [Démarrage rapide](#-démarrage-rapide)
@@ -23,63 +24,40 @@
 
 ## 🎯 Description du projet
 
-L'**API Fil Rouge** est une plateforme complète de gestion d'événements développée avec Spring Boot. Elle permet aux utilisateurs de créer, gérer et participer à des événements, avec un système d'authentification robuste, une gestion des lieux et des villes, et des fonctionnalités avancées de recherche et de recommandation.
+L'**API Dekin** est le moteur d'une application de danse développée avec Spring Boot. Elle permet aux utilisateurs de réaliser des danses et les poster sur l'application tout en recevant une note de réussite de ces danses avec un système d'authentification robuste. La plateforme favorise l'interaction sociale via un flux de vidéos, des commentaires et un système de likes.
 
 ### 🎪 Cas d'usage
 
-- **Organisateurs** : Création et gestion d'événements, gestion des participants, système de billets
-- **Participants** : Découverte d'événements, réservation de billets, système d'invitations
+- **Utilisateurs** : Création de comptes, gestion de profils, publication de vidéos de danse, abonnements, likes et commentaires.
 - **Administrateurs** : Gestion complète de la plateforme, modération des contenus
-- **Recherche** : Système de recherche avancée multi-critères avec filtres
 
 ## ✨ Fonctionnalités principales
 
 ### 🔐 Authentification et autorisation
 - **Authentification JWT** avec tokens sécurisés
 - **OAuth2** avec support **Google** et **GitHub**
-- **Gestion des rôles** : User, Organizer, Admin, AuthService
+- **Gestion des rôles** : User, Admin, AuthService
 - **Permissions granulaires** par endpoint
 - **URLs de redirection** configurées pour les frontends
 
-### 👥 Gestion des utilisateurs
-- Profils utilisateurs complets avec avatars et bannières
-- Système de notation et d'avis
-- Gestion des réseaux sociaux
-- Profils d'organisateurs spécialisés
+### 💃 Système de Danse et Vidéo
+- **Moteur de Scoring** : Enregistrement des scores de performance associés aux vidéos
+- **Social Feed** : Publication de "Social Posts" liant une vidéo, une description et une catégorie musicale
+- **Catégories Musicales** : Large choix de styles (Kpop, HipHop, Rock, Jazz, etc.) pour classer les défis
 
-### 🎫 Gestion des événements
-- Création et édition d'événements
-- Système de catégories et tags
-- Gestion des participants et invitations
-- Événements "première édition" et "tendances"
-- Filtres avancés (prix, dates, catégories, villes)
+### 📱 Interactions Sociales
+- **Likes & Engagement** : Système de likes sur les posts et les commentaires avec mise à jour en temps réel des compteurs
+- **Commentaires** : Possibilité de commenter les performances des autres utilisateurs
+- **Abonnements** : Système de "Followers" et "Subscriptions" pour créer son réseau
 
-### 🏙️ Gestion géographique
-- **Villes** : Gestion complète avec régions
-- **Lieux** : Salles, espaces, types de lieux
-- **Recherche géographique** intégrée
+### 👤 Profils Utilisateurs
+- Profils personnalisables (pseudo, bio, image de profil, bannière)
+- Système de **Slugs** automatiques pour des URLs de profil propres (ex: `/users/slug/mon-pseudo`)
+- Calcul de la moyenne des notes reçues par l'utilisateur
 
-### 🎟️ Système de billets et commandes
-- Création et gestion de billets
-- Système de commandes
-- Gestion des invitations
-- Notifications par email
-
-### 🔍 Recherche avancée
-- **Recherche globale** multi-entités
-- **Recherche typée** par catégorie
-- **Filtres combinés** (ville, lieu, prix, dates)
-- **Pagination** et tri
-
-### 📧 Notifications et communication
-- **Templates d'emails** avec Apache Velocity
-- Notifications automatiques pour les événements
-- Emails de bienvenue et de mise à jour
-
-### 🛡️ Modération et signalements
-- Système de signalements
-- Gestion des avis et commentaires
-- Modération des contenus
+### 🛡️ Modération
+- Système de signalement intégré (`countReportsReceived`)
+- **NameValidator** : Filtrage automatique des pseudos contenant des insultes via un dictionnaire JSON
 
 ## 🏗️ Architecture technique
 
@@ -117,14 +95,31 @@ L'**API Fil Rouge** est une plateforme complète de gestion d'événements déve
 ### Modèles de données principaux
 
 - **User** : Utilisateurs avec rôles et permissions
-- **Event** : Événements avec catégories et participants
-- **City** : Villes avec régions
-- **Place** : Lieux d'événements
 - **Category** : Catégories d'événements
-- **Order** : Commandes et billets
-- **Invitation** : Système d'invitations
-- **Review** : Avis et notations
-- **Report** : Signalements
+- **SocialPost** : Les posts sociaux liant une vidéo, une description et une catégorie
+- **Video** : Stockage de l'URL du média et du score obtenu par l'algorithme
+- **Commentary** : Echanges textuels sous les vidéos
+- **Like** : Interaction positive sur les posts ou commentaires
+- **Subscription** : Relation de suivi entre deux utilisateurs
+
+## 💡 Choix Techniques & Architecture de l'API
+
+Cette section explique les décisions architecturales majeures pour faciliter la reprise du projet.
+
+### ⚡ Automatisation des Endpoints (Spring Data REST)
+L'une des particularités de ce projet est l'absence de contrôleurs manuels pour plusieurs entités (`SocialPost`, `Category`, `Like`, `Commentary`, `Video`).
+*   **Choix** : Nous utilisons `Spring Data REST` via l'annotation `@RepositoryRestResource` sur les interfaces Repository.
+*   **Avantage** : Cela génère automatiquement les endpoints CRUD respectant les standards HATEOAS sans écrire de code boilerplate.
+*   **Conséquence** : Si vous cherchez un `SocialPostController` et que vous ne le trouvez pas, c'est normal. Tout est piloté par le repository et configuré dans `RestConfig.java`
+
+### 🎭 Gestion des données exposées (Projections)
+Puisque les contrôleurs sont automatisés, nous utilisons des **Projections** (dans le package `DTO`) pour contrôler finement les données JSON sortantes
+*   Par exemple, `SocialPostProjection` permet d'inclure l'URL de la vidéo et le pseudo de l'utilisateur sans exposer tout l'objet User
+*   Elles sont activées via le paramètre `?projection=nomDeLaProjection` dans les appels API
+
+### 🔄 Logique métier via EventHandlers
+Pour compenser l'absence de contrôleurs manuels lors de la création de ressources (ex: incrémenter un compteur de likes), nous utilisons des **RepositoryEventHandlers**
+*   Voir `LikeEventHandler.java` : Il intercepte la création d'un "Like" pour mettre à jour automatiquement la somme totale des likes sur le post ou le commentaire concerné avant la sauvegarde en base
 
 ## 📋 Prérequis
 
@@ -265,7 +260,7 @@ app.oauth2.allowed-redirect-uris=http://localhost:3000,http://localhost:3100,htt
 
 L'application démarre sur le port **8090** par défaut.
 
-- **API Documentation** : http://localhost:8090/swagger-ui/
+- **API Documentation** : http://localhost:8090/swagger-ui/index.html#/
 - **Health Check** : http://localhost:8090/actuator/health
 - **Base API** : http://localhost:8090/api/v1/
 
@@ -275,34 +270,31 @@ L'application démarre sur le port **8090** par défaut.
 # Test de l'API de santé
 curl http://localhost:8090/actuator/health
 
-# Test de récupération des villes
-curl http://localhost:8090/api/v1/cities
+# Test de récupération des posts
+curl http://localhost:8090/socialPost
 ```
 
 ## 📚 Documentation API
 
 ### Endpoints principaux
 
-| Endpoint | Description | Authentification |
-|----------|-------------|------------------|
-| `/api/v1/auth/**` | Authentification et inscription | Non |
-| `/api/v1/users/**` | Gestion des utilisateurs | Partielle |
-| `/api/v1/events/**` | Gestion des événements | Partielle |
-| `/api/v1/cities/**` | Gestion des villes | Non |
-| `/api/v1/places/**` | Gestion des lieux | Partielle |
-| `/api/v1/categories/**` | Gestion des catégories | Partielle |
-| `/api/v1/orders/**` | Gestion des commandes | Oui |
-| `/api/v1/invitations/**` | Gestion des invitations | Oui |
-| `/api/v1/reviews/**` | Gestion des avis | Partielle |
-| `/api/v1/reports/**` | Gestion des signalements | Oui |
-| `/api/v1/search/**` | Recherche globale | Non |
+| Endpoint | Description                      | Authentification |
+|----------|----------------------------------|------------------|
+| `/api/v1/auth/**` | Authentification et inscription  | Non              |
+| `/api/v1/users/**` | Gestion des utilisateurs         | Partielle        |
+| `/api/v1/socialPost/**` | Gestion des posts                | Oui              |
+| `/api/v1/videos/**` | Gestion des videos               | Oui              |
+| `/api/v1/like/**` | Gestion des likes                | Oui              |
+| `/api/v1/categories/**` | Gestion des catégories           | Oui              |
+| `/api/v1/commentary/**` | Gestion des commentaires         | Oui              |
+| `/api/v1/subscribes/**` | Gestion des abonements           | Oui              |
 
 ### Exemples d'utilisation
 
 #### Créer un compte utilisateur
 
 ```bash
-curl -X POST http://localhost:8090/api/v1/auth/register \
+curl -X POST http://localhost:8090/socialPost \
   -H "Content-Type: application/json" \
   -d '{
     "firstName": "John",
@@ -325,21 +317,18 @@ curl -X POST http://localhost:8090/api/v1/auth/authenticate \
   }'
 ```
 
-#### Créer un événement (avec token)
+#### Créer un socialPost (avec token)
 
 ```bash
-curl -X POST http://localhost:8090/api/v1/events \
+curl -X POST http://localhost:8090/socialPost \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
-    "title": "Concert de Jazz",
-    "description": "Un super concert de jazz",
-    "startDate": "2024-12-25T20:00:00",
-    "endDate": "2024-12-25T23:00:00",
-    "price": 25.0,
-    "maxParticipants": 100,
-    "placeId": 1,
-    "categoryIds": [1, 2]
+    "socialPostDescription": "TestPost!",
+    "user": "http://localhost:8090/api/v1/test/1",
+    "video": "http://localhost:8090/api/v1/video/1",
+    "category": "http://localhost:8090/api/v1/category/1",
+    "socialPostLike": "http://localhost:8090/socialPostLike/2"
   }'
 ```
 
@@ -362,7 +351,6 @@ curl -X POST http://localhost:8090/api/v1/events \
 | Rôle | Permissions | Description |
 |------|-------------|-------------|
 | **USER** | Lecture publique, gestion profil, participation | Utilisateur standard |
-| **ORGANIZER** | USER + création événements, gestion participants | Organisateur d'événements |
 | **ADMIN** | Toutes les permissions | Administrateur système |
 | **AUTH_SERVICE** | Authentification et gestion utilisateurs | Service d'authentification |
 
@@ -380,23 +368,18 @@ apifilrouge/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/projetfilrougeapi/apifilrouge/
-│   │   │   ├── assembler/          # Assemblers HATEOAS
 │   │   │   ├── auth/               # Authentification
 │   │   │   ├── config/             # Configuration Spring
 │   │   │   ├── DTO/                # Data Transfer Objects
 │   │   │   ├── email/              # Service d'emails
 │   │   │   ├── endpoint_api/       # Controllers et Services
 │   │   │   │   ├── category/       # Gestion des catégories
-│   │   │   │   ├── city/           # Gestion des villes
-│   │   │   │   ├── event/          # Gestion des événements
-│   │   │   │   ├── invitation/     # Système d'invitations
-│   │   │   │   ├── order/          # Commandes et billets
-│   │   │   │   ├── place/          # Gestion des lieux
-│   │   │   │   ├── report/         # Signalements
-│   │   │   │   ├── review/         # Avis et notations
-│   │   │   │   ├── search/         # Recherche globale
-│   │   │   │   ├── ticket/         # Gestion des billets
-│   │   │   │   └── user/           # Gestion des utilisateurs
+│   │   │   │   ├── commentary/     # Gestion des commentaires
+│   │   │   │   ├── like/           # Gestion des likes
+│   │   │   │   ├── socialPost/     # Gestion des posts sociaux
+│   │   │   │   ├── subscription/   # Gestion des abonnements
+│   │   │   │   ├── user/           # Gestion des utilisateurs
+│   │   │   │   └── video/          # Gestion des vidéos et scores
 │   │   │   ├── helper/             # Utilitaires
 │   │   │   ├── Specification/      # Spécifications JPA
 │   │   │   └── validator/          # Validateurs personnalisés
@@ -539,6 +522,6 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ---
 
-**Développé avec ❤️ par l'équipe Veevent**
+**Développé avec ❤️ par l'équipe Dekin**
 
-*Dernière mise à jour : Juillet 2025* 
+*Dernière mise à jour : Mai 2026* 

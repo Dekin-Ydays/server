@@ -14,7 +14,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
-                .info(new Info().title("API Veevent").version("1.0"))
+                .info(new Info().title("API Dekin").version("1.0"))
                 .addSecurityItem(new SecurityRequirement().addList("JWT"))
                 .components(new Components()
                         .addSecuritySchemes("JWT", new SecurityScheme()
