@@ -1,0 +1,11 @@
+# IDE/local state
+.idea/
+*.iml
+out/
+
+# Build output
+apifilrouge/target/
+target/
+
+# OS
+.DS_Store

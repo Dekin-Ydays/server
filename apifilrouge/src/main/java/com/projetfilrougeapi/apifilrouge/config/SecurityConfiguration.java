@@ -43,6 +43,10 @@ public class SecurityConfiguration {
 
     @Value("${springdoc.swagger-ui.enabled:false}")
     private boolean swaggerEnabled;
+
+    @Value("${app.cors.allowed-origin-patterns:http://localhost:3000,http://localhost:3100,https://veevent-admin.vercel.app,https://veevent.vercel.app,https://event-website-veevent.vercel.app,https://*.vercel.app}")
+    private String corsAllowedOriginPatterns;
+
     /**
      * Liste des URL accessibles sans authentification.
      */
@@ -70,7 +74,10 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3100", "https://veevent-admin.vercel.app", "https://veevent.vercel.app", "https://event-website-veevent.vercel.app"));
+        configuration.setAllowedOriginPatterns(Arrays.stream(corsAllowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE", "OPTIONS","HEAD"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

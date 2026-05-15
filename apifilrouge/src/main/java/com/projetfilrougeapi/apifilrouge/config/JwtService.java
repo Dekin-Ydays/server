@@ -5,11 +5,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,21 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String secretKey = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    @Value("${app.jwt.secret:}")
+    private String secretKey;
+
+    private Key signingKey;
+
+    @PostConstruct
+    void initializeSigningKey() {
+        if (secretKey == null || secretKey.isBlank()) {
+            signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            return;
+        }
+
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        signingKey = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     /**
      * Extrait le nom d'utilisateur (username) contenu dans un token JWT.
@@ -112,7 +127,6 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return signingKey;
     }
 }

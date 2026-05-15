@@ -1,5 +1,9 @@
 # 🎫 API Fil Rouge - Plateforme de Gestion d'Événements
 
+> Nouveau mainteneur : commencer par la passation française canonique dans le repo infrastructure : https://github.com/Dekin-Ydays/infrastructure/blob/main/HANDOVER_FR.md
+>
+> Dans ce repo, l’application Spring Boot exécutable est dans `apifilrouge/`. Attention : le workflow Docker peut construire/pousser une image GHCR, mais le déploiement SSH `dekin-deploy server` n’est pas supporté par l’infra Terraform actuelle tant que le helper remote n’est pas étendu.
+
 [![Java](https://img.shields.io/badge/Java-23-orange.svg)](https://openjdk.org/projects/jdk/23/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
@@ -498,8 +502,8 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 | `SPRING_PROFILES_ACTIVE` | Profil Spring | `dev` |
 | `DB_URL` | URL base de données | `jdbc:postgresql://localhost:5432/jwt_security` |
 | `DB_USERNAME` | Utilisateur DB | `postgres` |
-| `DB_PASSWORD` | Mot de passe DB | `admin` |
-| `JWT_SECRET` | Clé secrète JWT | `404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970` |
+| `DB_PASSWORD` | Mot de passe DB | `admin` en local, requis en prod |
+| `JWT_SECRET` | Clé secrète JWT base64 pour signer les tokens | requis en prod ; généré en mémoire en dev si absent |
 | `GOOGLE_CLIENT_ID` | Client ID Google OAuth2 | Configuré dans `application.properties` |
 | `GOOGLE_CLIENT_SECRET` | Client Secret Google OAuth2 | Configuré dans `application.properties` |
 | `GITHUB_CLIENT_ID` | Client ID GitHub OAuth2 | Configuré dans `application.yml` |
